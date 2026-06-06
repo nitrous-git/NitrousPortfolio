@@ -4,183 +4,31 @@
 */
 
 @media (prefers-reduced-motion: reduce) {
-    .orbit-system,
-    .scan-line,
-    .project-shine {
-        animation: none;
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
     }
 }
 
 @media (max-width: 1080px) {
-    .hero-grid,
-    .about-grid,
-    .contact-panel,
-    .prototype-grid,
-    .projects-grid,
-    .case-columns,
-    .home-profile-grid,
-    .home-selected-grid,
-    .home-split-grid,
-    .home-bottom-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .home-featured-grid .featured {
-        grid-column: auto;
-    }
-
-    .contact-panel {
-        align-items: start;
-    }
-
-    .home-work-media {
-        min-height: 260px;
-    }
-}
-
-@media (max-width: 820px) {
-    .menu-toggle {
-        display: inline-block;
-    }
-
-    .nav-links {
-        position: fixed;
-        top: var(--header-height);
-        left: 0;
-        right: 0;
-        background: rgba(7, 11, 17, 0.98);
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-        padding: 18px 20px 22px;
-        display: none;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 18px;
-    }
-
-    .nav-links.open {
-        display: flex;
-    }
-
-    .hero-panel {
-        min-height: 500px;
-    }
-
-    .home-hero-polished {
-        padding-top: 58px;
-        padding-bottom: 72px;
-    }
-
-    .home-hero-copy {
-        text-align: left;
-        justify-self: stretch;
-    }
-
-    .home-hero-title,
-    .home-hero-text {
-        margin-left: 0;
-        margin-right: 0;
-    }
-
-    .home-hero-actions,
-    .home-hero-meta {
-        justify-content: flex-start;
-    }
-
-    .hero-orbit-stage {
-        height: 260px;
-        border-radius: 30px;
-    }
-
-    .orbit-system {
-        transform: scale(0.82);
-    }
-}
-
-@media (max-width: 640px) {
-    .container {
-        width: min(var(--container), calc(100% - 24px));
-    }
-
-    .section {
-        padding: 72px 0;
-    }
-
-    .hero-actions,
-    .about-actions {
-        flex-direction: column;
-    }
-
-    .btn {
-        width: 100%;
-    }
-
-    .project-media {
-        height: 210px;
-    }
-
-    .featured .project-media,
-    .case-media.large {
-        height: 220px;
-    }
-
-    .hero-panel {
-        min-height: 440px;
-    }
-
-    .hero-panel-content {
-        left: 20px;
-        right: 20px;
-        bottom: 20px;
-    }
-
-    .footer-row {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .home-hero-title {
-        max-width: 10.5ch;
-    }
-
-    .home-hero-meta span {
-        font-size: 0.82rem;
-    }
-
-    .hero-orbit-stage {
-        height: 225px;
-    }
-
-    .orbit-system {
-        width: 240px;
-        height: 240px;
-    }
-
-    .orbit-node-a { transform: translate(102px, -52px); }
-    .orbit-node-b { transform: translate(-104px, 38px); }
-    .orbit-node-c { transform: translate(28px, 100px); }
-
-    .profile-card,
-    .stack-panel,
-    .focus-panel,
-    .home-work-body {
-        padding: 22px;
-    }
-
-    .home-work-media {
-        min-height: 185px;
-    }
-
-    .home-work-topline {
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 6px;
+    .prototype-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 920px) {
     .work-grid,
     .split-section,
-    .contact-panel {
+    .contact-panel,
+    .case-columns {
         grid-template-columns: 1fr;
     }
 
@@ -236,12 +84,22 @@
     }
 
     .article-row,
-    .contact-links {
+    .contact-links,
+    .prototype-grid {
         grid-template-columns: 1fr;
     }
 
-    .featured-image,
-    .work-image {
+    .hero-mark {
+        height: 250px;
+    }
+
+    .mark-orbit {
+        transform: scale(0.86);
+    }
+
+    .work-media,
+    .case-media {
         min-height: 210px;
+        height: 220px;
     }
 }

@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -41,23 +40,23 @@
 </header>
 
 <main>
-    <section class="section home-hero-polished">
-        <div class="container home-hero-shell">
-            <div class="home-hero-copy reveal">
+    <section class="section hero">
+        <div class="container hero-shell">
+            <div class="hero-copy reveal">
                 <p class="eyebrow">Gameplay Programmer · Technical Developer</p>
-                <h1 class="home-hero-title">Games, frameworks, and simulations built with systems thinking.</h1>
-                <p class="hero-text home-hero-text">
+                <h1>Games, frameworks, and simulations built with systems thinking.</h1>
+                <p class="hero-text">
                     I’m Olivier Trudel, a developer with a background in physics and computer science.
                     I build gameplay systems, technical prototypes, simulation tools, and real-time interactive work
                     across Unity, Unreal Engine, C#, Python, and graphics programming.
                 </p>
 
-                <div class="hero-actions home-hero-actions">
+                <div class="hero-actions">
                     <a href="projects.html" class="btn btn-primary">View Projects</a>
-                    <a href="devlog.html" class="btn btn-secondary">Read Devlog</a>
+                    <a href="prototypes.html" class="btn btn-secondary">Read Articles</a>
                 </div>
 
-                <div class="home-hero-meta" aria-label="Portfolio focus areas">
+                <div class="hero-meta" aria-label="Portfolio focus areas">
                     <span>Gameplay Systems</span>
                     <span>Physics Simulation</span>
                     <span>Real-Time Graphics</span>
@@ -65,17 +64,16 @@
                 </div>
             </div>
 
-            <div class="hero-orbit-stage reveal" aria-hidden="true">
-                <div class="orbit-grid"></div>
-                <div class="orbit-halo"></div>
-                <div class="orbit-system orbit-system-a">
-                    <span class="orbit-ring orbit-ring-main"></span>
-                    <span class="orbit-ring orbit-ring-secondary"></span>
-                    <span class="orbit-ring orbit-ring-tilted"></span>
-                    <span class="orbit-core"></span>
-                    <span class="orbit-node orbit-node-a"></span>
-                    <span class="orbit-node orbit-node-b"></span>
-                    <span class="orbit-node orbit-node-c"></span>
+            <div class="hero-mark reveal" aria-hidden="true">
+                <div class="mark-grid"></div>
+                <div class="mark-orbit">
+                    <span class="mark-ring mark-ring-main"></span>
+                    <span class="mark-ring mark-ring-inner"></span>
+                    <span class="mark-ring mark-ring-tilt"></span>
+                    <span class="mark-core"></span>
+                    <span class="mark-node mark-node-a"></span>
+                    <span class="mark-node mark-node-b"></span>
+                    <span class="mark-node mark-node-c"></span>
                 </div>
             </div>
         </div>
@@ -85,16 +83,12 @@
         <div class="container">
             <div class="section-head reveal">
                 <p class="eyebrow">Selected work</p>
-                <h2>Four projects that define the portfolio.</h2>
-                <p>
-                    The homepage stays focused on a small set of strong signals: shipped game development,
-                    gameplay architecture, simulation, and AI/pathfinding.
-                </p>
+                <h2>Projects</h2>
             </div>
 
             <div class="work-grid">
-                <a class="work-card reveal" href="projects.html">
-                    <div class="work-image media-underworld">
+                <a class="work-card reveal" href="projects.html#underworld">
+                    <div class="work-media media-underworld">
                         <span>Unity · Released game</span>
                     </div>
                     <div class="work-body">
@@ -107,8 +101,8 @@
                     </div>
                 </a>
 
-                <a class="work-card reveal" href="projects.html">
-                    <div class="work-image media-fragments">
+                <a class="work-card reveal" href="projects.html#fragments">
+                    <div class="work-media media-fragments">
                         <span>UE5 · Vertical slice</span>
                     </div>
                     <div class="work-body">
@@ -121,8 +115,8 @@
                     </div>
                 </a>
 
-                <a class="work-card reveal" href="projects.html">
-                    <div class="work-image media-sph">
+                <a class="work-card reveal" href="projects.html#sph">
+                    <div class="work-media media-sph">
                         <span>Physics · Realtime graphics</span>
                     </div>
                     <div class="work-body">
@@ -135,8 +129,8 @@
                     </div>
                 </a>
 
-                <a class="work-card reveal" href="projects.html">
-                    <div class="work-image media-protocol">
+                <a class="work-card reveal" href="projects.html#protocol">
+                    <div class="work-media media-protocol">
                         <span>AI · Pathfinding</span>
                     </div>
                     <div class="work-body">
@@ -159,12 +153,20 @@
                 <h2>Technical developer with a game systems bias.</h2>
                 <p>
                     My strongest direction is gameplay programming: systems that are modular, readable,
-                    and built to support actual play. The physics and graphics side gives the portfolio a more technical edge,
+                    and built to support actual play. Physics and graphics give the portfolio a more technical edge,
                     while professional .NET/Azure work adds production engineering context.
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
+                    <br>
                 </p>
             </div>
 
-            <div class="compact-list reveal">
+            <aside class="compact-list reveal" aria-label="Core technical areas">
                 <h3>Core areas</h3>
                 <ul>
                     <li>Gameplay systems and combat/traversal architecture</li>
@@ -172,7 +174,7 @@
                     <li>Rendering experiments, WebGL, shaders, and visual prototypes</li>
                     <li>C#, Unity, Unreal Engine, .NET, and Azure workflows</li>
                 </ul>
-            </div>
+            </aside>
         </div>
     </section>
 
@@ -182,21 +184,21 @@
                 <p class="eyebrow">Articles / studies</p>
                 <h2>Prototypes become the technical writing layer.</h2>
                 <p>
-                    Instead of maintaining a separate Devlog page, this direction lets each prototype page behave like a compact article:
-                    what was built, what problem it explores, and what was learned.
+                    Each prototype can act like a compact article: what was built,
+                    what problem it explores, and what was learned.
                 </p>
             </div>
 
             <div class="article-list">
-                <a class="article-row reveal" href="prototypes.html">
+                <a class="article-row reveal" href="prototypes.html#raytracer">
                     <span>WebGL Raytracer</span>
                     <p>Materials, lighting, intersections, and browser rendering experiments.</p>
                 </a>
-                <a class="article-row reveal" href="prototypes.html">
+                <a class="article-row reveal" href="prototypes.html#attractors">
                     <span>Chaotic Attractors</span>
                     <p>Nonlinear systems, trajectory visualization, and interactive math graphics.</p>
                 </a>
-                <a class="article-row reveal" href="prototypes.html">
+                <a class="article-row reveal" href="prototypes.html#fluid-rendering">
                     <span>Screen-space Fluid Rendering</span>
                     <p>Particle rendering, smoothing passes, surface approximation, and visual cohesion.</p>
                 </a>
@@ -210,8 +212,8 @@
                 <p class="eyebrow">Contact</p>
                 <h2>Links and references.</h2>
                 <p>
-                    Everything important is reachable from the homepage, so there is no need for a separate Contact/About page.
-                    Replace the placeholder links with your final public profiles when ready.
+                    Everything important is reachable from the homepage, so a separate contact page is unnecessary.
+                    Replace placeholders with final public links when ready.
                 </p>
             </div>
 
