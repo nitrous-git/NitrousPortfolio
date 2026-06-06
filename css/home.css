@@ -264,6 +264,7 @@ The visual stack :
     background .media-underworld / .media-fragments
 ------------------------ */
 
+/*
 .home-work-media {
     position: relative;
     min-height: 315px;
@@ -330,7 +331,7 @@ The visual stack :
     z-index: 4;
 }
 
-/* ------------------------ */
+!* ------------------------ *!
 
 
 
@@ -405,3 +406,4 @@ The visual stack :
     0%, 100% { transform: translateY(0) rotate(0deg); }
     50% { transform: translateY(-8px) rotate(2deg); }
 }
+*/
