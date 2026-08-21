@@ -3,244 +3,82 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Olivier Trudel — Gameplay & Technical Portfolio</title>
-    <meta
-            name="description"
-            content="Portfolio of Olivier Trudel — gameplay systems, simulation, graphics, and technical development."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-            rel="stylesheet"
-    />
+    <title>Olivier Trudel — Portfolio</title>
+    <meta name="description" content="Olivier Trudel — gameplay programming, simulation, graphics, and technical development." />
     <link rel="stylesheet" href="styles.css" />
 </head>
-
 <body>
 <header class="site-header">
     <div class="container nav">
-        <a href="index.html" class="brand" aria-label="Olivier Trudel home">
-            <span class="brand-title">Olivier Trudel</span>
-            <span class="brand-subtitle">Gameplay · Simulation · Graphics</span>
-        </a>
-
-        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
-            <span></span>
-            <span></span>
-        </button>
-
-        <nav class="nav-links" id="navLinks" aria-label="Main navigation">
-            <a href="#work">Work</a>
+        <a class="brand" href="index.html">Olivier Trudel</a>
+        <nav class="nav-links">
             <a href="projects.html">Projects</a>
-            <a href="prototypes.html">Articles</a>
-            <a href="#contact">Contact</a>
+            <a href="devlog.html">Devlog</a>
+            <a href="about.html">About</a>
         </nav>
     </div>
 </header>
 
-<main>
-    <section class="section hero">
-        <div class="container hero-shell">
-            <div class="hero-copy reveal">
-                <p class="eyebrow">Gameplay Programmer · Technical Developer</p>
-                <h1>Games, frameworks, and simulations built with systems thinking.</h1>
-                <p class="hero-text">
-                    I’m Olivier Trudel, a developer with a background in physics and computer science.
-                    I build gameplay systems, technical prototypes, simulation tools, and real-time interactive work
-                    across Unity, Unreal Engine, C#, Python, and graphics programming.
-                </p>
+<main class="container">
+    <section class="intro">
+        <h1>Gameplay programmer and technical developer.</h1>
+        <p class="lead">
+            I build games, gameplay systems, simulations, and graphics experiments.
+            My background is in computer science and physics.
+        </p>
+    </section>
 
-                <div class="hero-actions">
-                    <a href="projects.html" class="btn btn-primary">View Projects</a>
-                    <a href="prototypes.html" class="btn btn-secondary">Read Articles</a>
-                </div>
+    <section>
+        <div class="section-head">
+            <h2>Selected work</h2>
+            <a href="projects.html">All projects →</a>
+        </div>
 
-                <div class="hero-meta" aria-label="Portfolio focus areas">
-                    <span>Gameplay Systems</span>
-                    <span>Physics Simulation</span>
-                    <span>Real-Time Graphics</span>
-                    <span>.NET / Azure</span>
-                </div>
-            </div>
+        <div class="work-grid">
+            <article class="project">
+                <a class="project-image" href="underworld.html">Project image</a>
+                <span class="meta">Unity · Released game</span>
+                <h3><a href="underworld.html">Underworld</a></h3>
+                <p>A completed platformer developed under Nitrous Studio, focused on gameplay, level progression, and shipping a finished game.</p>
+                <a class="text-link" href="underworld.html">View project →</a>
+            </article>
 
-            <div class="hero-mark reveal" aria-hidden="true">
-                <div class="mark-grid"></div>
-                <div class="mark-orbit">
-                    <span class="mark-ring mark-ring-main"></span>
-                    <span class="mark-ring mark-ring-inner"></span>
-                    <span class="mark-ring mark-ring-tilt"></span>
-                    <span class="mark-core"></span>
-                    <span class="mark-node mark-node-a"></span>
-                    <span class="mark-node mark-node-b"></span>
-                    <span class="mark-node mark-node-c"></span>
-                </div>
-            </div>
+            <article class="project">
+                <a class="project-image" href="fragments-codex.html">Project image</a>
+                <span class="meta">Unreal Engine 5 · Vertical slice</span>
+                <h3><a href="fragments-codex.html">Fragments of the CodeX</a></h3>
+                <p>A systems-driven game project built around reusable combat, traversal, encounter, and boss frameworks.</p>
+                <a class="text-link" href="fragments-codex.html">View project →</a>
+            </article>
+
+            <article class="project">
+                <div class="project-image">Project image</div>
+                <span class="meta">Unity · RTS systems</span>
+                <h3>Protocol Exodus</h3>
+                <p>An RTS project focused on pathfinding, unit movement, local steering, combat behavior, and scalable gameplay architecture.</p>
+            </article>
         </div>
     </section>
 
-    <section class="section section-tight" id="work">
-        <div class="container">
-            <div class="section-head reveal">
-                <p class="eyebrow">Selected work</p>
-                <h2>Projects</h2>
-            </div>
-
-            <div class="work-grid">
-                <a class="work-card reveal" href="projects.html#underworld">
-                    <div class="work-media media-underworld">
-                        <span>Unity · Released game</span>
-                    </div>
-                    <div class="work-body">
-                        <p class="kicker">01</p>
-                        <h3>Underworld</h3>
-                        <p>
-                            A completed 2D platformer showing production discipline, gameplay feel,
-                            and the ability to finish a full game experience.
-                        </p>
-                    </div>
-                </a>
-
-                <a class="work-card reveal" href="projects.html#fragments">
-                    <div class="work-media media-fragments">
-                        <span>UE5 · Vertical slice</span>
-                    </div>
-                    <div class="work-body">
-                        <p class="kicker">02</p>
-                        <h3>Fragments of the CodeX</h3>
-                        <p>
-                            A systems-driven UE5 vertical slice centered on traversal, combat orchestration,
-                            boss behavior, and reusable gameplay architecture.
-                        </p>
-                    </div>
-                </a>
-
-                <a class="work-card reveal" href="projects.html#sph">
-                    <div class="work-media media-sph">
-                        <span>Physics · Realtime graphics</span>
-                    </div>
-                    <div class="work-body">
-                        <p class="kicker">03</p>
-                        <h3>Fluid Simulation / SPH</h3>
-                        <p>
-                            Particle-based fluid simulation work combining numerical methods,
-                            visualization, and realtime rendering experiments.
-                        </p>
-                    </div>
-                </a>
-
-                <a class="work-card reveal" href="projects.html#protocol">
-                    <div class="work-media media-protocol">
-                        <span>AI · Pathfinding</span>
-                    </div>
-                    <div class="work-body">
-                        <p class="kicker">04</p>
-                        <h3>Protocol Exodus</h3>
-                        <p>
-                            RTS-style movement and coordination prototype focused on pathfinding,
-                            congestion, occupancy, and large-unit systems logic.
-                        </p>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <section class="section section-tight">
-        <div class="container split-section">
-            <div class="profile-copy reveal">
-                <p class="eyebrow">Profile</p>
-                <h2>Technical developer with a game systems bias.</h2>
-                <p>
-                    My strongest direction is gameplay programming: systems that are modular, readable,
-                    and built to support actual play. Physics and graphics give the portfolio a more technical edge,
-                    while professional .NET/Azure work adds production engineering context.
-                    <br>
-                    <br>
-                    <br>
-                    <br>
-                    <br>
-                    <br>
-                    <br>
-                    <br>
-                </p>
-            </div>
-
-            <aside class="compact-list reveal" aria-label="Core technical areas">
-                <h3>Core areas</h3>
-                <ul>
-                    <li>Gameplay systems and combat/traversal architecture</li>
-                    <li>Physics simulation and numerical methods</li>
-                    <li>Rendering experiments, WebGL, shaders, and visual prototypes</li>
-                    <li>C#, Unity, Unreal Engine, .NET, and Azure workflows</li>
-                </ul>
-            </aside>
-        </div>
-    </section>
-
-    <section class="section section-tight">
-        <div class="container">
-            <div class="section-head reveal">
-                <p class="eyebrow">Articles / studies</p>
-                <h2>Prototypes become the technical writing layer.</h2>
-                <p>
-                    Each prototype can act like a compact article: what was built,
-                    what problem it explores, and what was learned.
-                </p>
-            </div>
-
-            <div class="article-list">
-                <a class="article-row reveal" href="prototypes.html#raytracer">
-                    <span>WebGL Raytracer</span>
-                    <p>Materials, lighting, intersections, and browser rendering experiments.</p>
-                </a>
-                <a class="article-row reveal" href="prototypes.html#attractors">
-                    <span>Chaotic Attractors</span>
-                    <p>Nonlinear systems, trajectory visualization, and interactive math graphics.</p>
-                </a>
-                <a class="article-row reveal" href="prototypes.html#fluid-rendering">
-                    <span>Screen-space Fluid Rendering</span>
-                    <p>Particle rendering, smoothing passes, surface approximation, and visual cohesion.</p>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <section class="section contact-section" id="contact">
-        <div class="container contact-panel reveal">
-            <div>
-                <p class="eyebrow">Contact</p>
-                <h2>Links and references.</h2>
-                <p>
-                    Everything important is reachable from the homepage, so a separate contact page is unnecessary.
-                    Replace placeholders with final public links when ready.
-                </p>
-            </div>
-
-            <div class="contact-links" aria-label="Contact links">
-                <a href="https://github.com/nitrous-git">GitHub</a>
-                <a href="https://www.youtube.com/@_Nitrous_">YouTube</a>
-                <a href="#">itch.io</a>
-                <a href="#">LinkedIn</a>
-                <a href="#">Resume</a>
-                <a href="#">Email</a>
-            </div>
+    <section class="section">
+        <h2>Elsewhere</h2>
+        <div class="links">
+            <a href="devlog.html">Devlog</a>
+            <a href="about.html">About</a>
+            <a href="#">GitHub</a>
+            <a href="#">LinkedIn</a>
+            <a href="#">YouTube</a>
+            <a href="#">itch.io</a>
+            <a href="#">Email</a>
         </div>
     </section>
 </main>
 
 <footer class="site-footer">
     <div class="container footer-row">
-        <p>© 2026 Olivier Trudel</p>
-        <div class="footer-links">
-            <a href="#work">Work</a>
-            <a href="projects.html">Projects</a>
-            <a href="prototypes.html">Articles</a>
-            <a href="#contact">Contact</a>
-        </div>
+        <span>© 2026 Olivier Trudel</span>
+        <span>Nitrous Studio</span>
     </div>
 </footer>
-
-<script src="script.js"></script>
 </body>
 </html>
