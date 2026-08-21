@@ -1,404 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Olivier Trudel — Portfolio</title>
-    <meta
-            name="description"
-            content="Portfolio of Olivier Trudel — gameplay systems, simulation, graphics, and technical development."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-            rel="stylesheet"
-    />
+    <meta name="description" content="Olivier Trudel — gameplay programming, simulation, graphics, and technical development." />
     <link rel="stylesheet" href="styles.css" />
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
 </head>
-
 <body>
-
-<div class="page-noise"></div>
-<div class="page-glow glow-1"></div>
-<div class="page-glow glow-2"></div>
 
 <header class="site-header">
     <div class="container nav">
-        <a href="index.html" class="brand">
-            <span class="brand-title">Olivier Trudel</span>
-            <span class="brand-subtitle">Gameplay Systems · Simulation · Nitrous Studio</span>
-        </a>
-
-        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
-            <span></span>
-            <span></span>
-        </button>
-
-        <nav class="nav-links" id="navLinks">
+        <a class="brand" href="index.html">Olivier Trudel</a>
+        <nav class="nav-links">
             <a href="projects.html">Projects</a>
-            <a href="prototypes.html">Prototypes</a>
             <a href="devlog.html">Devlog</a>
             <a href="about.html">About</a>
         </nav>
     </div>
 </header>
 
-<main>
-    <section class="section home-hero-polished">
-        <div class="container home-hero-shell">
-            <div class="home-hero-copy reveal">
-                <p class="eyebrow">Gameplay Programmer · Technical Developer</p>
-                <h1 class="home-hero-title">Games, frameworks, and simulations built with systems thinking.</h1>
-                <p class="hero-text home-hero-text">
-                    I’m Olivier Trudel, a developer with a background in physics and computer science.
-                    I build gameplay systems, technical prototypes, simulation tools, and real-time interactive work
-                    across Unity, Unreal Engine, C#, Python, and graphics programming.
+<main class="container">
+    <section class="intro">
+        <h1>Gameplay programmer and technical developer.</h1>
+        <p class="lead">
+            I build games, gameplay systems, simulations, and graphics experiments. <br>
+            My background is in computer science and physics.
+        </p>
+    </section>
+
+    <section>
+        <div class="section-head">
+            <h2>Selected work</h2>
+            <a href="projects.html">All projects →</a>
+        </div>
+
+        <div class="work-grid">
+            <article class="project">
+                <a class="project-image" href="underworld.html">
+                    <img
+                            src="assets/img/Underworld_cover1_16x9.png"
+                            alt="Underworld gameplay screenshot"
+                    >
+                </a>
+
+                <span class="meta">Unity · Released game</span>
+                <h3><a href="underworld.html">Underworld</a></h3>
+                <p>A completed platformer developed under Nitrous Studio, focused on gameplay, level progression, and shipping a finished game.</p>
+                <a class="text-link" href="underworld.html">View project →</a>
+            </article>
+
+            <article class="project">
+
+                <a class="project-image" href="fragments-codex.html">
+                    <img
+                            src="assets/img/FOTCodeX_cover3_16x9.png"
+                            alt="FOTCodeX gameplay screenshot"
+                    >
+                </a>
+
+                <span class="meta">Unreal Engine 5 · Vertical slice</span>
+                <h3><a href="fragments-codex.html">Fragments of the CodeX</a></h3>
+                <p>A systems-driven game project built around reusable combat, traversal, encounter, and boss frameworks.</p>
+                <a class="text-link" href="fragments-codex.html">View project →</a>
+            </article>
+
+<!--            <article class="project">-->
+<!--                <div class="project-image">Project image</div>-->
+<!--                <span class="meta">Unity · RTS systems</span>-->
+<!--                <h3>Protocol Exodus</h3>-->
+<!--                <p>An RTS project focused on pathfinding, unit movement, local steering, combat behavior, and scalable gameplay architecture.</p>-->
+<!--            </article>-->
+
+            <article class="project">
+                <a class="project-image" href="fragments-codex.html">
+                    <img
+                            src="assets/img/SPH_cover_16x9.png"
+                            alt="SPH screenshot"
+                    >
+                </a>
+
+                <span class="meta">ThreeJS · Simulation</span>
+                <h3>SPH Fluid Simulation</h3>
+                <p>
+                    Particle-based fluid simulation exploring physical modeling, numerical stability,
+                    visualization, and comparison with grid-based fluid approaches.
                 </p>
+            </article>
 
-                <div class="hero-actions home-hero-actions">
-                    <a href="projects.html" class="btn btn-primary">View Projects</a>
-                    <a href="devlog.html" class="btn btn-secondary">Read Devlog</a>
-                </div>
+            <article class="project">
+                <a class="project-image" href="fragments-codex.html">
+                    <img
+                            src="assets/img/Raytracer_Cornell.png"
+                            alt="Raytracer screenshot"
+                    >
+                </a>
 
-                <div class="home-hero-meta" aria-label="Portfolio focus areas">
-                    <span>Gameplay Systems</span>
-                    <span>Physics Simulation</span>
-                    <span>Real-Time Graphics</span>
-                    <span>.NET / Azure</span>
-                </div>
-            </div>
+                <span class="meta">C++ · Engine</span>
+                <h3>Raytracer Engine</h3>
+                <p>
+                    A Raytracer Engine built in pure C++ with a Distributed Smooth Shadow Raycaster.
+                </p>
+            </article>
 
-            <div class="hero-orbit-stage reveal" aria-hidden="true">
-                <div class="orbit-grid"></div>
-                <div class="orbit-halo"></div>
-                <div class="orbit-system orbit-system-a">
-                    <span class="orbit-ring orbit-ring-main"></span>
-                    <span class="orbit-ring orbit-ring-secondary"></span>
-                    <span class="orbit-ring orbit-ring-tilted"></span>
-                    <span class="orbit-core"></span>
-                    <span class="orbit-node orbit-node-a"></span>
-                    <span class="orbit-node orbit-node-b"></span>
-                    <span class="orbit-node orbit-node-c"></span>
-                </div>
-            </div>
+            <article class="project">
+                <a class="project-image" href="fragments-codex.html">
+                    <img
+                            src="assets/img/AeonSector_cover_16x9.png"
+                            alt="Raytracer screenshot"
+                    >
+                </a>
+
+                <span class="meta">Game Jam · Strategy</span>
+                <h3>Aeon//Sector</h3>
+                <p>
+                    Turn-based sci-fi mecha tactics prototype built in Unity, focused on grid movement,
+                    attack ranges, unit UI, battle flow, and clean jam-scope architecture.
+
+                </p>
+            </article>
+
+            <article class="project">
+                <a class="project-image" href="fragments-codex.html">
+                    <img
+                            src="assets/img/AttractorAizawa02.png"
+                            alt="Raytracer screenshot"
+                    >
+                </a>
+
+                <span class="meta">Three.js · Simulation</span>
+                <h3>Chaotic Attractor</h3>
+                <p>
+                    Visual representation of many Chaotic Attractor with Three.js and an RK4 solver for partial
+                    differential equations.
+                </p>
+            </article>
         </div>
     </section>
 
-    <section class="section section-alt home-profile-section">
-        <div class="container">
-            <div class="section-head reveal numbered-head home-section-head">
-                <div>
-                    <p class="section-number">01</p>
-                    <p class="eyebrow">Profile</p>
-                    <h2>A hybrid technical profile.</h2>
-                </div>
-            </div>
+    <section class="section">
+        <h2>Elsewhere</h2>
+        <div class="links">
+            <a href="https://github.com/nitrous-git" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github"></i>
+                GitHub
+            </a>
 
-            <div class="home-profile-grid">
-                <article class="profile-card reveal">
-                    <span class="profile-index">01</span>
-                    <h3>Gameplay Programmer</h3>
-                    <p>
-                        Modular gameplay architecture for combat, traversal, AI behavior, encounters,
-                        player interaction, and vertical slice production.
-                    </p>
-                </article>
+            <a href="https://www.youtube.com/@_Nitrous_" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-youtube"></i>
+                YouTube
+            </a>
 
-                <article class="profile-card reveal">
-                    <span class="profile-index">02</span>
-                    <h3>Technical Developer</h3>
-                    <p>
-                        Production-minded software development across Unity, Unreal Engine, C#, .NET,
-                        Azure DevOps, and maintainable engineering workflows.
-                    </p>
-                </article>
+            <a href="https://nitrous-studio.itch.io/" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-itch-io"></i>
+                itch.io
+            </a>
 
-                <article class="profile-card reveal">
-                    <span class="profile-index">03</span>
-                    <h3>Physics / Simulation Background</h3>
-                    <p>
-                        Numerical methods, particle simulation, rendering experiments, and mathematically
-                        grounded systems informed by a physics background.
-                    </p>
-                </article>
-            </div>
-        </div>
-    </section>
-
-    <section class="section home-work-section">
-        <div class="container">
-            <div class="section-head reveal numbered-head home-section-head">
-                <div>
-                    <p class="section-number">02</p>
-                    <p class="eyebrow">Selected Work</p>
-                    <h2>Projects that define the portfolio.</h2>
-                </div>
-                <a href="projects.html" class="section-link">View all projects</a>
-            </div>
-
-            <div class="home-selected-grid">
-
-                <!-- UNDERWORLD -->
-                <a class="home-work-card reveal" href="underworld.html" aria-label="Open Underworld project">
-                    <div class="home-work-media media-underworld">
-
-                        <img
-                                class="media-image"
-                                src="assets/img/Underworld_vertical02.png"
-                                height="1536"
-                                width="1024"
-                                alt="Underworld project artwork"
-                                loading="lazy"
-                        />
-
-                        <div class="project-shine"></div>
-                        <div class="media-label">Unity · Released Game</div>
-                    </div>
-                    <div class="home-work-body">
-                        <div class="home-work-topline">
-                            <span>01</span>
-                            <p>Shipped Project</p>
-                        </div>
-                        <h3>Underworld</h3>
-                        <p>
-                            Released Unity platformer developed under Nitrous Studio. A concrete production signal
-                            focused on game feel, level progression, collaboration, and execution.
-                        </p>
-                    </div>
-                </a>
-
-                <a class="home-work-card reveal" href="fragments-codex.html" aria-label="Open Fragments of the CodeX project">
-                    <div class="home-work-media media-fragments">
-
-                        <img
-                                class="media-image"
-                                src="assets/img/FOTCodeX.png"
-                                height="1402"
-                                width="1121"
-                                alt="Fragments of the CodeX preview"
-                                loading="lazy"
-                        />
-
-                        <div class="project-shine"></div>
-                        <div class="media-label">UE5 · Vertical Slice</div>
-                    </div>
-                    <div class="home-work-body">
-                        <div class="home-work-topline">
-                            <span>02</span>
-                            <p>Combat Framework</p>
-                        </div>
-                        <h3>Fragments of the CodeX</h3>
-                        <p>
-                            UE5 vertical slice powered by reusable combat, traversal, encounter, and boss orchestration
-                            systems built around a modular gameplay framework.
-                        </p>
-                    </div>
-                </a>
-
-                <a class="home-work-card reveal" href="projects.html" aria-label="Open Aeon//Sector project">
-                    <div class="home-work-media media-aeon">
-
-                        <img
-                                class="media-image"
-                                src="assets/img/AeonSector_NoLogo.png"
-                                height="1078"
-                                width="1459"
-                                alt="Aeon//Sector preview"
-                                loading="lazy"
-                        />
-
-
-                        <div class="project-shine"></div>
-                        <div class="media-label">Unity · Game Jam</div>
-                    </div>
-
-
-                    <div class="home-work-body">
-                        <div class="home-work-topline">
-                            <span>03</span>
-                            <p>Tactical Prototype</p>
-                        </div>
-                        <h3>Aeon//Sector</h3>
-                        <p>
-                            Turn-based sci-fi mecha tactics prototype built in Unity, focused on grid movement,
-                            attack ranges, unit UI, battle flow, and clean jam-scope architecture.
-                        </p>
-                    </div>
-                </a>
-
-                <a class="home-work-card reveal" href="projects.html" aria-label="Open SPH simulation project">
-                    <div class="home-work-media media-sph">
-                        <div class="project-shine"></div>
-                        <div class="media-label">Physics · Numerical Simulation</div>
-                    </div>
-                    <div class="home-work-body">
-                        <div class="home-work-topline">
-                            <span>04</span>
-                            <p>Scientific Computing</p>
-                        </div>
-                        <h3>SPH Fluid Simulation</h3>
-                        <p>
-                            Particle-based fluid simulation exploring physical modeling, numerical stability,
-                            visualization, and comparison with grid-based fluid approaches.
-                        </p>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <section class="section section-alt home-stack-section">
-        <div class="container">
-            <div class="home-split-grid">
-                <div class="stack-panel reveal">
-                    <p class="section-number">03</p>
-                    <p class="eyebrow">Technical Stack</p>
-                    <h2>Tools and systems I work with.</h2>
-
-
-                    <div class="stack-cloud">
-                        <span class="stack-pill has-icon">
-                        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/unrealengine.svg" alt="" />
-                        Unreal Engine 5
-                        </span>
-
-                        <span class="stack-pill has-icon">
-                        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/unity.svg" alt="" />
-                        Unity
-                        </span>
-
-                        <span class="stack-pill has-icon">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/csharp/csharp-plain.svg" alt="" />
-                        C#
-                        </span>
-
-                        <span class="stack-pill has-icon">
-                        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/cplusplus.svg" alt="" />
-                        C++
-                        </span>
-
-                        <span class="stack-pill has-icon">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/java/java-original.svg" alt="" />
-                        Java
-                        </span>
-
-                        <span class="stack-pill has-icon">
-                        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/dotnet.svg" alt="" />
-                        .NET
-                        </span>
-
-                        <span class="stack-pill has-icon">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/azuredevops/azuredevops-original.svg" alt="" />
-                        Azure DevOps
-                        </span>
-
-                        <span class="stack-pill has-icon">
-                        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/python.svg" alt="" />
-                        Python
-                        </span>
-
-                        <span class="stack-pill has-icon">
-                        <img src="https://cdn.jsdelivr.net/npm/simple-icons@v16/icons/opengl.svg" alt="" />
-                        OpenGL / WebGL
-                        </span>
-
-                        <span class="stack-pill has-icon">
-                        <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/brain-circuit.svg" alt="" />
-                        Gameplay AI
-                        </span>
-
-                        <span class="stack-pill has-icon">
-                        <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/route.svg" alt="" />
-                        Pathfinding
-                        </span>
-
-                        <span class="stack-pill has-icon">
-                        <img src="https://raw.githubusercontent.com/lucide-icons/lucide/main/icons/chart-scatter.svg" alt="" />
-                        Numerical Simulation
-                        </span>
-                    </div>
-
-                    <!--
-                    <div class="stack-cloud">
-                        <span>Unreal Engine 5</span>
-                        <span>Unity</span>
-                        <span>C#</span>
-                        <span>.NET</span>
-                        <span>Azure DevOps</span>
-                        <span>Python</span>
-                        <span>OpenGL / WebGL</span>
-                        <span>Gameplay AI</span>
-                        <span>Pathfinding</span>
-                        <span>Numerical Simulation</span>
-                    </div>
-                    -->
-                </div>
-
-                <div class="focus-panel reveal">
-                    <p class="section-number">04</p>
-                    <p class="eyebrow">Current Focus</p>
-                    <h2>What I’m building now.</h2>
-                    <div class="focus-list">
-                        <div>
-                            <span>RAMQ</span>
-                            <p>.NET, Azure DevOps, migration workflows, and enterprise software development.</p>
-                        </div>
-                        <div>
-                            <span>Nitrous Studio</span>
-                            <p>Gameplay systems, technical prototypes, devlogs, and indie game development.</p>
-                        </div>
-                        <div>
-                            <span>CodeX Framework</span>
-                            <p>Reusable UE5 combat, traversal, encounter, and boss orchestration architecture.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section class="section home-bottom-section">
-        <div class="container">
-            <div class="home-bottom-grid">
-                <article class="devlog-card home-devlog-card reveal">
-                    <p class="eyebrow">Technical Writing</p>
-                    <h2>Devlog & breakdowns.</h2>
-                    <p>
-                        Notes on gameplay architecture, simulation, AI/pathfinding, rendering experiments,
-                        and production decisions behind the projects.
-                    </p>
-                    <a href="devlog.html" class="section-link inline-link">Read the devlog</a>
-                </article>
-
-                <article class="contact-panel home-contact-card reveal">
-                    <div>
-                        <p class="eyebrow">Contact</p>
-                        <h2>Let’s connect.</h2>
-                        <p>Explore the portfolio, read the technical notes, or reach out through the links page.</p>
-                    </div>
-
-                    <div class="contact-links">
-                        <a href="#">YouTube</a>
-                        <a href="#">itch.io</a>
-                        <a href="#">GitHub</a>
-                        <a href="#">LinkedIn</a>
-                        <a href="#">Email</a>
-                    </div>
-                </article>
-            </div>
+            <a href="mailto:oliviertrudel716@gmail.com">
+                <i class="fa-solid fa-envelope"></i>
+                Email
+            </a>
         </div>
     </section>
 </main>
 
 <footer class="site-footer">
     <div class="container footer-row">
-        <p>© 2026 Olivier Trudel</p>
-        <a href="about.html" class="back-top">About / Contact</a>
+        <span>© 2026 Olivier Trudel</span>
+        <span>Nitrous Studio</span>
     </div>
 </footer>
-
-<script src="script.js"></script>
 </body>
 </html>

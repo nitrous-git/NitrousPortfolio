@@ -4,31 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Prototypes — Olivier Trudel</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-            rel="stylesheet"
-    />
     <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<div class="page-noise"></div>
-
 <header class="site-header">
     <div class="container nav">
-        <a href="index.html" class="brand">
-            <span class="brand-title">Olivier Trudel</span>
-            <span class="brand-subtitle">Prototype Archive</span>
-        </a>
-
-        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
-            <span></span>
-            <span></span>
-        </button>
-
-        <nav class="nav-links" id="navLinks">
-            <a href="index.html">Home</a>
+        <a class="brand" href="index.html">Olivier Trudel</a>
+        <nav class="nav-links">
             <a href="projects.html">Projects</a>
             <a href="prototypes.html">Prototypes</a>
             <a href="devlog.html">Devlog</a>
@@ -37,75 +19,27 @@
     </div>
 </header>
 
-<main class="section">
-    <div class="container">
-        <div class="page-intro reveal">
-            <p class="eyebrow">Experiments</p>
-            <h1 class="page-title">Prototypes & Technical Studies</h1>
-            <p class="page-subtitle">
-                Smaller experiments, graphics work, and technical explorations that support the main portfolio.
-            </p>
-        </div>
+<main class="container">
+    <section class="intro">
+        <h1>Prototypes</h1>
+        <p class="lead">Small technical experiments in graphics, simulation, shaders, and realtime systems.</p>
+    </section>
 
-        <div class="prototype-grid prototype-page-grid">
-            <article class="prototype-card reveal">
-                <div class="prototype-thumb thumb-ray"></div>
-                <h3>WebGL Raytracer</h3>
-                <p>Rendering experiments in the browser with lighting and material response.</p>
-            </article>
-
-            <article class="prototype-card reveal">
-                <div class="prototype-thumb thumb-chaos"></div>
-                <h3>Chaotic System Simulation</h3>
-                <p>Interactive visual studies of nonlinear and chaotic dynamics.</p>
-            </article>
-
-            <article class="prototype-card reveal">
-                <div class="prototype-thumb thumb-vertex"></div>
-                <h3>Vertex Deformation Shader</h3>
-                <p>Procedural surface deformation using shader-based transformations.</p>
-            </article>
-
-            <article class="prototype-card reveal">
-                <div class="prototype-thumb thumb-geometry"></div>
-                <h3>Geometry Wars OpenGL Clone</h3>
-                <p>Arcade gameplay mixed with Verlet-grid simulation experiments.</p>
-            </article>
-
-            <article class="prototype-card reveal">
-                <div class="prototype-thumb thumb-niagara"></div>
-                <h3>Niagara / Unreal FX</h3>
-                <p>Realtime VFX, post-process, and shader studies in Unreal Engine.</p>
-            </article>
-
-            <article class="prototype-card reveal">
-                <div class="prototype-thumb thumb-fluid-alt"></div>
-                <h3>Eulerian Fluid Study</h3>
-                <p>Grid-based fluid experiments complementary to the main SPH project.</p>
-            </article>
-
-            <article class="prototype-card reveal">
-                <div class="prototype-thumb thumb-webgl"></div>
-                <h3>WebGL Visual Sandbox</h3>
-                <p>Small browser experiments combining math, interaction, and graphics.</p>
-            </article>
-
-            <article class="prototype-card reveal">
-                <div class="prototype-thumb thumb-misc"></div>
-                <h3>Misc Technical Tests</h3>
-                <p>Smaller studies that do not belong in the main portfolio but still show exploration.</p>
-            </article>
-        </div>
+    <div class="list">
+        <article class="item"><div class="item-head"><h3>WebGL Raytracer</h3><span class="meta">Rendering · WebGL</span></div><p>Browser rendering experiments with ray intersections, materials, and lighting.</p></article>
+        <article class="item"><div class="item-head"><h3>Chaotic System Simulation</h3><span class="meta">Math · Visualization</span></div><p>Interactive studies of nonlinear and chaotic dynamical systems.</p></article>
+        <article class="item"><div class="item-head"><h3>Vertex Deformation Shader</h3><span class="meta">Shaders · Graphics</span></div><p>Procedural deformation experiments on realtime 3D surfaces.</p></article>
+        <article class="item"><div class="item-head"><h3>Geometry Wars OpenGL Clone</h3><span class="meta">OpenGL · Gameplay</span></div><p>An arcade-style graphics project combined with Verlet-grid simulation experiments.</p></article>
+        <article class="item"><div class="item-head"><h3>Niagara / Unreal FX</h3><span class="meta">UE5 · VFX</span></div><p>Realtime particle, shader, and post-process studies in Unreal Engine.</p></article>
+        <article class="item"><div class="item-head"><h3>Eulerian Fluid Study</h3><span class="meta">Simulation · Fluids</span></div><p>Grid-based fluid experiments complementary to the SPH project.</p></article>
     </div>
 </main>
 
 <footer class="site-footer">
     <div class="container footer-row">
-        <p>Prototype archive</p>
-        <a href="index.html" class="back-top">Back home</a>
+        <span>© 2026 Olivier Trudel</span>
+        <a href="index.html">Home</a>
     </div>
 </footer>
-
-<script src="script.js"></script>
 </body>
 </html>

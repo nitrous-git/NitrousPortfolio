@@ -4,109 +4,110 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>About — Olivier Trudel</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-            rel="stylesheet"
-    />
     <link rel="stylesheet" href="styles.css" />
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
 </head>
-<body>
-<div class="page-noise"></div>
 
+<body>
 <header class="site-header">
     <div class="container nav">
-        <a href="index.html" class="brand">
-            <span class="brand-title">Olivier Trudel</span>
-            <span class="brand-subtitle">About</span>
-        </a>
-
-        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
-            <span></span>
-            <span></span>
-        </button>
-
-        <nav class="nav-links" id="navLinks">
-            <a href="index.html">Home</a>
+        <a class="brand" href="index.html">Olivier Trudel</a>
+        <nav class="nav-links">
             <a href="projects.html">Projects</a>
-            <a href="prototypes.html">Prototypes</a>
             <a href="devlog.html">Devlog</a>
             <a href="about.html">About</a>
         </nav>
     </div>
 </header>
 
-<main class="section">
-    <div class="container">
-        <div class="page-intro reveal">
-            <p class="eyebrow">Profile</p>
-            <h1 class="page-title">About Me</h1>
-            <p class="page-subtitle">
-                Gameplay programmer and technical developer focused on systems, simulation, and interactive graphics.
-            </p>
+<main class="container">
+    <section class="intro">
+        <h1>About</h1>
+        <p class="lead">Gameplay programmer and technical developer with a background in computer science and physics.</p>
+
+    </section>
+
+    <section class="about-copy">
+        <p>
+            I am interested in the technical side of interactive systems: gameplay architecture,
+            AI and pathfinding, simulation, rendering, and tools that make larger game systems easier to build.
+        </p>
+        <p>
+            My game work includes Unity and Unreal Engine projects, from released games to experimental systems-heavy prototypes.
+            I also work on numerical simulation and realtime graphics projects where mathematics and implementation meet directly.
+        </p>
+        <p>
+            Outside game development, I have professional software experience with C#, .NET, cloud workflows, and enterprise development.
+        </p>
+
+
+        <div class="skills-block">
+            <!--<p class="eyebrow">Technical Stack</p>-->
+
+            <img
+                    class="skill-icons"
+                    src="https://skillicons.dev/icons?i=cs,cpp,java,python,js,html,css,dotnet,unity,unreal,git,github,azure,mysql,nodejs,opengl,vulkan"
+                    alt="Technical skills"
+            />
         </div>
 
-        <div class="about-grid">
-            <div class="about-copy reveal">
-                <h2>A hybrid technical profile</h2>
-                <p>
-                    My background combines computer science and physics, which naturally pushed me toward
-                    projects involving gameplay architecture, rendering, simulation, and problem-solving through systems.
-                </p>
-                <p>
-                    On the game side, I’m interested in modular frameworks, combat/traversal systems,
-                    AI/pathfinding, vertical slices, and the technical foundations behind interactive experiences.
-                </p>
-                <p>
-                    On the scientific side, I’m drawn to numerical methods, physical modeling, and visual simulation.
-                    I also have professional experience in software development, including migration-oriented work
-                    involving .NET, cloud workflows, and enterprise environments.
-                </p>
-            </div>
+        <a
+                href="assets/Olivier_Trudel_Resume.pdf"
+                class="resume-download"
+                download
+        >
+            <i class="fa-solid fa-file-arrow-down"></i>
+            Download Resume
+        </a>
 
-            <div class="about-card reveal">
-                <h3>Core Areas</h3>
-                <ul>
-                    <li>Gameplay systems and technical game architecture</li>
-                    <li>UE5 / Unity prototyping and vertical slice development</li>
-                    <li>Physics simulation and numerical methods</li>
-                    <li>Rendering, WebGL, shaders, and realtime graphics</li>
-                    <li>C# / .NET / Azure-oriented engineering workflows</li>
-                </ul>
+    </section>
 
-                <div class="about-actions">
-                    <a href="#" class="btn btn-primary">Resume</a>
-                    <a href="#" class="btn btn-secondary">LinkedIn</a>
-                </div>
-            </div>
+    <section class="section">
+        <h2>Areas</h2>
+        <div class="list">
+            <div class="item">Gameplay systems and architecture</div>
+            <div class="item">Unity and Unreal Engine</div>
+            <div class="item">AI, pathfinding, and movement systems</div>
+            <div class="item">Physics simulation and numerical methods</div>
+            <div class="item">Rendering, shaders, WebGL, and OpenGL</div>
+            <div class="item">C#, .NET, and Azure</div>
         </div>
+    </section>
 
-        <div class="contact-panel reveal contact-panel-alone">
-            <div>
-                <p class="eyebrow">Contact</p>
-                <h2>Links</h2>
-                <p>Replace these placeholders with your real public profiles.</p>
-            </div>
+    <section class="section">
+        <h2>Contact</h2>
+        <div class="links">
+            <a href="https://github.com/nitrous-git" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-github"></i>
+                GitHub
+            </a>
 
-            <div class="contact-links">
-                <a href="#">YouTube</a>
-                <a href="#">itch.io</a>
-                <a href="#">GitHub</a>
-                <a href="#">LinkedIn</a>
-                <a href="#">Email</a>
-            </div>
+            <a href="#" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-youtube"></i>
+                YouTube
+            </a>
+
+            <a href="#" target="_blank" rel="noopener noreferrer">
+                <i class="fa-brands fa-itch-io"></i>
+                itch.io
+            </a>
+
+            <a href="mailto:oliviertrudel716@gmail.com">
+                <i class="fa-solid fa-envelope"></i>
+                Email
+            </a>
         </div>
-    </div>
+    </section>
 </main>
 
 <footer class="site-footer">
     <div class="container footer-row">
-        <p>About / contact</p>
-        <a href="index.html" class="back-top">Back home</a>
+        <span>© 2026 Olivier Trudel</span>
+        <a href="index.html">Home</a>
     </div>
 </footer>
-
-<script src="script.js"></script>
 </body>
 </html>

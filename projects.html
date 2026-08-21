@@ -4,192 +4,127 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Projects — Olivier Trudel</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-            rel="stylesheet"
-    />
     <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<div class="page-noise"></div>
-<div class="page-glow glow-1"></div>
-<div class="page-glow glow-2"></div>
-
 <header class="site-header">
     <div class="container nav">
-        <a href="index.html" class="brand">
-            <span class="brand-title">Olivier Trudel</span>
-            <span class="brand-subtitle">Main Projects</span>
-        </a>
-
-        <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
-            <span></span>
-            <span></span>
-        </button>
-
-        <nav class="nav-links" id="navLinks">
-            <a href="index.html">Home</a>
+        <a class="brand" href="index.html">Olivier Trudel</a>
+        <nav class="nav-links">
             <a href="projects.html">Projects</a>
-            <a href="prototypes.html">Prototypes</a>
             <a href="devlog.html">Devlog</a>
             <a href="about.html">About</a>
         </nav>
     </div>
 </header>
 
-<main class="section">
-    <div class="container">
-        <div class="page-intro reveal">
-            <p class="eyebrow">Portfolio</p>
-            <h1 class="page-title">Featured Projects</h1>
-            <p class="page-subtitle">
-                These are the four projects that best represent my profile: shipped game development,
-                UE5 gameplay systems, scientific simulation, and algorithmic/AI prototyping.
-            </p>
-        </div>
+<main class="container">
+    <section class="intro">
+        <h1>Projects</h1>
+        <p class="lead">A small selection of game development, simulation, and systems work.</p>
+    </section>
 
-        <div class="case-list">
-            <article class="case-card reveal">
-                <div class="case-media media-underworld large"></div>
-                <div class="case-content">
-                    <p class="case-kicker">Unity · Released Game</p>
-                    <h2>Underworld</h2>
-                    <a href="underworld.html" class="case-study-link">Open case study</a>
-                    <p>
-                        Underworld is a released Unity platformer developed under Nitrous Studio.
-                        It represents a concrete shipped result and shows my ability to work toward
-                        a completed game experience rather than only technical experiments.
-                    </p>
+    <div class="work-list">
 
-                    <div class="case-columns">
-                        <div>
-                            <h3>Focus</h3>
-                            <ul>
-                                <li>Gameplay feel and platforming</li>
-                                <li>Level progression and production execution</li>
-                                <li>Collaboration under Nitrous Studio</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h3>Why it matters</h3>
-                            <ul>
-                                <li>Strongest “finished product” signal</li>
-                                <li>Easy for recruiters to evaluate quickly</li>
-                                <li>Establishes credibility immediately</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </article>
+        <article class="work-row">
+            <a class="project-image" href="underworld.html">
+                <img
+                        src="assets/img/Underworld_cover1_16x9.png"
+                        alt="Underworld gameplay screenshot"
+                >
+            </a>
 
-            <article class="case-card reveal">
-                <div class="case-media media-fragments large"></div>
-                <div class="case-content">
-                    <p class="case-kicker">UE5 · Systems-Driven Vertical Slice</p>
-                    <h2>Fragments of the CodeX</h2>
-                    <a href="fragments-codex.html" class="case-study-link">Open case study</a>
-                    <p>
-                        A vertical slice built on my CodeX combat orchestration framework.
-                        The project combines traversal, combat flow, environmental transitions,
-                        cinematic structure, and boss encounter design into a reusable technical foundation.
-                    </p>
+            <div>
+                <span class="meta">Unity · Released game</span>
+                <h3><a href="underworld.html">Underworld</a></h3>
+                <p>A completed platformer developed under Nitrous Studio, focused on gameplay, level progression, and shipping a finished game.</p>
+                <a class="text-link" href="underworld.html">View project →</a>
+            </div>
+        </article>
 
-                    <div class="case-columns">
-                        <div>
-                            <h3>Focus</h3>
-                            <ul>
-                                <li>Combat orchestration framework</li>
-                                <li>Traversal systems and gameplay architecture</li>
-                                <li>Boss framework and vertical slice structure</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h3>Why it matters</h3>
-                            <ul>
-                                <li>Shows advanced systems thinking</li>
-                                <li>Strong gameplay programmer signal</li>
-                                <li>Represents my most ambitious game-dev architecture work</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </article>
+        <article class="work-row">
+            <a class="project-image" href="fragments-codex.html">
+                <img
+                        src="assets/img/FOTCodeX_cover3_16x9.png"
+                        alt="FOTCodeX gameplay screenshot"
+                >
+            </a>
 
-            <article class="case-card reveal">
-                <div class="case-media media-sph large"></div>
-                <div class="case-content">
-                    <p class="case-kicker">Physics · Numerical Modeling</p>
-                    <h2>SPH Simulation</h2>
-                    <p>
-                        A fluid simulation project centered on Smoothed Particle Hydrodynamics,
-                        with attention to physical behavior, implementation details, and comparison
-                        with Eulerian approaches. This project reflects the scientific side of my profile.
-                    </p>
+            <div>
+                <span class="meta">Unreal Engine 5 · Vertical slice</span>
+                <h3><a href="fragments-codex.html">Fragments of the CodeX</a></h3>
+                <p>A vertical slice built around the CodeX gameplay framework, including combat orchestration, traversal, encounters, cinematic flow, and boss systems.</p>
+                <a class="text-link" href="fragments-codex.html">View project →</a>
+            </div>
+        </article>
 
-                    <div class="case-columns">
-                        <div>
-                            <h3>Focus</h3>
-                            <ul>
-                                <li>Particle-based fluid simulation</li>
-                                <li>Numerical modeling and visualization</li>
-                                <li>Physically grounded technical exploration</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h3>Why it matters</h3>
-                            <ul>
-                                <li>Differentiates me from standard game portfolios</li>
-                                <li>Shows math/physics depth</li>
-                                <li>Reinforces technical rigor</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </article>
+        <article class="work-row">
+            <a class="project-image" href="fragments-codex.html">
+                <img
+                        src="assets/img/SPH_cover_16x9.png"
+                        alt="SPH screenshot"
+                >
+            </a>
 
-            <article class="case-card reveal">
-                <div class="case-media media-protocol large"></div>
-                <div class="case-content">
-                    <p class="case-kicker">AI · Strategy Systems</p>
-                    <h2>Protocol Exodus</h2>
-                    <p>
-                        A pathfinding and coordination-heavy prototype inspired by large unit movement problems.
-                        It explores congestion, route planning, and systems behavior in RTS-like contexts.
-                    </p>
+            <div>
+                <span class="meta">Physics · Numerical methods</span>
+                <h3>SPH Simulation</h3>
+                <p>A fluid simulation based on Smoothed Particle Hydrodynamics, with emphasis on implementation, physical behavior, visualization, and comparison with Eulerian methods.</p>
+            </div>
+        </article>
 
-                    <div class="case-columns">
-                        <div>
-                            <h3>Focus</h3>
-                            <ul>
-                                <li>Pathfinding and movement logic</li>
-                                <li>Conflict resolution in dense groups</li>
-                                <li>Algorithmic systems design</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h3>Why it matters</h3>
-                            <ul>
-                                <li>Strong AI / technical prototype signal</li>
-                                <li>Complements gameplay and simulation work</li>
-                                <li>Shows interest in scalable logic problems</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </article>
-        </div>
+<!--        <article class="work-row">-->
+<!--            <div class="work-image">Project image</div>-->
+<!--            <div>-->
+<!--                <span class="meta">Unity · RTS systems</span>-->
+<!--                <h3>Protocol Exodus</h3>-->
+<!--                <p>An RTS project used to explore custom A* pathfinding, destination allocation, local steering, combat states, unit production, resources, and faction architecture.</p>-->
+<!--            </div>-->
+<!--        </article>-->
+
+        <article class="work-row">
+            <a class="project-image" href="fragments-codex.html">
+                <img
+                        src="assets/img/AeonSector_cover_16x9.png"
+                        alt="Raytracer screenshot"
+                >
+            </a>
+
+            <div>
+                <span class="meta">Game Jam · Strategy</span>
+                <h3>Aeon//Sector</h3>
+                <p>
+                    Turn-based sci-fi mecha tactics prototype built in Unity, focused on grid movement,
+                    attack ranges, unit UI, battle flow, and clean jam-scope architecture.
+                </p>
+            </div>
+        </article>
+
+        <article class="work-row">
+            <a class="project-image" href="fragments-codex.html">
+                <img
+                        src="assets/img/AttractorAizawa02.png"
+                        alt="Raytracer screenshot"
+                >
+            </a>
+            <div>
+                <span class="meta">Three.js · Simulation</span>
+                <h3>Chaotic Attractor</h3>
+                <p>
+                    Visual representation of many Chaotic Attractor with Three.js and an RK4 solver for partial
+                    differential equations.
+                </p>
+            </div>
+        </article>
+
     </div>
 </main>
 
 <footer class="site-footer">
     <div class="container footer-row">
-        <p>Featured portfolio projects</p>
-        <a href="index.html" class="back-top">Back home</a>
+        <span>© 2026 Olivier Trudel</span>
+        <a href="index.html">Home</a>
     </div>
 </footer>
-
-<script src="script.js"></script>
 </body>
 </html>

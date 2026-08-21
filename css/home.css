@@ -3,40 +3,38 @@
     polished homepage only: orbit hero, profile cards, selected work, stack/focus panels, home bottom grid
 */
 
-.home-hero-polished {
+/* Home hero */
+.hero {
     padding-top: 72px;
     padding-bottom: 80px;
 }
 
-.home-hero-shell {
+.hero-shell {
     display: grid;
     gap: 46px;
     justify-items: center;
 }
 
-.home-hero-copy {
+.hero-copy {
     max-width: 920px;
     text-align: center;
 }
 
-.home-hero-title {
-    max-width: 27.5ch;
-    margin: 0 auto;
-    font-size: clamp(3rem, 2.4vw, 5.2rem);
-}
-
-.home-hero-text {
+.hero-text {
     max-width: 72ch;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 24px auto 0;
     font-size: clamp(1rem, 1.4vw, 1.16rem);
 }
 
-.home-hero-actions {
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
+    gap: 12px;
+    margin-top: 30px;
 }
 
-.home-hero-meta {
+.hero-meta {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
@@ -44,20 +42,21 @@
     margin-top: 24px;
 }
 
-.home-hero-meta span {
+.hero-meta span,
+.work-media span {
     border: 1px solid rgba(164, 195, 255, 0.14);
     background: rgba(255, 255, 255, 0.035);
     color: #d9e6fb;
     border-radius: 999px;
-    padding: 9px 13px;
-    font-size: 0.86rem;
+    padding: 8px 12px;
+    font-size: 0.84rem;
     font-weight: 700;
 }
 
-.hero-orbit-stage {
+.hero-mark {
     position: relative;
     width: min(680px, 100%);
-    height: 310px;
+    height: 300px;
     display: grid;
     place-items: center;
     overflow: hidden;
@@ -65,16 +64,16 @@
     isolation: isolate;
 }
 
-.hero-orbit-stage::before,
-.hero-orbit-stage::after {
+.hero-mark::before,
+.hero-mark::after {
     content: "";
     position: absolute;
     pointer-events: none;
-    z-index: -1;
 }
 
-.hero-orbit-stage::before {
+.hero-mark::before {
     inset: 30px 70px;
+    z-index: -1;
     border-radius: 999px;
     background:
             radial-gradient(circle at 50% 45%, rgba(87, 213, 255, 0.18), transparent 36%),
@@ -82,13 +81,13 @@
     filter: blur(8px);
 }
 
-.hero-orbit-stage::after {
+.hero-mark::after {
     inset: auto 14% 28px;
     height: 1px;
     background: linear-gradient(90deg, transparent, rgba(164, 195, 255, 0.35), transparent);
 }
 
-.orbit-grid {
+.mark-grid {
     position: absolute;
     inset: 30% -12% -18%;
     background-image:
@@ -99,30 +98,21 @@
     opacity: 0.42;
 }
 
-.orbit-halo {
-    position: absolute;
-    width: 280px;
-    height: 280px;
-    border-radius: 999px;
-    background: radial-gradient(circle, rgba(87, 213, 255, 0.12), transparent 66%);
-    filter: blur(4px);
-}
-
-.orbit-system {
+.mark-orbit {
     position: relative;
-    width: 300px;
-    height: 300px;
+    width: 290px;
+    height: 290px;
     animation: orbitFloat 7s ease-in-out infinite;
 }
 
-.orbit-ring,
-.orbit-core,
-.orbit-node {
+.mark-ring,
+.mark-core,
+.mark-node {
     position: absolute;
     border-radius: 999px;
 }
 
-.orbit-ring-main {
+.mark-ring-main {
     inset: 20px;
     border: 1px solid rgba(124, 164, 255, 0.28);
     box-shadow:
@@ -130,19 +120,19 @@
             0 0 38px rgba(87, 213, 255, 0.05);
 }
 
-.orbit-ring-secondary {
+.mark-ring-inner {
     inset: 62px;
     border: 1px solid rgba(255, 190, 120, 0.18);
     transform: rotate(22deg) skew(6deg);
 }
 
-.orbit-ring-tilted {
+.mark-ring-tilt {
     inset: 34px;
     border: 1px solid rgba(87, 213, 255, 0.18);
     transform: rotate(-26deg) scaleY(0.42);
 }
 
-.orbit-core {
+.mark-core {
     width: 82px;
     height: 82px;
     top: 50%;
@@ -153,7 +143,7 @@
     box-shadow: 0 0 42px rgba(87, 213, 255, 0.32);
 }
 
-.orbit-node {
+.mark-node {
     width: 13px;
     height: 13px;
     top: 50%;
@@ -162,246 +152,169 @@
     box-shadow: 0 0 18px rgba(255, 190, 120, 0.78);
 }
 
-.orbit-node-a {
-    transform: translate(128px, -66px);
+.mark-node-a {
+    transform: translate(124px, -64px);
 }
 
-.orbit-node-b {
-    transform: translate(-132px, 48px);
+.mark-node-b {
+    transform: translate(-128px, 46px);
     background: var(--accent-2);
     box-shadow: 0 0 18px rgba(87, 213, 255, 0.7);
 }
 
-.orbit-node-c {
-    transform: translate(36px, 126px);
+.mark-node-c {
+    transform: translate(34px, 122px);
     background: var(--accent);
     box-shadow: 0 0 18px rgba(124, 164, 255, 0.72);
 }
 
-.numbered-head {
-    align-items: start;
-}
-
-.home-section-head {
+/* Home sections */
+.section-head {
+    max-width: 760px;
     margin-bottom: 30px;
 }
 
-.section-number {
-    margin: 0 0 10px;
-    color: rgba(124, 164, 255, 0.58);
-    font-size: 0.84rem;
-    font-weight: 800;
-    letter-spacing: 0.18em;
+.section-head p:not(.eyebrow),
+.profile-copy p,
+.contact-panel p {
+    margin-top: 14px;
 }
 
-.home-profile-grid {
+.work-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
 }
 
-.profile-card,
-.home-work-card,
-.stack-panel,
-.focus-panel {
+.work-card,
+.compact-list,
+.contact-panel {
     border: 1px solid var(--line);
-    background: var(--panel);
     border-radius: var(--radius);
+    background: var(--panel);
     box-shadow: var(--shadow);
+    overflow: hidden;
     transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
 }
 
-.profile-card:hover,
-.home-work-card:hover,
-.stack-panel:hover,
-.focus-panel:hover {
+.work-card:hover,
+.compact-list:hover,
+.contact-panel:hover {
     transform: translateY(-4px);
     border-color: rgba(124, 164, 255, 0.28);
     background: rgba(16, 23, 35, 0.88);
 }
 
-.profile-card {
-    min-height: 232px;
-    padding: 26px;
-}
-
-.profile-index {
-    display: inline-flex;
-    margin-bottom: 28px;
-    color: var(--accent-2);
-    font-weight: 800;
-    letter-spacing: 0.12em;
-}
-
-.profile-card h3 {
-    margin-bottom: 14px;
-}
-
-.home-selected-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
-}
-
-.home-work-card {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-height: 100%;
-}
-
-
-
-
-/* ------------------------
-Image visual for home page.
-The visual stack :
-    z-index 4  media label
-    z-index 3  shine
-    z-index 2  inner border/frame
-    z-index 1  dark overlay
-    z-index 0  image with opacity
-    background .media-underworld / .media-fragments
------------------------- */
-
-.home-work-media {
+.work-media {
     position: relative;
-    min-height: 315px;
-    overflow: hidden;
-    isolation: isolate;
+    min-height: 230px;
+    background-size: cover;
+    background-position: center;
 }
 
-.home-work-media .media-image {
+.work-media span {
     position: absolute;
-    inset: 0;
-    z-index: 0;
-
-    width: 100%;
-    height: 100%;
-
-    object-fit: cover;
-    object-position: center;
-
-    display: block;
-    opacity: 0.86;
-
-    transform: scale(1.01);
-    transition:
-            transform 220ms ease,
-            opacity 220ms ease,
-            filter 220ms ease;
+    left: 16px;
+    top: 16px;
 }
 
-.home-work-card:hover .media-image {
-    transform: scale(1.045);
-    opacity: 0.40;
-}
-
-.home-work-media::before,
-.home-work-media::after {
-    content: "";
-    position: absolute;
-    pointer-events: none;
-}
-
-.home-work-media::before {
-    inset: 26px;
-    z-index: 2;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 22px;
-}
-
-.home-work-media::after {
-    inset: 0;
-    z-index: 1;
-
-    background:
-            linear-gradient(180deg, rgba(5, 8, 12, 0.02), rgba(5, 8, 12, 0.36)),
-            radial-gradient(circle at 50% 20%, transparent 0%, rgba(0, 0, 0, 0.18) 78%);
-}
-
-.home-work-media .project-shine {
-    position: absolute;
-    z-index: 3;
-}
-
-.home-work-media .media-label {
-    position: absolute;
-    z-index: 4;
-}
-
-/* ------------------------ */
-
-
-
-.home-work-body {
+.work-body {
     padding: 24px;
 }
 
-.home-work-topline {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
+.work-body h3 {
+    margin-top: 12px;
     margin-bottom: 14px;
 }
 
-.home-work-topline span {
-    color: var(--accent-2);
+.split-section {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+    gap: 34px;
+    align-items: start;
+}
+
+.compact-list {
+    padding: 24px;
+}
+
+.compact-list h3 {
+    margin-bottom: 14px;
+}
+
+.compact-list ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.compact-list li + li {
+    margin-top: 10px;
+}
+
+.article-list {
+    border-top: 1px solid var(--line);
+}
+
+.article-row {
+    display: grid;
+    grid-template-columns: 0.42fr 1fr;
+    gap: 24px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.article-row span {
+    color: var(--text);
     font-weight: 800;
-    letter-spacing: 0.14em;
-    font-size: 0.82rem;
 }
 
-.home-work-topline p {
-    color: var(--muted-2);
-    font-size: 0.86rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
+.article-row p {
+    margin: 0;
 }
 
-.home-work-body h3 {
-    margin-bottom: 12px;
-    font-size: 1.48rem;
+.contact-section {
+    padding-bottom: 92px;
 }
 
-.home-split-grid {
+.contact-panel {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 0.75fr);
+    gap: 28px;
+    align-items: start;
+    padding: 24px;
+    background:
+            linear-gradient(135deg, rgba(142, 183, 255, 0.07), transparent 42%),
+            var(--panel);
 }
 
-.stack-panel,
-.focus-panel {
-    padding: 30px;
-}
-
-.stack-panel h2,
-.focus-panel h2,
-.home-devlog-card h2,
-.home-contact-card h2 {
-    margin-bottom: 14px;
-}
-
-.home-bottom-grid {
+.contact-links {
     display: grid;
-    grid-template-columns: 0.82fr 1.18fr;
-    gap: 24px;
-    align-items: stretch;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
 }
 
-.inline-link {
-    display: inline-flex;
-    margin-top: 24px;
+.contact-links a {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px 14px;
+    color: #dbe6f7;
+    font-weight: 800;
+    background: rgba(255, 255, 255, 0.035);
+    transition: border-color 160ms ease, background 160ms ease;
 }
 
-.home-contact-card {
-    grid-template-columns: 1fr;
-    align-content: space-between;
+.contact-links a:hover {
+    border-color: var(--line-strong);
+    background: rgba(255, 255, 255, 0.065);
 }
 
 @keyframes orbitFloat {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50% { transform: translateY(-8px) rotate(2deg); }
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
 }
