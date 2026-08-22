@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Cooperative Pathfinding “à la StarCraft” — Olivier Trudel</title>
+    <meta
+            name="description"
+            content="A grid-based RTS pathfinding devlog covering A*, priority queues, multi-agent replanning, and cooperative reservation tables."
+    />
+
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="devlog-article.css" />
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/styles/github-dark.min.css">
+
+
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']]
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            hljs.highlightAll();
+        });
+    </script>
+
+    <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    <script defer
+            src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/highlight.min.js">
+    </script>
+</head>
+
+<body>
+<header class="site-header">
+    <div class="container nav">
+        <a class="brand" href="../index.html">Olivier Trudel</a>
+        <nav class="nav-links">
+            <a href="../projects.html">Projects</a>
+            <a href="../devlog.html">Devlog</a>
+            <a href="../about.html">About</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <article class="devlog-article">
+
+        <header class="article-header">
+            <a class="back-link" href="../devlog.html">← Back to Devlog</a>
+
+            <p class="meta">Protocol Exodus · Pathfinding · Algorithms</p>
+            <h1>Cooperative Pathfinding <br> “à la StarCraft”</h1>
+            <p class="subtitle">Algorithmic Complexity, Game AI, and Optimization Strategies</p>
+
+            <p class="lead">
+                In real-time strategy games like <em>StarCraft</em>, moving dozens of units
+                in real time without collision, lag, or chaotic behavior is a non-trivial
+                problem. This article revisits a grid-based cooperative pathfinding
+                experiment I first explored in 2022.
+            </p>
+
+<!--            <figure class="figure-placeholder">-->
+<!--                <div>Footage Starcraft 1998</div>-->
+<!--                <figcaption>-->
+<!--                    A Group of Marine using classical Grid Based pathfinding algorithms.-->
+<!--                </figcaption>-->
+<!--            </figure>-->
+
+            <figure>
+                <video preload="auto" autoplay loop muted playsinline>
+                    <source src="../assets/video/MarineExample01.mp4" type="video/mp4">
+                </video>
+
+                <figcaption>
+                    A Group of Marine using classic grid based pathfinding algorithm.
+                </figcaption>
+            </figure>
+
+            <div class="note">
+                <strong>Scope.</strong>
+                “À la StarCraft” describes the classic grid-based RTS problem that
+                motivated this experiment. This is not a reconstruction of Blizzard's
+                exact internal pathfinding implementation.
+            </div>
+
+
+        </header>
+
+        <nav class="toc">
+            <strong>Contents</strong>
+            <ol>
+                <li><a href="#classical-pathfinding">Classical Pathfinding Recap</a></li>
+                <li><a href="#group-pathfinding">The Complexity of Group Pathfinding</a></li>
+                <li><a href="#cooperative-pathfinding">Cooperative Pathfinding</a></li>
+                <li><a href="#conclusion">Conclusion</a></li>
+            </ol>
+        </nav>
+
+        <!-- ============================================================= -->
+        <section id="classical-pathfinding">
+            <h2>1. Classical Pathfinding Recap</h2>
+
+            <h3>1.1 Dijkstra's Algorithm</h3>
+
+            <ul>
+                <li>Finds shortest paths from a source through a weighted graph.</li>
+                <li>A priority queue can select the node with the lowest current cost.</li>
+                <li>
+                    With a binary heap, the usual bound is
+                    \(O((V+E)\log V)\), often written \(O(E\log V)\)
+                    for the sparse graphs relevant here.
+                </li>
+            </ul>
+
+            <h3>1.2 A* Algorithm</h3>
+
+            <p>
+                A* makes Dijkstra goal-directed by adding a heuristic estimate:
+            </p>
+
+            \[
+            f(n)=g(n)+h(n)
+            \]
+
+            <ul>
+                <li>\(g(n)\): known cost from the start node to \(n\).</li>
+                <li>\(h(n)\): estimated cost from \(n\) to the goal.</li>
+                <li>\(f(n)\): estimated total path cost through \(n\).</li>
+            </ul>
+
+            <p>
+                For a four-connected grid, Manhattan distance is a natural heuristic:
+            </p>
+
+            \[
+            h(a,b)=|a_x-b_x|+|a_y-b_y|
+            \]
+
+
+            <h3>1.2.1 The Naive Approach</h3>
+
+            <p>
+                Here is the analysis of the A* loop when using an unsorted list for
+                <code>openList</code> and <code>closedList</code>, a very rudimentary
+                data structure. We will see later that this approach suffers in a
+                cooperative setup because of the many recalculations we may need.
+            </p>
+
+            <pre><code>
+function FindPath(start, end):
+    initialize every grid node
+
+    openList   ← { start }
+    closedList ← ∅
+
+    while openList is not empty:
+        current ← node in openList with minimum fCost
+
+        if current == end:
+            return reconstructPath(end)
+
+        remove current from openList
+        add current to closedList
+
+        for each neighbor of current:
+            if neighbor in closedList:
+                continue
+
+            if not neighbor.walkable:
+                continue
+
+            tentativeG ← current.gCost + distance(current, neighbor)
+
+            if tentativeG &lt; neighbor.gCost:
+                neighbor.parent ← current
+                neighbor.gCost  ← tentativeG
+                neighbor.hCost  ← heuristic(neighbor, end)
+                neighbor.fCost  ← neighbor.gCost + neighbor.hCost
+
+                if neighbor not in openList:
+                    add neighbor to openList
+            </code></pre>
+
+            <p>Let \(N\) be the total number of grid cells.</p>
+
+            <ul>
+                <li>Initialization of the grid: \(O(N)\).</li>
+                <li>Up to \(N\) main-loop iterations.</li>
+                <li>Finding the minimum-\(f\) node by linear scan: \(O(N)\).</li>
+                <li>Removing from an array-backed list may also cost \(O(N)\).</li>
+                <li>At most four neighbor checks on a four-connected grid: \(O(1)\).</li>
+            </ul>
+
+            \[
+            \underbrace{O(N)}_{\text{scan}}
+            +
+            \underbrace{O(N)}_{\text{removal}}
+            +
+            \underbrace{4\cdot O(1)}_{\text{neighbors}}
+            \in O(N)
+            \]
+
+            <div class="result">
+                \[
+                \boxed{T(N)\in\Theta(N^2)}
+                \]
+            </div>
+
+            <h4>A more rigorous derivation</h4>
+
+            <p>
+                Let iteration \(j\) be the \(j\)-th removal from <code>open</code>.
+                Define \(S_j=|open|\) just before the \(j\)-th scan.
+                Let \(\alpha\) be the comparison cost per element,
+                \(\beta\) the removal / shifting cost per element,
+                and \(\gamma\) the bounded neighbor-check cost.
+            </p>
+
+            \[
+            T_j
+            =
+            \alpha S_j+\beta S_j+\gamma
+            =
+            (\alpha+\beta)S_j+\gamma
+            \]
+
+            <p>
+                In the worst case every node enters <code>open</code> before it is
+                removed, so \(S_j\leq j\). There are at most \(N\) iterations:
+            </p>
+
+            \[
+            \begin{aligned}
+            T_{\text{total}}
+            &=
+            \sum_{j=1}^{N}
+            \left[(\alpha+\beta)j+\gamma\right] \\[4pt]
+            &=
+            (\alpha+\beta)\frac{N(N+1)}{2}
+            +\gamma N \\[4pt]
+            &=
+            \frac{\alpha+\beta}{2}N^2
+            +
+            \left(\frac{\alpha+\beta}{2}+\gamma\right)N
+            \end{aligned}
+            \]
+
+            <div class="result">
+                \[
+                \boxed{T_{\text{total}}\in\Theta(N^2)}
+                \]
+            </div>
+
+            <p>
+                Reconstructing the path is at most \(O(N)\), which is dominated by
+                the quadratic search. Space complexity remains \(O(N)\).
+            </p>
+
+            <h3>1.2.2 The Standard Approach</h3>
+
+            <p>
+                The naive approach does not hold up once we put it in the context of
+                multi-agent cooperation. The important change is not A* itself, but
+                the data structure used for the open set.
+            </p>
+
+            <p>
+                Replacing the unsorted list with a binary min-heap / priority queue
+                gives:
+            </p>
+
+            \[
+            \text{extract-min}=O(\log N)
+            \qquad
+            \text{insert/update}=O(\log N)
+            \]
+
+            <p>
+                A grid has bounded connectivity, so \(E=O(N)\). For this implementation,
+                the practical bound becomes:
+            </p>
+
+            <div class="result">
+                <strong>Naive list:</strong> \(\Theta(N^2)\)
+                <br />
+                <strong>Min-heap / priority queue:</strong> \(O(N\log N)\)
+            </div>
+
+            <p>
+                This matters much more once many units are requesting paths.
+            </p>
+
+<!--            <figure class="figure-placeholder">-->
+<!--                <div>Diagram: unsorted list vs. min-heap</div>-->
+<!--                <figcaption>-->
+<!--                    Why minimum-\(f\) extraction changes the practical cost.-->
+<!--                </figcaption>-->
+<!--            </figure>-->
+
+            <figure>
+                <img
+                        src="../assets/devlog_img/MinHeap.png"
+                        alt="MinHeap Structure"
+                >
+
+                <figcaption>
+                    Final sift up operation on a MinHeap. Credits : <a href="https://www.happycoders.eu/algorithms/heapsort/">happycoders.eu/algorithms/heapsort/</a>
+                </figcaption>
+            </figure>
+
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="group-pathfinding">
+            <h2>2. The Complexity of Group Pathfinding</h2>
+
+            <p>
+                A fast A* search does not automatically produce a fast RTS movement
+                system. Once units become dynamic obstacles for one another, the
+                important variable becomes how often we are forced to search again.
+            </p>
+
+            <ul>
+                <li><strong>\(N\)</strong>: total number of grid cells.</li>
+                <li><strong>\(P\)</strong>: length of the current path in grid steps.</li>
+                <li><strong>\(R\)</strong>: number of full blocked-cell path recalculations.</li>
+            </ul>
+
+            <p>
+                The original movement prototype can be understood through three main
+                methods: <code>updateMovement()</code>, <code>moveTo()</code>, and
+                <code>handleBlockedCell()</code>.
+            </p>
+
+            <h3>2.1 <code>updateMovement()</code></h3>
+
+            <pre><code>public void updateMovement() {
+    if (!isMoving) return;
+
+    if (path == null || currentIndex >= path.size()) {
+        return;
+    }
+
+    nextNode = path.get(currentIndex);
+
+    if (isBlocked(...) && currentIndex > 0) {
+        handleBlockedCell(nextNode);
+        return;
+    }
+
+    float distance = calculateDistance(...);
+
+    if (distance <= 2.0f) {
+        snapToTarget(...);
+        currentIndex++;
+    } else {
+        moveX();
+        moveY();
+        syncHitbox();
+    }
+}</code></pre>
+
+            <p>
+                Aside from the occasional blocked-cell handler, every operation is
+                fixed-cost.
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{\texttt{updateMovement()}=O(1)\text{ per update tick}}
+                \]
+            </div>
+
+            <h3>2.2 <code>moveTo()</code></h3>
+
+            <pre><code>public void moveTo(float newX, float newY, Camera camera) {
+    start = ...;
+    end = ...;
+
+    if (map.intArr[...] == WALL_TOKEN) {
+        return;
+    }
+
+    path = pf.FindPath(map.intArr, start, end);
+
+    if (path == null || path.isEmpty()) {
+        return;
+    }
+
+    currentIndex = 0;
+    isMoving = true;
+}</code></pre>
+
+            <p>
+                Everything except the path search is constant-time.
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{\texttt{moveTo()}=O(N\log N)}
+                \]
+            </div>
+
+            <h3>2.3 <code>handleBlockedCell()</code></h3>
+
+            <pre><code>private void handleBlockedCell(Vector2Int blockedNode) {
+    if (!isWaiting) {
+        isWaiting = true;
+        blockStartTime = ...;
+    } else {
+        long elapsed = ...;
+
+        if (elapsed > 1000) {
+            start = ...;
+            path = pf.FindPath(map.intArr, start, end);
+
+            if (path == null) {
+                stopMovement();
+            }
+
+            isWaiting = false;
+            currentIndex = 0;
+        }
+    }
+}</code></pre>
+
+            <p>
+                During ordinary waiting this remains \(O(1)\). Once the timeout
+                triggers a full rebuild of the path, we pay for A* again.
+            </p>
+
+            <h3>2.4 End-to-End Movement Cost</h3>
+
+            <p>
+                For one move command:
+            </p>
+
+            \[
+            \underbrace{O(N\log N)}_{\text{initial path}}
+            +
+            \underbrace{O(P)}_{\text{movement}}
+            +
+            \underbrace{R\cdot O(N\log N)}_{\text{recalculations}}
+            \]
+
+            <div class="result">
+                \[
+                \boxed{
+                O\left((1+R)N\log N+P\right)
+                }
+                \]
+            </div>
+
+            <p>
+                In the common case, \(R\) is small:
+            </p>
+
+            \[
+            O(N\log N+P)
+            \]
+
+            <p>
+                In the pathological case where almost every path step causes another
+                full search, \(R\approx P\). With the simplifying worst-case assumption
+                \(P=O(N)\):
+            </p>
+
+            \[
+            O(PN\log N+P)=O(N^2\log N)
+            \]
+
+            <div class="note">
+                The walking logic itself is cheap. Repeated global pathfinding is the
+                expensive part.
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="cooperative-pathfinding">
+            <h2>3. Cooperative Pathfinding</h2>
+
+            <p>
+                To keep \(R\), the number of full A* replans, small in practice,
+                units need to coordinate before they physically collide.
+                A reservation table turns future occupancy into part of the planning
+                problem.
+            </p>
+
+            <h3>3.1 Reservation-Table Pathfinding</h3>
+
+            <p>
+                Ordinary grid A* searches positions:
+            </p>
+
+            \[
+            (x,y)
+            \]
+
+            <p>
+                Cooperative pathfinding adds a time dimension:
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{(x,y,t)}
+                \]
+            </div>
+
+            <p>
+                A planned path can now also be interpreted as a sequence of future
+                reservations:
+            </p>
+
+            \[
+            (x_0,y_0,t_0),
+            (x_1,y_1,t_1),
+            (x_2,y_2,t_2),
+            \ldots
+            \]
+
+            <p>The basic idea is simple:</p>
+
+            <ol>
+                <li>Reserve each grid cell for the timestep in which it will be occupied.</li>
+                <li>Let later units treat conflicting reservations as unavailable.</li>
+                <li>Allow a unit to wait instead of immediately triggering a full replan.</li>
+                <li>Replan only when the reservation plan can no longer be followed.</li>
+            </ol>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Agent A</th>
+                    <th>Agent B</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr><td>\(t_0\)</td><td>(2, 1)</td><td>(0, 3)</td></tr>
+                <tr><td>\(t_1\)</td><td>(2, 2)</td><td>(1, 3)</td></tr>
+                <tr><td>\(t_2\)</td><td>(2, 3)</td><td>wait</td></tr>
+                <tr><td>\(t_3\)</td><td>(2, 4)</td><td>(2, 3)</td></tr>
+                </tbody>
+            </table>
+
+            <p>
+                Two agents may use the same spatial cell. The important constraint is
+                that they do not reserve it at the same time.
+            </p>
+
+            <figure class="figure-placeholder">
+                <div>Diagram: space-time reservation table</div>
+                <figcaption>
+                    Two units crossing the same area without occupying the same
+                    cell at the same timestep.
+                </figcaption>
+            </figure>
+
+            <h4>Waiting is a valid action</h4>
+
+            <p>
+                A cooperative path does not need to move to a new cell at every
+                timestep:
+            </p>
+
+            \[
+            (x,y,t)\rightarrow(x,y,t+1)
+            \]
+
+            <p>
+                A one-step wait may resolve a transient conflict without replacing
+                the entire spatial path.
+            </p>
+
+            <h4>Cell and edge conflicts</h4>
+
+            <p>
+                Reserving cells prevents two units from occupying the same cell at the
+                same time:
+            </p>
+
+            \[
+            A(t)=B(t)
+            \]
+
+            <p>
+                We also need to prevent two units from swapping positions through one
+                another during the same timestep:
+            </p>
+
+            \[
+            A:u\rightarrow v
+            \qquad
+            B:v\rightarrow u
+            \]
+
+            <h3>3.2 Delay or Throttle Replanning</h3>
+
+            <p>
+                The original prototype already waited before performing another full
+                A* search. This can be tuned based on the blocker:
+            </p>
+
+            <ul>
+                <li>A moving blocker may justify waiting longer.</li>
+                <li>A static blocker may justify a one-time replan.</li>
+            </ul>
+
+            <h3>3.3 Local Detour Before Full Replanning</h3>
+
+            <p>
+                Another intermediate strategy is to try a small local search before
+                invoking full-grid A*:
+            </p>
+
+            <ul>
+                <li>Search a small \(5\times5\) or \(7\times7\) region.</li>
+                <li>Splice a successful local detour into the current path.</li>
+                <li>Use global A* only if the local detour fails.</li>
+            </ul>
+
+            <p>
+                The objective remains the same: keep \(R\) small.
+            </p>
+
+            <h3>3.4 Other Directions</h3>
+
+            <h4>D* Lite</h4>
+            <p>
+                Dynamic search methods can repair an existing path when a localized
+                part of the environment changes, rather than discarding all previous
+                search work.
+            </p>
+
+            <h4>Hierarchical Pathfinding (HPA*)</h4>
+            <p>
+                Large maps can be divided into clusters. A high-level route is planned
+                across the abstract cluster graph and refined locally as the unit moves.
+            </p>
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="conclusion">
+            <h2>4. Conclusion</h2>
+
+            <p>
+                The progression of this experiment is straightforward:
+            </p>
+
+            <p>
+                <strong>
+                    Grid → A* → Min-Heap → Multi-Agent Conflicts → Replanning → Reservations
+                </strong>
+            </p>
+
+            <p>
+                The central complexity result remains:
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{
+                O\left((1+R)N\log N+P\right)
+                }
+                \]
+            </div>
+
+            <p>
+                The optimization problem is therefore not only
+                <em>“How do we make A* faster?”</em>
+                It is also:
+            </p>
+
+            <blockquote>
+                How do we prevent units from unnecessarily asking A* the same expensive
+                question again and again?
+            </blockquote>
+
+            <p>
+                Reservation-based cooperation attacks that second problem directly.
+            </p>
+
+            <p>
+                This model is intentionally discrete and grid-centric. It coordinates
+                who may occupy a cell and when, but does not by itself provide fluid
+                crowd movement, formation behavior, variable unit footprints, or
+                continuous local avoidance. Those belong to another movement layer.
+            </p>
+        </section>
+
+        <footer class="article-footer">
+            <a href="../devlog.html">← Back to Devlog</a>
+        </footer>
+
+    </article>
+</main>
+
+<footer class="site-footer">
+    <div class="container footer-row">
+        <span>© 2026 Olivier Trudel</span>
+        <a href="../index.html">Home</a>
+    </div>
+</footer>
+</body>
+</html>

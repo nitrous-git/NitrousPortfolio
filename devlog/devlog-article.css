@@ -1,0 +1,235 @@
+/* Simple reusable styling for technical devlog articles.
+   Loaded after the portfolio's main styles.css. */
+
+.devlog-article {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.article-header {
+    padding-bottom: 36px;
+    border-bottom: 1px solid var(--line);
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 28px;
+    color: var(--muted);
+}
+
+.meta {
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.devlog-article h1 {
+    margin-bottom: 12px;
+    font-size: clamp(2.2rem, 7vw, 4rem);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+}
+
+.subtitle {
+    margin-bottom: 24px;
+    color: var(--muted);
+}
+
+.lead {
+    font-size: 1.1rem;
+    line-height: 1.75;
+}
+
+.devlog-article section {
+    padding-top: 64px;
+    scroll-margin-top: 24px;
+}
+
+.devlog-article h2 {
+    margin-bottom: 26px;
+    font-size: 1.8rem;
+}
+
+.devlog-article h3 {
+    margin: 44px 0 16px;
+    font-size: 1.25rem;
+}
+
+.devlog-article h4 {
+    margin: 30px 0 12px;
+    font-size: 1rem;
+}
+
+.devlog-article p,
+.devlog-article li {
+    line-height: 1.75;
+}
+
+.devlog-article p {
+    margin-bottom: 18px;
+}
+
+.devlog-article ul,
+.devlog-article ol {
+    margin: 0 0 24px;
+    padding-left: 24px;
+}
+
+.devlog-article li + li {
+    margin-top: 5px;
+}
+
+.devlog-article code {
+    font-family: Consolas, "Courier New", monospace;
+}
+
+.devlog-article p code,
+.devlog-article li code {
+    padding: 0.1em 0.3em;
+    background: #181818;
+    border: 1px solid var(--line);
+}
+
+.toc {
+    margin-top: 36px;
+    padding: 20px 22px;
+    border: 1px solid var(--line);
+}
+
+.toc strong {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.toc ol {
+    margin: 0;
+}
+
+.note {
+    margin: 26px 0;
+    padding: 16px 18px;
+    border-left: 2px solid #777;
+    background: #161616;
+}
+
+.result {
+    margin: 24px 0;
+    padding: 18px 20px;
+    border: 1px solid #444;
+    background: #171717;
+    text-align: center;
+}
+
+pre {
+    margin: 22px 0 28px;
+    padding: 20px;
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    background: #0d0d0d;
+    color: #d6d6d6;
+    font: 0.88rem/1.6 Consolas, "Courier New", monospace;
+}
+
+pre code.hljs {
+    padding: 0;
+    background: transparent;
+}
+
+blockquote {
+    margin: 26px 0;
+    padding-left: 20px;
+    border-left: 2px solid #666;
+    color: #d0d0d0;
+    font-size: 1.1rem;
+}
+
+mjx-container[display="true"] {
+    margin: 24px 0 !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+figure {
+    margin: 32px 0;
+}
+
+.figure-placeholder {
+    padding: 28px;
+    border: 1px dashed #444;
+    background: #151515;
+    color: var(--muted);
+    text-align: center;
+}
+
+.figure-placeholder figcaption {
+    margin-top: 8px;
+    font-size: 0.82rem;
+}
+
+table {
+    width: 100%;
+    margin: 26px 0;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+th,
+td {
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    text-align: left;
+}
+
+th {
+    background: #171717;
+}
+
+td {
+    background: #121212;
+    color: #bbb;
+}
+
+.article-footer {
+    margin-top: 72px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+}
+
+.article-footer a {
+    color: var(--muted);
+}
+
+/*---------------Video & image---------------- */
+.devlog-article img,
+.devlog-article video {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.devlog-article video {
+    border: 1px solid var(--line);
+}
+
+/*---------------Adjustement---------------- */
+
+@media (max-width: 700px) {
+    .devlog-article h1 {
+        font-size: 2.4rem;
+    }
+
+    .devlog-article section {
+        padding-top: 50px;
+    }
+
+    pre {
+        padding: 16px;
+        font-size: 0.8rem;
+    }
+
+    .result {
+        padding: 15px;
+    }
+}

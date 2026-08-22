@@ -94,7 +94,7 @@ h3 { margin-bottom: 6px; font-size: 1.05rem; }
     .section { margin-top: 56px; }
 }
 
-/*---------------Devlog page---------------- */
+/*---------------devlog page---------------- */
 
 .devlog-groups { border-top: 1px solid var(--line); }
 .devlog-groups details { padding: 20px 0; border-bottom: 1px solid var(--line); }
