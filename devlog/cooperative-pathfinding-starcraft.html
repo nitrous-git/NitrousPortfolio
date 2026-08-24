@@ -82,7 +82,7 @@
                 </video>
 
                 <figcaption>
-                    A Group of Marine using classic grid based pathfinding algorithm.
+                    A Group of Marine using pathfinding movement in Starcraft 1998.
                 </figcaption>
             </figure>
 
@@ -479,10 +479,25 @@ function FindPath(start, end):
             O(PN\log N+P)=O(N^2\log N)
             \]
 
+            <p>
+                Already better compare to the \(O(N^3)\) we get with the naive approach.
+            </p>
+
+            <figure>
+                <video preload="auto" autoplay loop muted playsinline>
+                    <source src="../assets/video/PathfindingJava.mp4" type="video/mp4">
+                </video>
+
+                <figcaption>
+                    A simple implementation in Java demonstrating the algorithm : <a href="https://github.com/nitrous-git/RTS-Prototype">github.com/nitrous-git/RTS-Prototype</a>
+                </figcaption>
+            </figure>
+
             <div class="note">
                 The walking logic itself is cheap. Repeated global pathfinding is the
                 expensive part.
             </div>
+
         </section>
 
         <!-- ============================================================= -->
@@ -557,14 +572,6 @@ function FindPath(start, end):
                 Two agents may use the same spatial cell. The important constraint is
                 that they do not reserve it at the same time.
             </p>
-
-            <figure class="figure-placeholder">
-                <div>Diagram: space-time reservation table</div>
-                <figcaption>
-                    Two units crossing the same area without occupying the same
-                    cell at the same timestep.
-                </figcaption>
-            </figure>
 
             <h4>Waiting is a valid action</h4>
 
