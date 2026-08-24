@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Building a Ray Tracer in C++ — Olivier Trudel</title>
+    <meta
+            name="description"
+            content="A technical devlog on building a recursive ray tracer in C++, from perspective camera rays and geometric intersections to Phong illumination, mirror reflections, and Monte Carlo soft shadows."
+    />
+
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="devlog-article.css" />
+
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/styles/github-dark.min.css"
+    />
+
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']]
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            hljs.highlightAll();
+        });
+    </script>
+
+    <script
+            defer
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+
+    <script
+            defer
+            src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/highlight.min.js">
+    </script>
+</head>
+
+<body>
+<header class="site-header">
+    <div class="container nav">
+        <a class="brand" href="../index.html">Olivier Trudel</a>
+
+        <nav class="nav-links">
+            <a href="../projects.html">Projects</a>
+            <a href="../devlog.html">Devlog</a>
+            <a href="../about.html">About</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <article class="devlog-article">
+
+        <header class="article-header">
+            <a class="back-link" href="../devlog.html">← Back to Devlog</a>
+
+            <p class="meta">Computer Graphics · C++ · Ray Tracing · Monte Carlo</p>
+
+            <h1>Building a Ray Tracer in C++</h1>
+
+            <p class="subtitle">
+                From Camera Rays and Geometric Intersections to Recursive Reflections
+                and Monte Carlo Soft Shadows
+            </p>
+
+            <p class="lead">
+                A ray tracer is built from a surprisingly small set of ideas: construct a ray
+                through every pixel, find the first surface it intersects, evaluate the light
+                reaching that surface, and recursively launch new rays when the material
+                requires it. This project was my implementation of that pipeline in pure C++,
+                later extended with distributed sampling over finite light sources to produce
+                soft shadows.
+            </p>
+
+
+            <figure>
+                <img
+                        src="../assets/devlog_img/cornell_box_output_soft.png"
+                        alt="Cornell Box soft shadow"
+                >
+
+                <figcaption>
+                    Cornell Box scene with soft shadow enabled.
+                </figcaption>
+            </figure>
+
+            <div class="note">
+                <strong>Scope.</strong>
+                The renderer is a recursive, Whitted-style ray tracer with local Phong
+                illumination, hard shadow rays, perfect mirror reflections, and an optional
+                distributed area-light approximation. It is not a full path tracer.
+                The implementation is available in the
+                <a href="https://github.com/nitrous-git/IFT3355-Infographie-Raytracer-Engine">
+                    Raytracer Engine repository
+                </a>.
+            </div>
+        </header>
+
+        <nav class="toc">
+            <strong>Contents</strong>
+            <ol>
+                <li><a href="#pixels-to-rays">From Pixels to Rays</a></li>
+                <li><a href="#intersecting-scene">Intersecting the Scene</a></li>
+                <li><a href="#shading">Shading the Hit Point</a></li>
+                <li><a href="#reflections">Recursive Mirror Reflections</a></li>
+                <li><a href="#area-lights">From Hard Shadows to Area Lights</a></li>
+                <li><a href="#disk-sampling">Uniform Disk Sampling and Monte Carlo</a></li>
+                <li><a href="#conclusion">What This Renderer Became</a></li>
+            </ol>
+        </nav>
+
+        <!-- ============================================================= -->
+        <section id="pixels-to-rays">
+            <h2>1. From Pixels to Rays</h2>
+
+            <p>
+                The first problem is purely geometric: for each pixel in the output image,
+                construct a ray that starts at the camera and passes through the corresponding
+                point on a perspective view plane.
+            </p>
+
+            <p>
+                I describe the camera using its position \(C\), a target point, an up vector,
+                a vertical field of view, an aspect ratio, and a near-plane distance \(d\).
+                From those values I build a local orthonormal basis:
+            </p>
+
+            \[
+            \mathbf w
+            =
+            \frac{C_{\text{target}}-C}
+                 {\|C_{\text{target}}-C\|}
+            \]
+
+            \[
+            \mathbf u
+            =
+            \frac{\mathbf w\times \mathbf{v}}
+                 {\|\mathbf w\times \mathbf{v}\|},
+            \qquad
+            \mathbf v
+            =
+            \frac{\mathbf u\times\mathbf w}
+                 {\|\mathbf u\times\mathbf w\|}.
+            \]
+
+            <p>
+                Here \(\mathbf w\) points forward, \(\mathbf u\) points to the camera's right,
+                and \(\mathbf v\) points upward.
+            </p>
+
+            <figure>
+                <img
+                        src="../assets/devlog_img/perspective.png"
+                        alt="Perspective camera and field-of-view derivation"
+                        style="display: block; margin: 0 auto; width: 50%; height: auto;"
+                >
+                <figcaption>
+                    Perspective view-plane geometry used to derive its dimensions from the
+                    camera field of view.
+                </figcaption>
+            </figure>
+
+            <h3>1.1 Building the View Plane</h3>
+
+            <p>
+                With vertical field of view \(\theta\), the half-height of a view plane at
+                distance \(d\) is
+            </p>
+
+            \[
+            h
+            =
+            d\tan\left(\frac{\theta}{2}\right).
+            \]
+
+            <p>
+                The dimensions of the plane are : \(l, r, t, b\)
+            </p>
+
+            <p>
+                And for an image of resolution \(N_x\times N_y\), the physical size of one
+                pixel on this plane is therefore
+            </p>
+
+            \[
+            \Delta u=\frac{r - l}{N_x},
+            \qquad
+            \Delta v=\frac{t - b}{N_y}.
+            \]
+
+            <p>
+                The center of the view plane is
+            </p>
+
+            \[
+            C_{\text{view}}=C+d\mathbf \cdot w
+            \]
+
+            <p>
+                and its lower-left corner is
+            </p>
+
+            \[
+            O = C + d\mathbf \cdot w - l\mathbf \cdot u - t\mathbf  \cdot v,
+            \]
+
+            <p>
+                The implementation follows the derivation almost directly:
+            </p>
+
+            <pre><code class="language-cpp">Vector C = scene.camera.position;
+
+Vector w = (scene.camera.center - scene.camera.position).normalized();
+
+Vector u = w.cross(scene.camera.up).normalized();
+Vector v = u.cross(w).normalized();
+
+double d = scene.camera.zNear;
+
+double half_height = d * tan(deg2rad(scene.camera.fovy * 0.5));
+double half_width = half_height * scene.camera.aspect;
+
+double delta_u = (2.0 * half_width) / static_cast&lt;double&gt;(width);
+double delta_v = (2.0 * half_height) / static_cast&lt;double&gt;(height);
+
+Vector view_center = C + d * w;
+
+Vector view_bottom_left = view_center - half_width * u - half_height * v;
+            </code></pre>
+
+            <h3>1.2 Shooting Through the Center of a Pixel</h3>
+
+            <p>
+                For pixel \((i,j)\), I use its center rather than one of its corners.
+                Its position on the view plane is
+            </p>
+
+            \[
+            \boxed{
+            P_{i,j}
+            =
+            O
+            +
+            \left(i+\frac12\right)\Delta  u\ \cdot \mathbf u
+            +
+            \left(j+\frac12\right)\Delta v\ \cdot \mathbf v
+            }
+            \]
+
+            <p>
+                The \(+\frac12\) offset is important: integer pixel coordinates identify
+                cells, while the ray should pass through the center of that cell.
+            </p>
+
+            <p>
+                The parametric equation for a ray is
+            </p>
+
+            \[
+            R_{i,j}(t)=C+t \cdot ( P_{i,j} - C)
+            \]
+            \[
+            R_{i,j}(t)=C+t \cdot \mathbf V_{i,j}
+            \]
+
+            <p>
+                with
+            </p>
+
+            \[
+            \boxed{
+            \mathbf V_{i,j}
+            =
+            \frac{P_{i,j}-C}
+                 {\|P_{i,j}-C\|}
+            }.
+            \]
+
+            <pre><code class="language-cpp">Vector pixel_position =
+                view_bottom_left + (x + 0.5) * delta_u * u + (y + 0.5) * delta_v * v;
+
+Vector dir = (pixel_position - C).normalized();
+Ray ray(C, dir);</code></pre>
+
+            <h3>1.3 Verifying the Projection</h3>
+
+            <p>
+                While implementing the camera, I used the inverse construction as a test:
+                generate a ray for a known pixel, intersect that ray with the view plane,
+                and verify that the original pixel coordinates can be recovered.
+            </p>
+
+            <figure>
+                <img
+                        src="../assets/devlog_img/rayintersectplane.png"
+                        alt="Standard ray intersecting plane geometry"
+                        style="display: block; margin: 0 auto; width: 60%; height: auto;"
+                >
+                <figcaption>
+                    Standard ray intersecting plane geometry
+                </figcaption>
+            </figure>
+
+            <p>
+                A plane passing through a point \(Q\), with normal \(\mathbf n\), is defined by
+            </p>
+
+            \[
+            (X-Q)\cdot\mathbf n=0.
+            \]
+
+            <p>
+                Substituting a ray \(R(t)=P_0+t\mathbf \cdot r\) gives
+            </p>
+
+            \[
+            (P_0+t\mathbf \cdot r-Q)\cdot\mathbf n=0,
+            \]
+
+            \[
+            (P_0-Q)\cdot\mathbf n
+            +
+            t(\mathbf r\cdot\mathbf n)
+            =0,
+            \]
+
+            <p>
+                and therefore
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{
+                t_{intersect}
+                =
+                -\frac{(P_0-Q)\cdot\mathbf n}
+                       {\mathbf r\cdot\mathbf n}
+                }
+                \]
+            </div>
+
+            <p>
+                The intersection point is then \(H=R(t_{intersect})\).
+            </p>
+
+
+
+            <p>
+                Because \(\mathbf u\) and \(\mathbf v\) are orthonormal, the coordinates
+                of this offset along the view plane are simply its projections:
+            </p>
+
+            \[
+            \mathbf c=a\mathbf u+b\mathbf v,
+            \]
+
+            \[
+            \mathbf c\cdot\mathbf u
+            =
+            a(\mathbf u\cdot\mathbf u)
+            +
+            b(\mathbf v\cdot\mathbf u)
+            =
+            a,
+            \]
+
+            \[
+            \boxed{
+            a=\mathbf c\cdot\mathbf u,
+            \qquad
+            b=\mathbf c\cdot\mathbf v
+            }.
+            \]
+
+            <p>
+                Dividing those distances by the pixel dimensions, and undoing the
+                half-pixel offset, recovers the original pixel:
+            </p>
+
+            \[
+            i=\frac{a}{\Delta u}-\frac12,
+            \qquad
+            j=\frac{b}{\Delta v}-\frac12.
+            \]
+
+            <figure>
+                <img
+                        src="../assets/devlog_img/recover_pixel.png"
+                        alt="Notes verifying a primary ray by intersecting the view plane"
+                        style="display: block; margin: 0 auto; width: 60%; height: auto;"
+                >
+                <figcaption>
+                    Reverse verification: intersect a known ray with the view plane and
+                    project the hit point onto the camera basis to recover its pixel coordinates.
+                </figcaption>
+            </figure>
+
+            <div class="note">
+                <strong>Why this test was useful.</strong>
+                It checks the camera basis, the view-plane position, the pixel dimensions,
+                and the \(+0.5\) pixel-center convention together. A sign error in any of
+                those pieces shows up immediately when the recovered pixel no longer matches
+                the one used to generate the ray.
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="intersecting-scene">
+            <h2>2. Intersecting the Scene</h2>
+
+            <p>
+                Once a primary ray exists, the renderer needs to determine which surface,
+                if any, is visible along that ray. Every geometric primitive implements an
+                intersection test, while <code>Raytracer::trace()</code> keeps the closest
+                valid hit.
+            </p>
+
+            <h3>2.1 Ray-Sphere Intersection</h3>
+
+            <p>
+                Consider the parametric ray
+            </p>
+
+            \[
+            R(t)=P_0+t\mathbf r.
+            \]
+
+            <p>
+                Component-wise,
+            </p>
+
+            \[
+            x(t)=p_x+r_xt,
+            \qquad
+            y(t)=p_y+r_yt,
+            \qquad
+            z(t)=p_z+r_zt.
+            \]
+
+            <p>
+                For a sphere of radius \(R\), centered at the origin in its local coordinate
+                system,
+            </p>
+
+            \[
+            x^2+y^2+z^2=R^2.
+            \]
+
+            <p>
+                Requiring the point on the ray to also lie on the sphere gives
+            </p>
+
+            \[
+            (p_x+r_xt)^2
+            +
+            (p_y+r_yt)^2
+            +
+            (p_z+r_zt)^2
+            =
+            R^2.
+            \]
+
+            <p>
+                Expanding and grouping by powers of \(t\) produces a quadratic:
+            </p>
+
+            \[
+            At^2+Bt+C=0,
+            \]
+
+            <p>
+                where
+            </p>
+
+            \[
+            A=r_x^2+r_y^2+r_z^2,
+            \]
+
+            \[
+            B=2(p_xr_x+p_yr_y+p_zr_z),
+            \]
+
+            \[
+            C=p_x^2+p_y^2+p_z^2-R^2.
+            \]
+
+            <p>
+                The solutions are
+            </p>
+
+            \[
+            t=
+            \frac{-B\pm\sqrt{\Delta}}{2A},
+            \qquad
+            \Delta=B^2-4AC.
+            \]
+
+            <p>
+                The discriminant gives the familiar three cases:
+            </p>
+
+            <ul>
+                <li>\(\Delta&lt;0\): no real root, therefore no intersection.</li>
+                <li>\(\Delta=0\): one repeated root, so the ray is tangent to the sphere.</li>
+                <li>\(\Delta&gt;0\): two roots, giving two intersections with the sphere.</li>
+            </ul>
+
+            <figure>
+                <img
+                        src="../assets/devlog_img/Line-Sphere_Intersection.png"
+                        alt="Ray sphere intersection derivation and geometric sketch"
+                >
+                <figcaption>
+                    Ray-sphere intersection solutions. <a href="https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection">  wiki/Line–sphere_intersection </a>
+                </figcaption>
+            </figure>
+
+            <p>
+                In the implementation I test the nearer root first and only accept a
+                positive intersection that is closer than the hit already stored:
+            </p>
+
+            <pre><code class="language-cpp">double A = rx * rx + ry * ry + rz * rz;
+double B = 2.0 * (px * rx + py * ry + pz * rz);
+double C = px * px + py * py + pz * pz - radius * radius;
+
+double discriminant = B * B - 4.0 * A * C;
+
+if (discriminant &lt; 0.0)
+    return false;
+
+double t0 = (-B - std::sqrt(discriminant)) / (2.0 * A);
+double t1 = (-B + std::sqrt(discriminant)) / (2.0 * A);
+
+if (t0 &gt; 1e-4 && t0 &lt; hit.depth) {
+    ...
+}</code></pre>
+
+            <h3>2.2 Local-Space Geometry</h3>
+
+            <p>
+                Objects can be translated, rotated, or scaled in the scene. Instead of
+                deriving a different intersection equation for every transformed primitive,
+                the engine transforms the incoming ray into the object's local coordinate
+                system, performs the primitive test there, then transforms the resulting
+                position and normal back into world space.
+            </p>
+
+            <p>
+                This keeps the geometric equations simple: a sphere can remain centered
+                at the local origin, and a plane can remain at local \(z=0\).
+            </p>
+
+            <h3>2.3 Planes, Triangles, and Meshes</h3>
+
+            <p>
+                The same plane equation used to verify the camera is also used for actual
+                plane and triangle intersection:
+            </p>
+
+            \[
+            t=
+            -\frac{(P_0-Q)\cdot N}
+                   {\mathbf r\cdot N}.
+            \]
+
+            <p>
+                For triangles, the intersection point is projected to a suitable 2D plane
+                and tested against the three triangle edges. Meshes add a useful first
+                rejection step: an axis-aligned bounding box is tested before iterating
+                through every triangle. If the ray misses the bounding box, the entire mesh
+                can be discarded immediately.
+            </p>
+
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="shading">
+            <h2>3. Shading the Hit Point</h2>
+
+            <p>
+                Once the closest surface has been found, <code>Raytracer::shade()</code>
+                determines the color returned by that ray. I found it useful to think of
+                the complete result as a decomposition:
+            </p>
+
+            \[
+            \boxed{
+            L(p,\mathbf V)
+            =
+            L_{\text{emission}}
+            +
+            L_{\text{ambient}}
+            +
+            \sum_{l\in\mathcal L}
+            \left(
+                L_{l,\text{diff}}
+                +
+                L_{l,\text{spec}}
+            \right)
+            +
+            k_rL_{\text{refl}}
+            }
+            \]
+
+            <p>
+                The implementation mirrors this structure directly:
+            </p>
+
+            <pre><code class="language-cpp">return material.emission
+     + ambient
+     + diffuse
+     + specular
+     + material.reflect * reflectedLight;</code></pre>
+
+            <h3>3.1 Local Phong Illumination</h3>
+
+            <p>
+                At a surface point \(p\), let \(\mathbf N\) be the surface normal,
+                \(\mathbf L\) the normalized direction toward the light, and
+                \(\mathbf V\) the normalized direction toward the camera. Material and light
+                colors are RGB vectors, so I use \(\odot\) below for component-wise
+                multiplication (Hadamard product).
+            </p>
+
+            <p>
+                The ambient term is
+            </p>
+
+            \[
+            L_{\text{ambient}}
+            =
+            \mathbf k_a\odot\mathbf I_{l,a}.
+            \]
+
+            <p>
+                For direct lighting, the implementation uses distance attenuation
+            </p>
+
+            \[
+            f_{\text{att}}(d)
+            =
+            a_0+a_1d+a_2d^2,
+            \]
+
+            \[
+            A(d)
+            =
+            \frac{1}{f_{\text{att}}(d)}.
+            \]
+
+            <p>
+                The diffuse contribution is
+            </p>
+
+            \[
+            L_{l,\text{diff}}
+            =
+            A(d)
+            \left(
+            \mathbf k_d\odot\mathbf I_{l,d}
+            \right)
+            \max(0,\mathbf N\cdot\mathbf L).
+            \]
+
+            <p>
+                For the specular term I use the Phong reflection-vector formulation.
+                The perfect reflection of the vector from the surface toward the light is
+            </p>
+
+            \[
+            \mathbf R
+            =
+            -\mathbf L
+            +
+            2(\mathbf N\cdot\mathbf L)\mathbf N,
+            \]
+
+            <p>
+                giving
+            </p>
+
+            \[
+            L_{l,\text{spec}}
+            =
+            A(d)
+            \left(
+            \mathbf k_s\odot\mathbf I_{l,s}
+            \right)
+            \left[
+            \max(0,\mathbf R\cdot\mathbf V)
+            \right]^\alpha.
+            \]
+
+            <p>
+                where \( \alpha \) is the shininess of the material.
+            </p>
+
+            <div class="note">
+                <strong>Phong vs. Blinn-Phong.</strong>
+                The active implementation uses the Phong reflection vector
+                \(\mathbf R\cdot\mathbf V\). Blinn-Phong would instead construct the halfway
+                vector
+                \(\mathbf H=(\mathbf L+\mathbf V)/\|\mathbf L+\mathbf V\|\)
+                and use \((\mathbf N\cdot\mathbf H)^\alpha\). The surrounding shading
+                pipeline is otherwise structurally similar.
+            </div>
+
+            <h3>3.2 Visibility and Hard Shadows</h3>
+
+            <p>
+                Direct illumination only contributes when the light is visible from the
+                hit point. For a point light, this is a binary visibility problem.
+            </p>
+
+            <p>
+                I launch a shadow ray from the intersection toward the light:
+            </p>
+
+            \[
+            R_s(t)
+            =
+            p_\varepsilon+t\mathbf L,
+            \]
+
+            <p>
+                where
+            </p>
+
+            \[
+            p_\varepsilon
+            =
+            p+\varepsilon\mathbf N.
+            \]
+
+            <p>
+                The small normal offset avoids immediately intersecting the same surface
+                again because of floating-point error, a common artifact known as
+                self-shadowing or shadow acne.
+            </p>
+
+            <p>
+                Let \(d\) be the distance to the light. Only intersections satisfying
+                \(0&lt;t&lt;d\) can actually block it. This gives the visibility function
+            </p>
+
+            \[
+            V_l(p)
+            =
+            \begin{cases}
+            0, & \text{if an object blocks the segment from \(p\) to the light,}\\
+            1, & \text{otherwise.}
+            \end{cases}
+            \]
+
+            <p>
+                The renderer enforces that finite interval by initializing the shadow
+                intersection depth to the light distance:
+            </p>
+
+            <pre><code class="language-cpp">Vector shadowOrigin = intersection.position + N * 1e-4;
+
+Ray shadowRay(shadowOrigin, L);
+
+Intersection shadowHit;
+shadowHit.depth = d;
+
+bool inShadow = false;
+
+for (Object* objPtr : scene.objects)
+{
+    if (objPtr->intersect(shadowRay, shadowHit))
+    {
+        inShadow = true;
+        break;
+    }
+}</code></pre>
+
+            <p>
+                Diffuse and specular terms are accumulated only when the light is visible.
+                Ambient illumination remains unaffected by the shadow test.
+            </p>
+
+            \[
+            L_{\text{direct}}(p)
+            =
+            \sum_{l\in\mathcal L}
+            V_l(p)
+            \left(
+                L_{l,\text{diff}}
+                +
+                L_{l,\text{spec}}
+            \right).
+            \]
+
+            <p>
+                Because the light is an infinitesimal point, \(V_l\) is either zero or one.
+                The resulting shadow boundary is therefore perfectly sharp.
+            </p>
+
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="reflections">
+            <h2>4. Recursive Mirror Reflections</h2>
+
+            <p>
+                Direct illumination gives the color of the surface itself, but a reflective
+                material must also include light arriving through another direction. For a
+                perfect mirror, that direction is deterministic.
+            </p>
+
+            <p>
+                Given a normalized incident ray direction \(\mathbf I\) and surface normal
+                \(\mathbf N\), the reflected direction is
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{
+                \mathbf R
+                =
+                \mathbf I
+                -
+                2(\mathbf I\cdot\mathbf N)\mathbf N
+                }
+                \]
+            </div>
+
+            <p>
+                The new ray begins at the same intersection, again moved slightly along the
+                normal to avoid immediately hitting the originating surface:
+            </p>
+
+            <pre><code class="language-cpp">Vector I = ray.direction.normalized();
+
+Vector R_direction = (I - 2.0 * N.dot(I) * N).normalized();
+Vector R_origin = intersection.position + N * 1e-4;
+
+Ray reflection_ray(R_origin, R_direction);
+
+Vector reflection_color(0.0);
+double reflection_depth = DBL_MAX;
+
+if (trace(
+        reflection_ray,
+        rayDepth,
+        scene,
+        reflection_color,
+        reflection_depth))
+{
+    reflectedLight = reflection_color;
+}</code></pre>
+
+            <p>
+                This is where the renderer becomes naturally recursive:
+                <code>trace()</code> finds a surface, <code>shade()</code> creates a reflected
+                ray, and that ray enters <code>trace()</code> again. The recursion is capped
+                at a maximum depth of 10 so mutually reflective surfaces cannot recurse
+                indefinitely.
+            </p>
+
+            <figure>
+                <img
+                        src="../assets/devlog_img/basic2_output.png"
+                        alt="muliple sphere rendering"
+                >
+
+                <figcaption>
+                    Rendering sphere with hard shadows calculation and recursive reflections.
+                </figcaption>
+            </figure>
+
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="area-lights">
+            <h2>5. From Hard Shadows to Area Lights</h2>
+
+            <p>
+                Hard shadows expose a limitation of the point-light model. A point source
+                has no spatial extent: from any surface point it is either completely visible
+                or completely blocked. A finite emitter can instead be partially occluded.
+                Some parts of the source may be visible while others are hidden, producing a
+                penumbra.
+            </p>
+
+            <p>
+                To approximate that behavior, I keep the original point light as the center
+                of the source but replace the single shadow query by several queries toward
+                positions distributed over a disk of radius
+                <code>AREA_LIGHT_RADIUS</code>.
+            </p>
+
+            <pre><code class="language-cpp">static const bool   USING_SOFT_SHADOW = false;
+static const int    SOFT_SHADOW_SAMPLES = 32;
+static const double AREA_LIGHT_RADIUS = 1.0;</code></pre>
+
+            <p>
+                Enabling the soft-shadow branch changes the direct-light calculation from
+                one visibility test into \(N\) sampled light positions. Each sample has its
+                own direction, distance, attenuation, visibility, diffuse contribution, and
+                specular contribution.
+            </p>
+
+            <h3>5.1 Constructing a Local Basis Around the Light</h3>
+
+            <p>
+                A disk is a two-dimensional object embedded in 3D space. I therefore need
+                two perpendicular directions that span its local plane.
+            </p>
+
+            <p>
+                Starting with
+            </p>
+
+            \[
+            \mathbf w=\mathbf L,
+            \]
+
+            <p>
+                I choose an auxiliary coordinate axis \(\mathbf a\) that is not collinear
+                with \(\mathbf w\). In the implementation, I choose the axis corresponding
+                to the smallest absolute component of \(\mathbf w\), which avoids a
+                near-degenerate cross product.
+            </p>
+
+            <p>
+                The remaining basis vectors are
+            </p>
+
+            \[
+            \boxed{
+            \mathbf u
+            =
+            \frac{\mathbf w\times\mathbf a}
+                 {\|\mathbf w\times\mathbf a\|}
+            }
+            \]
+
+            \[
+            \boxed{
+            \mathbf v
+            =
+            \frac{\mathbf w\times\mathbf u}
+                 {\|\mathbf w\times\mathbf u\|}
+            }.
+            \]
+
+            <pre><code class="language-cpp">Vector w = L;
+Vector a(0);
+
+if (wx &lt;= wy && wx &lt;= wz)
+    a = Vector(1.0, 0.0, 0.0, 0.0);
+else if (wy &lt;= wz)
+    a = Vector(0.0, 1.0, 0.0, 0.0);
+else
+    a = Vector(0.0, 0.0, 1.0, 0.0);
+
+Vector u = w.cross(a, 0.0).normalized();
+Vector v = w.cross(u, 0.0).normalized();</code></pre>
+
+            <p>
+                The pair \((\mathbf u,\mathbf v)\) now gives a local 2D coordinate system
+                in which points can be generated on the disk and then mapped back into
+                world space.
+            </p>
+
+            <div class="note">
+                <strong>Implementation approximation.</strong>
+                This basis is rebuilt from the light direction for the current shading point.
+                The sampled disk therefore behaves like a small emitter facing the current
+                point rather than a rigid world-space disk with one fixed orientation.
+                The purpose here is distributed visibility sampling around the original
+                point light, not a complete physically based area-light model.
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="disk-sampling">
+            <h2>6. Uniform Disk Sampling and Monte Carlo</h2>
+
+            <p>
+                Once the disk exists, the next problem is less obvious than it first appears:
+                how do we choose random points so that every equal-area region of the disk has
+                the same probability?
+            </p>
+
+            <h3>6.1 Why a Uniform Radius Is Not Uniform in Area</h3>
+
+            <p>
+                A tempting implementation would choose
+            </p>
+
+            \[
+            r=R\xi,
+            \qquad
+            \xi\sim U(0,1),
+            \]
+
+            <p>
+                together with a uniform angle. But equal intervals in \(r\) do not represent
+                equal amounts of area.
+            </p>
+
+            <p>
+                A thin annulus between \(r\) and \(r+dr\) has area approximately
+            </p>
+
+            \[
+            dA=(2\pi r)\,dr.
+            \]
+
+            <p>
+                The circumference grows with \(r\), so outer radial intervals contain more
+                area than inner ones. Choosing \(r\) uniformly would therefore place too many
+                samples near the center relative to the disk's area.
+            </p>
+
+            <p>
+                What I actually want is for the probability of landing inside a radius \(r\)
+                to equal the fraction of the disk's area contained there:
+            </p>
+
+            \[
+            F(r)
+            =
+            \frac{\pi r^2}
+                 {\pi R^2}
+            =
+            \frac{r^2}{R^2}.
+            \]
+
+            <p>
+                Let \(\xi_1\sim U(0,1)\). Setting
+            </p>
+
+            \[
+            \xi_1=\frac{r^2}{R^2}
+            \]
+
+            <p>
+                and inverting the cumulative distribution gives
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{
+                r=R\sqrt{\xi_1}
+                }
+                \]
+            </div>
+
+            <p>
+                There is no preferred angle on a full disk, so with an independent
+                \(\xi_2\sim U(0,1)\),
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{
+                \theta=2\pi\xi_2
+                }
+                \]
+            </div>
+
+            <p>
+                Converting back to Cartesian coordinates,
+            </p>
+
+            \[
+            x=r\cos\theta,
+            \qquad
+            y=r\sin\theta.
+            \]
+
+            <p>
+                Finally, the sampled world-space light position is
+            </p>
+
+            \[
+            \boxed{
+            P_{\text{sample}}
+            =
+            P_L+x\mathbf u+y\mathbf v
+            }.
+            \]
+
+            <figure>
+                <img
+                        src="../assets/devlog_img/raytracer-uniform-disk.png"
+                        alt="Derivation of uniform random sampling over a disk"
+                >
+                <figcaption>
+                    My derivation of uniform disk sampling: annulus area grows with radius,
+                    which leads to the inverse-CDF result \(r=R\sqrt{\xi}\).
+                </figcaption>
+            </figure>
+
+            <pre><code class="language-cpp">double r =
+    AREA_LIGHT_RADIUS * std::sqrt(rand_uniform_01());
+
+double theta =
+    2.0 * PI * rand_uniform_01();
+
+double dx = r * std::cos(theta);
+double dy = r * std::sin(theta);
+
+Vector offset = u * dx + v * dy;
+Vector sample_pos = light.position + offset;</code></pre>
+
+            <h3>6.2 Averaging the Light Samples</h3>
+
+            <p>
+                For every sampled point \(x_i\) on the disk, I repeat the direct-light
+                calculation:
+            </p>
+
+            <ol>
+                <li>Construct the direction from the surface point to \(x_i\).</li>
+                <li>Compute the new distance and attenuation.</li>
+                <li>Launch a shadow ray toward \(x_i\).</li>
+                <li>Discard the sample if that ray is blocked.</li>
+                <li>Otherwise evaluate the diffuse and specular terms for that sample.</li>
+            </ol>
+
+            <p>
+                The final direct-light estimate is the average of those samples:
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{
+                \bar L_{\text{direct}}(p)
+                \approx
+                \frac{1}{N}
+                \sum_{i=1}^{N}
+                f(p,x_i)
+                }
+                \]
+            </div>
+
+            <p>
+                Here \(f(p,x_i)\) includes visibility, distance attenuation, and the local
+                Phong response for the sampled light position.
+            </p>
+
+            <pre><code class="language-cpp">double diffuse_sum = 0.0;
+double specular_sum = 0.0;
+
+for (int i = 0; i &lt; SOFT_SHADOW_SAMPLES; i++)
+{
+    // sample_pos generated uniformly on the disk
+
+    Vector toLight_withOffset =
+        sample_pos - intersection.position;
+
+    Vector newL =
+        toLight_withOffset.normalized();
+
+    double d_newL =
+        toLight_withOffset.length();
+
+    Ray shadowRay(
+        intersection.position + N * 1e-4,
+        newL
+    );
+
+    Intersection shadowHit;
+    shadowHit.depth = d_newL;
+
+    bool blocked = false;
+
+    for (Object* obj : scene.objects)
+    {
+        if (obj->intersect(shadowRay, shadowHit))
+        {
+            blocked = true;
+            break;
+        }
+    }
+
+    if (blocked)
+        continue;
+
+    double attenuation_sample =
+        1.0 /
+        (a0 + a1 * d_newL + a2 * d_newL * d_newL);
+
+    Vector R_sample =
+        (-newL + 2.0 * N.dot(newL) * N).normalized();
+
+    diffuse_sum +=
+        attenuation_sample *
+        std::max(0.0, N.dot(newL));
+
+    specular_sum +=
+        attenuation_sample *
+        std::pow(
+            std::max(0.0, R_sample.dot(V)),
+            material.shininess
+        );
+}
+
+double inv_samples =
+    1.0 / static_cast&lt;double&gt;(SOFT_SHADOW_SAMPLES);
+
+diffuse +=
+    material.diffuse *
+    light.diffuse *
+    diffuse_sum *
+    inv_samples;
+
+specular +=
+    material.specular *
+    light.specular *
+    specular_sum *
+    inv_samples;</code></pre>
+
+            <p>
+                If an occluder hides every sample, the surface remains in full shadow.
+                If no samples are blocked, the surface receives the complete average direct
+                contribution. Around an occlusion boundary, only a fraction of the disk is
+                visible, so some samples contribute and others do not. That gradual change in
+                visible emitter area produces the penumbra.
+            </p>
+
+            <div class="note">
+                <strong>About the Monte Carlo terminology.</strong>
+                For a literal surface integral
+                \(\int_A f(x)\,dA\), uniform sampling would introduce the factor
+                \(A/N\). This renderer intentionally averages the sampled contributions with
+                \(1/N\), effectively treating the disk as a distributed approximation of the
+                original point light. Increasing the radius therefore changes shadow softness
+                without automatically scaling the light's total intensity by the disk area.
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="conclusion">
+            <h2>7. What This Renderer Became</h2>
+
+            <p>
+                The final renderer can be summarized as a sequence of increasingly richer
+                ray queries.
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{
+                \text{Pixel}
+                \rightarrow
+                \text{Primary Ray}
+                \rightarrow
+                \text{Intersection}
+                \rightarrow
+                \text{Shading}
+                \rightarrow
+                \text{Shadow Ray}
+                \rightarrow
+                \text{Reflection Ray}
+                \rightarrow
+                \text{Area-Light Samples}
+                }
+                \]
+            </div>
+
+            <p>
+                A single primary ray is generated through the center of each pixel. The
+                renderer finds its nearest geometric intersection, evaluates local Phong
+                illumination, tests visibility using secondary shadow rays, and recursively
+                follows perfect mirror reflections. The soft-shadow extension adds stochastic
+                sampling, but only around the light source: several shadow/direct-light rays
+                are distributed over a disk and their contributions are averaged.
+            </p>
+
+            <p>
+                That distinction is important. This is not path tracing: I do not launch many
+                random paths per pixel or sample arbitrary bounce directions over the
+                hemisphere to solve diffuse indirect illumination. The renderer is much
+                closer to classical recursive ray tracing extended with
+                <strong>distributed ray tracing</strong> for a finite light source.
+            </p>
+
+            <p>
+                What I like most about this project is how directly the mathematics maps to
+                the program. Perspective projection becomes a few vector operations. A sphere
+                intersection becomes a quadratic equation. Visibility becomes another ray.
+                Mirror reflection becomes a recursive call. And a visual effect as familiar as
+                a soft shadow ultimately comes from one probability-distribution detail:
+                sampling a disk with \(r=R\sqrt{\xi}\) rather than a uniform radius.
+            </p>
+
+            <!-- Add final renderer screenshots here when selected.
+            <figure class="figure-placeholder">
+                <div>Final render / hard-shadow vs. soft-shadow comparison</div>
+                <figcaption>
+                    Comparison of point-light hard shadows and distributed disk-light soft shadows.
+                </figcaption>
+            </figure>
+            -->
+        </section>
+
+        <footer class="article-footer">
+            <a href="https://github.com/nitrous-git/IFT3355-Infographie-Raytracer-Engine">
+                View the Raytracer Engine source on GitHub →
+            </a>
+        </footer>
+
+    </article>
+</main>
+</body>
+</html>
