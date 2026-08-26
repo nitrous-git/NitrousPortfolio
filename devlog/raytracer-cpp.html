@@ -523,27 +523,6 @@ Ray ray(C, dir);</code></pre>
                 </figcaption>
             </figure>
 
-            <p>
-                In the implementation I test the nearer root first and only accept a
-                positive intersection that is closer than the hit already stored:
-            </p>
-
-            <pre><code class="language-cpp">double A = rx * rx + ry * ry + rz * rz;
-double B = 2.0 * (px * rx + py * ry + pz * rz);
-double C = px * px + py * py + pz * pz - radius * radius;
-
-double discriminant = B * B - 4.0 * A * C;
-
-if (discriminant &lt; 0.0)
-    return false;
-
-double t0 = (-B - std::sqrt(discriminant)) / (2.0 * A);
-double t1 = (-B + std::sqrt(discriminant)) / (2.0 * A);
-
-if (t0 &gt; 1e-4 && t0 &lt; hit.depth) {
-    ...
-}</code></pre>
-
             <h3>2.2 Local-Space Geometry</h3>
 
             <p>
@@ -612,7 +591,8 @@ if (t0 &gt; 1e-4 && t0 &lt; hit.depth) {
             \]
 
             <p>
-                The implementation mirrors this structure directly:
+                Where  \(\mathcal L\) represents all punctual lights in the scene. <br>
+                The implementation then mirrors this structure directly,
             </p>
 
             <pre><code class="language-cpp">return material.emission
@@ -702,15 +682,25 @@ if (t0 &gt; 1e-4 && t0 &lt; hit.depth) {
 
             <p>
                 where \( \alpha \) is the shininess of the material.
+                <br>
+                Putting it all together we obtain :
             </p>
+
+            \[
+            L_{\text{total}} =
+            \mathbf{k}_a \odot \mathbf{I}_a +
+            \sum_{l \in \mathcal{L}}
+            A_l(d_l) \Big[ \big(\mathbf{k}_d \odot \mathbf{I}_{l,d}\big) \max(0, \mathbf{N} \cdot \mathbf{L}_l) +
+            \big(\mathbf{k}_s \odot \mathbf{I}_{l,s}\big) \max(0, \mathbf{R} \cdot \mathbf{V})^\alpha \Big]
+            \]
 
             <div class="note">
                 <strong>Phong vs. Blinn-Phong.</strong>
                 The active implementation uses the Phong reflection vector
-                \(\mathbf R\cdot\mathbf V\). Blinn-Phong would instead construct the halfway
+                \(\mathbf R\cdot\mathbf V\). <br> Blinn-Phong would instead construct the halfway
                 vector
-                \(\mathbf H=(\mathbf L+\mathbf V)/\|\mathbf L+\mathbf V\|\)
-                and use \((\mathbf N\cdot\mathbf H)^\alpha\). The surrounding shading
+                \(\mathbf H= \frac{ (\mathbf L+\mathbf V) } { \|\mathbf L+\mathbf V\|   } \)
+                and use \((\mathbf N\cdot\mathbf H)^\alpha\). <br> The surrounding shading
                 pipeline is otherwise structurally similar.
             </div>
 
@@ -1016,7 +1006,9 @@ Vector v = w.cross(u, 0.0).normalized();</code></pre>
             </p>
 
             \[
-            dA=(2\pi r)\,dr.
+             A = \iint_D dA = \int_{0}^{2\pi} \int_{0}^{R} r \, dr \, d\theta =
+             \pi   \int_{0}^{R} r \, dr =
+             \pi R^2
             \]
 
             <p>
@@ -1094,22 +1086,10 @@ Vector v = w.cross(u, 0.0).normalized();</code></pre>
             }.
             \]
 
-            <figure>
-                <img
-                        src="../assets/devlog_img/raytracer-uniform-disk.png"
-                        alt="Derivation of uniform random sampling over a disk"
-                >
-                <figcaption>
-                    My derivation of uniform disk sampling: annulus area grows with radius,
-                    which leads to the inverse-CDF result \(r=R\sqrt{\xi}\).
-                </figcaption>
-            </figure>
 
-            <pre><code class="language-cpp">double r =
-    AREA_LIGHT_RADIUS * std::sqrt(rand_uniform_01());
+            <pre><code class="language-cpp">double r = AREA_LIGHT_RADIUS * std::sqrt(rand_uniform_01());
 
-double theta =
-    2.0 * PI * rand_uniform_01();
+double theta = 2.0 * PI * rand_uniform_01();
 
 double dx = r * std::cos(theta);
 double dy = r * std::sin(theta);
@@ -1133,7 +1113,23 @@ Vector sample_pos = light.position + offset;</code></pre>
             </ol>
 
             <p>
-                The final direct-light estimate is the average of those samples:
+            The direct contribution of an area light \(A_{l}\) at a point \(p\) can be seen as an integral of the form,
+            </p>
+
+            \[
+            L_{direct}(p)
+            =
+            \int_{A_l}
+            f(p, x) \, dA(x),
+            \]
+
+            <p>
+                Where \(f(p,x_i)\) includes visibility, distance attenuation, and the local
+                Phong response for the sampled light position.
+            </p>
+
+            <p>
+                We can approximate the final direct-light estimate with the average of those samples:
             </p>
 
             <div class="result">
@@ -1148,31 +1144,17 @@ Vector sample_pos = light.position + offset;</code></pre>
                 \]
             </div>
 
-            <p>
-                Here \(f(p,x_i)\) includes visibility, distance attenuation, and the local
-                Phong response for the sampled light position.
-            </p>
-
             <pre><code class="language-cpp">double diffuse_sum = 0.0;
 double specular_sum = 0.0;
 
 for (int i = 0; i &lt; SOFT_SHADOW_SAMPLES; i++)
 {
     // sample_pos generated uniformly on the disk
+    Vector toLight_withOffset = sample_pos - intersection.position;
+    Vector newL = toLight_withOffset.normalized();
+    double d_newL = toLight_withOffset.length();
 
-    Vector toLight_withOffset =
-        sample_pos - intersection.position;
-
-    Vector newL =
-        toLight_withOffset.normalized();
-
-    double d_newL =
-        toLight_withOffset.length();
-
-    Ray shadowRay(
-        intersection.position + N * 1e-4,
-        newL
-    );
+    Ray shadowRay(intersection.position + N * 1e-4, newL);
 
     Intersection shadowHit;
     shadowHit.depth = d_newL;
@@ -1191,50 +1173,34 @@ for (int i = 0; i &lt; SOFT_SHADOW_SAMPLES; i++)
     if (blocked)
         continue;
 
-    double attenuation_sample =
-        1.0 /
-        (a0 + a1 * d_newL + a2 * d_newL * d_newL);
+    double attenuation_sample = 1.0 / (a0 + a1 * d_newL + a2 * d_newL * d_newL);
 
-    Vector R_sample =
-        (-newL + 2.0 * N.dot(newL) * N).normalized();
+    Vector R_sample = (-newL + 2.0 * N.dot(newL) * N).normalized();
 
-    diffuse_sum +=
-        attenuation_sample *
-        std::max(0.0, N.dot(newL));
-
-    specular_sum +=
-        attenuation_sample *
-        std::pow(
-            std::max(0.0, R_sample.dot(V)),
-            material.shininess
-        );
+    diffuse_sum += attenuation_sample * std::max(0.0, N.dot(newL));
+    specular_sum += attenuation_sample * std::pow(std::max(0.0, R_sample.dot(V)), material.shininess);
 }
 
-double inv_samples =
-    1.0 / static_cast&lt;double&gt;(SOFT_SHADOW_SAMPLES);
+double inv_samples = 1.0 / static_cast&lt;double&gt;(SOFT_SHADOW_SAMPLES);
 
-diffuse +=
-    material.diffuse *
-    light.diffuse *
-    diffuse_sum *
-    inv_samples;
+diffuse += material.diffuse * light.diffuse * diffuse_sum * inv_samples;
+specular += material.specular * light.specular * specular_sum * inv_samples;
+            </code></pre>
 
-specular +=
-    material.specular *
-    light.specular *
-    specular_sum *
-    inv_samples;</code></pre>
+            <figure>
+                <img
+                        src="../assets/devlog_img/teapot_output.png"
+                        alt="Teapot model with soft shadow (around 20k tris)"
+                >
 
-            <p>
-                If an occluder hides every sample, the surface remains in full shadow.
-                If no samples are blocked, the surface receives the complete average direct
-                contribution. Around an occlusion boundary, only a fraction of the disk is
-                visible, so some samples contribute and others do not. That gradual change in
-                visible emitter area produces the penumbra.
-            </p>
+                <figcaption>
+                    Teapot model with soft shadow (around 20k tris, medium resolution).
+                </figcaption>
+            </figure>
+
 
             <div class="note">
-                <strong>About the Monte Carlo terminology.</strong>
+                <strong>About Monte Carlo.</strong>
                 For a literal surface integral
                 \(\int_A f(x)\,dA\), uniform sampling would introduce the factor
                 \(A/N\). This renderer intentionally averages the sampled contributions with
@@ -1246,32 +1212,23 @@ specular +=
 
         <!-- ============================================================= -->
         <section id="conclusion">
-            <h2>7. What This Renderer Became</h2>
+            <h2>7. Conclusion</h2>
 
             <p>
                 The final renderer can be summarized as a sequence of increasingly richer
                 ray queries.
             </p>
 
-            <div class="result">
-                \[
-                \boxed{
-                \text{Pixel}
-                \rightarrow
-                \text{Primary Ray}
-                \rightarrow
-                \text{Intersection}
-                \rightarrow
-                \text{Shading}
-                \rightarrow
-                \text{Shadow Ray}
-                \rightarrow
-                \text{Reflection Ray}
-                \rightarrow
-                \text{Area-Light Samples}
-                }
-                \]
-            </div>
+            <figure>
+                <img
+                        src="../assets/devlog_img/basic_output_raytrace.png"
+                        alt="Multiple shapes"
+                >
+
+                <figcaption>
+                    Rendering multiples different shapes in the scene.
+                </figcaption>
+            </figure>
 
             <p>
                 A single primary ray is generated through the center of each pixel. The
