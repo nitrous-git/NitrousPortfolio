@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>From N x A* to Shared Navigation — Olivier Trudel</title>
+    <meta
+        name="description"
+        content="A Protocol Exodus RTS devlog on scaling group movement from per-unit A* to shared navigation, Flow Fields, clearance, steering, formations, and profiling."
+    />
+
+    <link rel="stylesheet" href="../styles.css" />
+    <link rel="stylesheet" href="devlog-article.css" />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/styles/github-dark.min.css">
+
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']]
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            hljs.highlightAll();
+        });
+    </script>
+
+    <script defer
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script defer
+            src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/highlight.min.js">
+    </script>
+</head>
+
+<body>
+<header class="site-header">
+    <div class="container nav">
+        <a class="brand" href="../index.html">Olivier Trudel</a>
+        <nav class="nav-links">
+            <a href="../projects.html">Projects</a>
+            <a href="../devlog.html">Devlog</a>
+            <a href="../about.html">About</a>
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    <article class="devlog-article">
+        <header class="article-header">
+            <a class="back-link" href="../devlog.html">← Back to Devlog</a>
+
+            <p class="meta">Protocol Exodus · Pathfinding · RTS Systems</p>
+            <h1>From N × A* <br> to Shared Navigation</h1>
+            <p class="subtitle">Scaling Group Movement in Protocol Exodus</p>
+
+            <p class="lead">
+                Moving one unit through a map is a pathfinding problem. Moving fifty units
+                through the same map is not simply the same problem fifty times.
+            </p>
+
+            <p>
+                During the development of <em>Protocol Exodus</em>, the navigation system
+                progressively grew from classical per-unit A* into a larger stack involving
+                destination allocation, path following, local steering, static obstacle
+                clearance, unit depenetration, formation topology, and tactical position
+                reservation.
+            </p>
+
+            <p>
+                Each subsystem solved a real problem. Together, however, they exposed a more
+                fundamental scalability issue: a group of units executing the same command was
+                still asking the global pathfinder essentially the same expensive question once
+                per unit. The final system uses Flow Fields for large groups while retaining individual
+                A* where it remains cheaper. The architecture separates
+                problems that are easy to conflate.
+            </p>
+
+            <blockquote>
+                Global navigation decides where the group should travel. Local movement decides
+                how individual units move through nearby traffic. Formation policy decides where
+                each unit ultimately belongs.
+            </blockquote>
+
+            <figure>
+                <video preload="auto" autoplay loop muted playsinline>
+                    <source src="../assets/devlog_shared_nav/SmallGroupCombat02.mp4" type="video/mp4">
+                </video>
+
+                <figcaption>
+                    Small Group during combat phase.
+                </figcaption>
+            </figure>
+
+            <div class="note">
+                <strong>Source.</strong>
+                The implementation discussed here is developed in the
+                <a href="https://github.com/nitrous-git/Protocol_Exodus_RTS/tree/SharedNavigation_exp">
+                    SharedNavigation_exp branch
+                </a>
+                of Protocol Exodus.
+            </div>
+        </header>
+
+        <nav class="toc">
+            <strong>Contents</strong>
+            <ol>
+                <li><a href="#navigation-stack">The Navigation Stack</a></li>
+                <li><a href="#scaling-problem">The Scaling Problem: N Units, N A*</a></li>
+                <li><a href="#shared-astar">First Attempt: One A* Path, Many Units</a></li>
+                <li><a href="#flow-fields">Flow Fields: Making Navigation Spatial</a></li>
+                <li><a href="#clearance-local-motion">Static Clearance, Mixed Radii and Local Movement</a></li>
+                <li><a href="#formation-policy">Navigation Is Not Formation Policy</a></li>
+                <li><a href="#optimization">Making the Flow Field Actually Fast</a></li>
+                <li><a href="#payoff">The Payoff</a></li>
+                <li><a href="#conclusion">Conclusion</a></li>
+            </ol>
+        </nav>
+
+        <!-- ============================================================= -->
+        <section id="navigation-stack">
+            <h2>1. The Navigation Stack</h2>
+
+            <p>
+                Before discussing Flow Fields, it is useful to establish what
+                <em>navigation</em> means inside an RTS. A pathfinding algorithm alone does
+                not move a unit.
+            </p>
+
+            <p>
+                By this stage of <em>Protocol Exodus</em>, a Move command passed through
+                several cooperating systems:
+            </p>
+
+            <figure>
+                <img
+                        src="../assets/devlog_shared_nav/FlowChart_RTSNav%20.jpeg"
+                        alt="FlowChart RTS Navigation Stack"
+                >
+
+                <figcaption>
+                    General FlowChart for Shared Navigation Stack.
+                </figcaption>
+            </figure>
+
+            <div class="note">
+                This is an ownership and data-flow diagram rather than a literal call stack.
+                The important architectural change is that the expensive navigation solution
+                can be group-owned while movement remains unit-owned.
+            </div>
+
+            <h3>1.1 Global Path, Local Motion</h3>
+
+            <p>
+                The global navigation layer produces a preferred direction. Local Steering is
+                allowed to modify that direction, but it should not replace the global
+                navigation decision entirely.
+            </p>
+
+            <pre><code >Vector3 pathDirection = preferredVelocity.normalized;
+Vector3 separation = CalculateSeparation(pathDirection);
+
+Vector3 desiredDirection = pathDirection + separation * separationWeight;
+
+Vector3 limitedDirection =
+    Vector3.RotateTowards(
+            pathDirection,
+            desiredDirection,
+            maxSteeringAngle * Mathf.Deg2Rad,
+            0f);
+            </code></pre>
+
+            <p>
+                The path remains authoritative. Steering only bends it. If a nearby unit
+                produces an avoidance vector \(\mathbf a\), I remove the component parallel to
+                the navigation direction \(\mathbf d\):
+            </p>
+
+            \[
+            \mathbf a_{\perp}
+            =
+            \mathbf a-
+            \operatorname{proj}_{\mathbf d}(\mathbf a)
+            \]
+
+            <p>For normalized \(\mathbf d\):</p>
+
+            <div class="result">
+                \[
+                \boxed{
+                \mathbf a_{\perp}
+                =
+                \mathbf a-
+                (\mathbf a\cdot\mathbf d)\mathbf d
+                }
+                \]
+            </div>
+
+            <p>The separation distance depends on both navigation radii:</p>
+
+            \[
+            D_{\text{sep}}=r_A+r_B+p
+            \]
+
+            <p>and the force increases as units approach:</p>
+
+            \[
+            S(d)=1-\frac{d}{D_{\text{sep}}}.
+            \]
+
+
+            <figure>
+                <video preload="auto" autoplay loop muted playsinline>
+                    <source src="../assets/devlog_shared_nav/Avoidance.mp4" type="video/mp4">
+                </video>
+
+                <figcaption>
+                    Global navigation remains authoritative while local separation bends the
+                    trajectories around nearby units.
+                </figcaption>
+            </figure>
+
+            <h3>1.2 Depenetration Is a Different Problem</h3>
+
+            <p>Steering is preventative. Depenetration is corrective.</p>
+
+            <p>
+                If two units still overlap because of dense traffic, numerical error, or
+                conflicting movement, a small positional solver separates them after movement.
+                This is intentionally not a full physics simulation; a few bounded correction
+                passes are enough for this movement layer.
+            </p>
+
+            <ul>
+                <li>Steering tries to prevent overlap.</li>
+                <li>Depenetration resolves overlap.</li>
+                <li>Neither decides the global route.</li>
+            </ul>
+
+            <p>
+                As unit counts increased, local neighborhood queries were also moved toward
+                spatial buckets rather than brute-force all-pairs checks.
+            </p>
+
+            <blockquote>
+                Do expensive spatial work once, then make repeated queries cheap.
+            </blockquote>
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="scaling-problem">
+            <h2>2. The Scaling Problem: \(N\) Units, \(N\) x A*</h2>
+
+            <p>
+                The original architecture was straightforward. A group Move command produced
+                one destination per unit, then each unit requested its own A* path.
+            </p>
+
+            <div class="result">
+                \[
+                U\text{ units}
+                \rightarrow
+                U\text{ destinations}
+                \rightarrow
+                U\text{ A* searches}
+                \]
+            </div>
+
+            <p>Let \(V\) be grid cells, \(E\) graph edges, and \(U\) moving units.</p>
+
+            <p>With a binary heap, the usual graph-search bound is:</p>
+
+            \[
+            O((V+E)\log V).
+            \]
+
+            <p>
+                A regular grid has bounded connectivity, so \(E=O(V)\), giving the practical
+                simplification:
+            </p>
+
+            \[
+            O(V\log V).
+            \]
+
+            <p>Running this independently for an entire group gives:</p>
+
+            <div class="result">
+                \[
+                \boxed{
+                T_{\text{group}}=O(UV\log V)
+                }
+                \]
+            </div>
+
+            <p>
+                The critical point was not that A* was necessarily slow. The architecture was
+                asking it to run too many times.
+            </p>
+
+            <h3>2.1 Dynamic Occupancy Made It Worse</h3>
+
+            <p>
+                Earlier iterations experimented with traversal reservations. A unit could claim
+                its next grid cell, release its previous cell after advancing, wait when the next
+                cell belonged to another unit, and potentially request a new path when movement
+                could not continue.
+            </p>
+
+            <div class="result">
+                \[
+                \text{conflict}
+                \rightarrow
+                \text{wait}
+                \rightarrow
+                \text{replan}
+                \rightarrow
+                A^*
+                \]
+            </div>
+
+            <p>
+                That policy was gradually relaxed. Dynamic traffic became primarily a local
+                movement problem, while strict reservations remained most useful at the final
+                destination.
+            </p>
+
+            <h3>2.2 The Profiler Changed the Question</h3>
+
+            <p>
+                The pathfinder already used a min-heap and radius-aware traversal. But a
+                25-unit Move still meant roughly 25 synchronous global searches; a 50-unit Move
+                meant roughly 50.
+            </p>
+
+            \[
+            T(U)\propto U.
+            \]
+
+            <p>The useful question changed from:</p>
+            <blockquote>How can I make A* faster?</blockquote>
+            <p>to:</p>
+            <blockquote>
+                Why are units executing the same order solving global navigation independently?
+            </blockquote>
+
+            <p>That question led to <code>MovementGroup</code>.</p>
+
+            <figure class="figure-placeholder">
+                <div>TODO — Old N × A* profiler / command log</div>
+                <figcaption>
+                    The bottleneck was synchronous multiplication of global path searches.
+                </figcaption>
+            </figure>
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="shared-astar">
+            <h2>3. First Attempt: One A* Path, Many Units</h2>
+
+            <p>
+                The first Shared Navigation experiment did not begin with Flow Fields. It made
+                the smallest possible architectural change: build one A* route for the group and
+                let every unit consume it.
+            </p>
+
+            <p>
+                A <code>MovementGroup</code> owns a <code>GroupNavigator</code>, which exposes an
+                abstract navigation solution:
+            </p>
+
+            <pre><code >public interface INavigationSolution
+{
+    bool IsValid { get; }
+    Vector3 Destination { get; }
+    float NavigationRadius { get; }
+
+    IReadOnlyList&lt;Vector3&gt; DebugPath { get; }
+
+    NavigationSample SampleDirection(
+        Vector3 worldPosition,
+        int previousRouteSegmentIndex = -1);
+}</code></pre>
+
+            <p>
+                This interface became more durable than either backend. A unit no longer needs
+                to own a complete path. It needs a useful navigation sample from its current
+                position:
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{\mathbf d=\text{SampleDirection}(P)}
+                \]
+            </div>
+
+            <h3>3.1 Projecting onto a Shared Polyline</h3>
+
+            <p>
+                Suppose the shared route contains a segment from \(A\) to \(B\), and a unit is
+                currently at \(P\). Define \(\mathbf s=B-A\). The projection parameter is:
+            </p>
+
+            \[
+            t=  \frac{(P-A)\cdot\mathbf s} {\|\mathbf s\|^2}.
+            \]
+
+            <p>Since this is a finite segment:</p>
+
+            \[
+            t=\operatorname{clamp}(t,0,1).
+            \]
+
+            <p>The closest point becomes:</p>
+
+            <div class="result">
+                \[
+                \boxed{P_{\text{proj}}=A+t(B-A)}
+                \]
+            </div>
+
+            <pre><code >float t = Vector3.Dot(current - start, segment) / segmentLengthSqr;
+t = Mathf.Clamp01(t);
+Vector3 point = start + segment * t;
+            </code></pre>
+
+            <p>
+                A lightweight segment cursor avoids scanning the whole route every frame. The
+                current sampler performs a bounded initial attachment search and a smaller
+                forward search around the previously relevant segment.
+            </p>
+
+            <h3>3.2 Parallel Sampling Instead of Centerline Collapse</h3>
+
+            <p>
+                A naive vector from each unit directly toward the look-ahead point causes units
+                beside the route to continuously steer inward toward the centerline.
+            </p>
+
+            <p>
+                Instead, the sampler derives direction from the projected route point toward
+                the look-ahead point:
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{
+                \mathbf d=
+                \operatorname{normalize}
+                \left(
+                P_{\text{lookahead}}-P_{\text{proj}}
+                \right)
+                }
+                \]
+            </div>
+
+            <pre><code >Vector3 lookAheadPoint = CalculateLookAheadPoint(projection);
+Vector3 routeDirection = lookAheadPoint - projection.Point;
+routeDirection.y = 0f;
+            </code></pre>
+
+
+            <figure>
+                <img
+                        src="../assets/devlog_shared_nav/PolylineSampling.png"
+                        alt="Red shared A* polyline + yellow parallel sample vectors"
+                >
+
+                <figcaption>
+                    The sampled directions follow the shared route without collapsing every unit
+                    directly onto its centerline.
+                </figcaption>
+            </figure>
+
+            <h3>3.3 A Polyline Is Still One-Dimensional</h3>
+
+            <p>
+                The limitations appeared around obstacles and larger lateral deviations. Once a
+                unit moves away from the line, the system needs answers for corridor width,
+                recovery distance, corner handling, static safety, look-ahead, and which section
+                of the route remains relevant.
+            </p>
+
+            <p>
+                The shared route already solved:
+            </p>
+
+            \[
+            N\times A^*\rightarrow1\times A^*,
+            \]
+
+            <p>
+                but the representation was gradually reconstructing corridor navigation around
+                a one-dimensional centerline.
+            </p>
+
+            <blockquote>
+                The group did not really need a shared line. It needed a useful global direction
+                from anywhere in the navigable region.
+            </blockquote>
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="flow-fields">
+            <h2>4. Flow Fields: Making Navigation Spatial</h2>
+
+            <p>The representation changed from:</p>
+
+            \[
+            P\rightarrow\text{nearest route segment}\rightarrow\text{route tangent}
+            \]
+
+            <p>to simply:</p>
+
+            <div class="result">
+                \[
+                \boxed{P\rightarrow\mathbf d(P)}
+                \]
+            </div>
+
+            <p>
+                A Flow Field stores navigation information over the traversable grid. Every unit
+                in the <code>MovementGroup</code> samples the same field from its own world
+                position.
+            </p>
+
+            <pre><code >public NavigationSample SampleDirection(Vector3 worldPosition)
+{
+    GridCoord currentCell = field.Grid.WorldToCell(worldPosition);
+
+    if (!field.IsInside(currentCell) || !field.IsReachable(currentCell))
+    {
+        return NavigationSample.Invalid;
+    }
+
+    Vector3 direction =
+        SampleSmoothedDirection(
+            worldPosition,
+            currentCell);
+
+    // ...
+}</code></pre>
+
+            <h3>4.1 Radius-Aware Traversability</h3>
+
+            <p>
+                A narrow passage that is valid for an infantry unit may not be valid for a
+                larger Mecha. One group-shared field therefore uses a conservative radius:
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{r_{\text{field}}=\max_i r_i}
+                \]
+            </div>
+
+            <p>
+                If the largest member fits, every smaller member can safely consume the same
+                global field.
+            </p>
+
+            <h3>4.2 Multi-Source Dijkstra Integration</h3>
+
+            <p>
+                The Flow Field begins with an integration field: the cost-to-go from every
+                reachable cell toward the destination.
+            </p>
+
+            \[
+            C(g)=0
+            \qquad
+            C(x)=\infty\;\text{ initially elsewhere}.
+            \]
+
+            <p>Dijkstra performs the relaxation:</p>
+
+            \[
+            C(v)\leftarrow
+            \min\left(C(v),C(u)+w(u,v)\right).
+            \]
+
+            <p>
+                For the eight-connected grid, orthogonal movement uses cost \(10\) and diagonal
+                movement uses \(14\), approximating \(\sqrt2\). Diagonal expansion also checks
+                the adjacent orthogonal cells, preventing corner cutting.
+            </p>
+
+            <h3>4.3 The Destination Should Not Be One Cell</h3>
+
+            <p>
+                A point goal was algorithmically correct but visually poor for an RTS group:
+                every vector eventually converged toward the same microscopic location.
+            </p>
+
+            <p>
+                A large group has an assembly region, not a point-sized destination. After an
+                initial circular experiment, the goal was changed to a rectangular region
+                derived from the formation half-extents.
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{
+                C(g)=0
+                \qquad
+                \forall g\in G
+                }
+                \]
+            </div>
+
+            <p>
+                Every valid goal cell is inserted into the initial Dijkstra frontier, making the
+                integration pass a multi-source shortest-path computation.
+            </p>
+
+
+            <figure>
+                <video preload="auto" autoplay loop muted playsinline>
+                    <source src="../assets/devlog_shared_nav/FlowFieldGroupNav.mp4" type="video/mp4">
+                </video>
+
+                <figcaption>
+                    The rectangular assembly region prevents the complete group from converging
+                    onto one microscopic destination.
+                </figcaption>
+            </figure>
+
+            <h3>4.4 Clearance as a Cost, Not Only a Constraint</h3>
+
+            <p>
+                Binary traversability answers whether a unit can physically fit. Two legal
+                routes are not necessarily equally desirable.
+            </p>
+
+            <p>Define spare clearance:</p>
+
+            \[
+            s(x)=R_{\text{clear}}(x)-r_{\text{field}}.
+            \]
+
+            <p>A finite discomfort penalty is:</p>
+
+            \[
+            P_{\text{clear}}(x)
+            =
+            P_{\max}
+            \left[
+            1-
+            \operatorname{clamp}
+            \left(
+            \frac{s(x)}{m},0,1
+            \right)
+            \right].
+            \]
+
+            <p>The relaxation becomes:</p>
+
+            <div class="result">
+                \[
+                \boxed{
+                C(v)=C(u)+w(u,v)+P_{\text{clear}}(v)
+                }
+                \]
+            </div>
+
+            <blockquote>
+                Legal clearance is a hard constraint. Comfortable clearance is a soft cost.
+            </blockquote>
+
+            <figure>
+                <img
+                        src="../assets/devlog_shared_nav/Clearance.png"
+                        alt="Clearance Value"
+                        style="display: block; margin: 0 auto; width: 50%; height: auto;"
+                >
+
+                <figcaption>
+                    Clearance value annotations for the Ground capability (only white tiles are traversable). <br>
+                    Credits : <a href="https://harablog.wordpress.com/2009/02/05/hierarchical-clearance-based-pathfinding/">harablog.wordpress.com/hierarchical-clearance-based-pathfinding</a>
+                </figcaption>
+            </figure>
+
+            <h3>4.5 From Integration Field to Direction Field</h3>
+
+            <p>
+                Once \(C(x)\) is known, each reachable cell selects the traversable neighbor with
+                the lowest cost toward the goal:
+            </p>
+
+            \[
+            n^*=\arg\min_{n\in N(x)}\left[C(n)+w(x,n)\right].
+            \]
+
+            <p>The local direction is:</p>
+
+            <div class="result">
+                \[
+                \boxed{
+                \mathbf d(x)=
+                \frac{P(n^*)-P(x)}
+                {\|P(n^*)-P(x)\|}
+                }
+                \]
+            </div>
+
+            <h3>4.6 Smoothing the Field</h3>
+
+            <p>
+                Raw grid directions change abruptly at cell boundaries. Some units exhibited
+                high-frequency rotational jitter even with Local Steering disabled, which
+                isolated the field sampling itself as the cause.
+            </p>
+
+            <p>For local coordinates \(t_x,t_z\in[0,1]\):</p>
+
+            \[
+            w_{00}=(1-t_x)(1-t_z),
+            \quad
+            w_{10}=t_x(1-t_z),
+            \]
+
+            \[
+            w_{01}=(1-t_x)t_z,
+            \quad
+            w_{11}=t_xt_z.
+            \]
+
+            <p>The blended direction becomes:</p>
+
+            <div class="result">
+                \[
+                \boxed{
+                \mathbf d(P)=
+                \operatorname{normalize}
+                \left(
+                \sum_{ij}w_{ij}\mathbf d_{ij}
+                \right)
+                }
+                \]
+            </div>
+
+            <pre><code class="language-csharp">float w00 = (1f - tx) * (1f - tz);
+float w10 = tx * (1f - tz);
+float w01 = (1f - tx) * tz;
+float w11 = tx * tz;
+
+Vector3 blended = Vector3.zero;
+float totalWeight = 0f;
+
+AddDirectionSample(currentCell, c00, w00, ref blended, ref totalWeight);
+AddDirectionSample(currentCell, c10, w10, ref blended, ref totalWeight);
+AddDirectionSample(currentCell, c01, w01, ref blended, ref totalWeight);
+AddDirectionSample(currentCell, c11, w11, ref blended, ref totalWeight);</code></pre>
+
+            <p>
+                Invalid or unreachable samples are rejected, and zero vectors inside the goal
+                region are not blended into an approaching sample from outside the goal.
+            </p>
+
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="clearance-local-motion">
+            <h2>5. Static Clearance, Mixed Radii and Local Movement</h2>
+
+            <p>
+                Flow Fields made one existing optimization even more important:
+                <code>StaticClearanceField</code>.
+            </p>
+
+            <h3>5.1 The Expensive Version of Clearance</h3>
+
+            <p>A radius-aware navigation system repeatedly asks:</p>
+            <blockquote>Can a unit of radius \(r\) stand in this cell?</blockquote>
+
+            <p>
+                Searching nearby static obstacles every time is acceptable occasionally, but not
+                when the same query appears inside A*, Flow Fields, formation allocation,
+                attack-position allocation, and static movement safety.
+            </p>
+
+            <h3>5.2 Precompute Distance to Static Geometry</h3>
+
+            <p>
+                Instead, each grid location stores the distance to the nearest static
+                obstruction:
+            </p>
+
+            \[
+            R_{\text{clear}}(x)=
+            \min_{b\in B}\|x-b\|.
+            \]
+
+            <p>
+                The current field is produced using a separable Euclidean distance transform on
+                a higher-resolution lattice. Once cached, a radius-aware query becomes:
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{
+                \text{Traversable}(x,r)
+                \iff
+                r\le R_{\text{clear}}(x)
+                }
+                \]
+            </div>
+
+            <p>
+                Static buildings and terrain contribute to this field. Dynamic units do not:
+            </p>
+
+            \[
+            \text{static geometry}\neq\text{dynamic traffic}.
+            \]
+
+            <h3>5.3 Mixed Infantry and Mecha</h3>
+
+            <p>A representative infantry radius is approximately:</p>
+
+            \[
+            r_{\text{infantry}}\approx0.45,
+            \]
+
+            <p>while the larger Mecha uses approximately:</p>
+
+            \[
+            r_{\text{mecha}}\approx1.5.
+            \]
+
+            <p>
+                The same map therefore represents different traversable spaces depending on the
+                requesting radius. A group-shared field uses the largest member conservatively,
+                while local separation still uses the radii of the actual pair of units.
+            </p>
+
+            <figure class="figure-placeholder">
+                <div>TODO — Mixed Mecha + infantry navigation footage</div>
+                <figcaption>
+                    Mixed footprints consume one conservative global field while retaining
+                    individual local separation radii.
+                </figcaption>
+            </figure>
+
+            <h3>5.4 Flow Fields Do Not Solve Avoidance</h3>
+
+            <p>
+                A Flow Field solves global static routing. It does not know that another unit
+                happens to be standing half a meter to the side.
+            </p>
+
+            <div class="result">
+                \[
+                \text{Flow Field sample}
+                \rightarrow
+                \text{preferred velocity}
+                \rightarrow
+                \text{Local Steering}
+                \rightarrow
+                \text{static safety}
+                \rightarrow
+                \text{movement}
+                \]
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="formation-policy">
+            <h2>6. Navigation Is Not Formation Policy</h2>
+
+            <p>
+                A Flow Field should not be responsible for preserving an exact rigid formation.
+                Its job is to get the group through the world. Formation policy is a separate
+                layer.
+            </p>
+
+            <h3>6.1 Building a Roughly Square Formation</h3>
+
+            <p>For \(U\) units, the allocator chooses:</p>
+
+            \[
+            c=\left\lceil\sqrt U\right\rceil
+            \]
+
+            <p>columns and:</p>
+
+            \[
+            r=\left\lceil\frac{U}{c}\right\rceil
+            \]
+
+            <p>rows.</p>
+
+            <p>The spacing must account for the largest member:</p>
+
+            \[
+            s_{\text{world}}\ge2r_{\max}.
+            \]
+
+            <p>Converted into grid cells:</p>
+
+            \[
+            s_{\text{cell}}=
+            \left\lceil
+            \frac{2r_{\max}}{\text{cellSize}}
+            \right\rceil.
+            \]
+
+            <p>
+                Each final destination is then protected through the destination reservation
+                system.
+            </p>
+
+            <h3>6.2 Why Nearest-Slot Assignment Is Not Enough</h3>
+
+            <pre><code>A B C
+D E F
+G H I</code></pre>
+
+            <p>
+                After the group deforms around an obstacle, assigning each unit to the nearest
+                final slot can produce crossings and invert the original spatial order.
+            </p>
+
+            <p>Instead, normalize the current topology around the group center:</p>
+
+            \[
+            \hat P_i=
+            \left(
+            \frac{x_i-x_G}{e_x},
+            \frac{z_i-z_G}{e_z}
+            \right),
+            \]
+
+            <p>and normalize the destination slot topology:</p>
+
+            \[
+            \hat S_j=
+            \left(
+            \frac{x_j-x_F}{f_x},
+            \frac{z_j-z_F}{f_z}
+            \right).
+            \]
+
+            <p>Then minimize the topology error:</p>
+
+            <div class="result">
+                \[
+                \boxed{
+                E(i,j)=\|\hat P_i-\hat S_j\|^2
+                }
+                \]
+            </div>
+
+            <p>
+                The assignment tends to preserve left versus right, front versus rear, and the
+                overall ordering of the group.
+            </p>
+
+            <h3>6.3 Final Assignment from Post-Obstacle Topology</h3>
+
+            <p>
+                The original assignment is computed before travel. But after moving around a
+                building, the actual group ordering may be substantially different. Near the
+                destination, final assignment can use the current post-obstacle topology instead.
+            </p>
+
+            <div class="result">
+                \[
+                \text{initial topology}
+                \rightarrow
+                \text{free group travel}
+                \rightarrow
+                \text{post-obstacle topology}
+                \rightarrow
+                \text{final slots}
+                \]
+            </div>
+
+            <figure class="figure-placeholder">
+                <div>TODO — Formation deforms around obstacle then settles</div>
+                <figcaption>
+                    The formation is not kept rigid during travel; final slots are resolved when
+                    the group is close enough for exact placement to matter again.
+                </figcaption>
+            </figure>
+
+            <h3>6.4 AttackPositionAllocator: Topology Applied to Combat</h3>
+
+            <p>
+                The same idea applies to combat deployment. A unit's angular approach direction
+                and radial depth provide a preferred region around the target, reducing
+                unnecessary crossing between attackers.
+            </p>
+
+            <p>Candidate positions can be scored as:</p>
+
+            \[
+            C=
+            w_a C_{\text{angular}}
+            +w_r C_{\text{radial}}
+            +w_t C_{\text{travel}}.
+            \]
+
+            <p>Cheap rejection happens first:</p>
+
+            <ol>
+                <li>radial range,</li>
+                <li>angular compatibility,</li>
+                <li>cached static clearance,</li>
+                <li>destination reservation only for useful candidates.</li>
+            </ol>
+
+            <p>
+                A local search radius of four cells means at most \(9\times9=81\) candidate
+                cells per unit rather than an entire attack ring.
+            </p>
+
+            <pre><code>15 attackers
+Cells inspected:       1215
+Clearance checks:       281
+Reservation attempts:    19
+Allocation:           13.90 ms
+
+25 attackers
+Cells inspected:       2025
+Clearance checks:       422
+Reservation attempts:    56
+Allocation:           15.93 ms</code></pre>
+
+            <blockquote>
+                Do not repeatedly search a large space when topology already tells you where the
+                useful answer probably is.
+            </blockquote>
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="optimization">
+            <h2>7. Making the Flow Field Actually Fast</h2>
+
+            <p>
+                Replacing \(N\) A* searches with one Flow Field improves the scaling model, but a
+                badly implemented field can still be too expensive.
+            </p>
+
+            <p>For a \(256\times256\) grid:</p>
+
+            <div class="result">
+                \[
+                256^2=65\,536\text{ cells}
+                \]
+            </div>
+
+            <p>A field build contains several large passes:</p>
+
+            <ol>
+                <li>allocation / reset,</li>
+                <li>traversability,</li>
+                <li>Dijkstra integration,</li>
+                <li>direction-field generation.</li>
+            </ol>
+
+            <h3>7.1 Initial Profile</h3>
+
+            <pre><code>Grid             256 x 256
+Cells            65536
+Goals            289
+Expanded          ~45194
+
+Allocation        0.82 ms
+Traversability   51.75 ms
+Integration     232.64 ms
+Direction       150.11 ms
+
+Total           435.54 ms</code></pre>
+
+            <p>
+                The useful information was not only the total. It was how that total was
+                distributed.
+            </p>
+
+            <h3>7.2 Traversability</h3>
+
+            <p>
+                Reusing cached static-clearance data more directly reduced traversability from
+                about \(51.75\) ms to around \(26\) ms:
+            </p>
+
+            <pre><code>Traversability   26.04 ms
+Integration     234.72 ms
+Direction       128.51 ms
+Total           390.36 ms</code></pre>
+
+            <h3>7.3 Dijkstra Integration</h3>
+
+            <p>
+                Integration was now dominant. The next pass focused on representation and queue
+                traffic rather than changing Dijkstra itself.
+            </p>
+
+            <p>A 2D coordinate can be flattened to:</p>
+
+            <div class="result">
+                \[
+                \boxed{i=zW+x}
+                \]
+            </div>
+
+            <p>This provides:</p>
+
+            <ul>
+                <li>contiguous field arrays,</li>
+                <li>cheap <code>settled[index]</code> access,</li>
+                <li>less coordinate conversion,</li>
+                <li>smaller queue payloads,</li>
+                <li>better cache locality.</li>
+            </ul>
+
+            <p>After the integration pass:</p>
+
+            <pre><code>Traversability   25.82 ms
+Integration     130.77 ms
+Direction       128.51 ms
+Total           286.07 ms</code></pre>
+
+            <h3>7.4 Direction-Field Indexing</h3>
+
+            <p>
+                Direction generation had now become as expensive as integration, which was a
+                strong sign that the issue was data access rather than algorithmic complexity.
+            </p>
+
+            <p>
+                After making the pass more index-oriented, direction generation dropped from
+                roughly \(128-150\) ms to around \(21-22\) ms:
+            </p>
+
+            <pre><code>[FlowField]
+Grid=256x256
+Cells=65536
+Goals=289
+Expanded=45290
+Enqueued=47632
+Dequeued=47632
+Duplicates=2342
+PeakOpen=512
+
+AllocationMs=0.88
+TraversabilityMs=25.88
+IntegrationMs=127.22
+DirectionMs=21.94
+
+TotalMs=176.06</code></pre>
+
+            <div class="note">
+                The algorithm did not fundamentally change. The representation did. An
+                \(O(V)\) pass can still be expensive when each iteration contains unnecessary
+                conversions, abstractions, or scattered memory access.
+            </div>
+
+            <h3>7.5 Queue Diagnostics</h3>
+
+            <pre><code>Cells=65536
+Goals=289
+Expanded=45281
+
+Enqueued=47549
+Dequeued=47549
+Duplicates=2268
+PeakOpen=507</code></pre>
+
+            <p>
+                Despite propagating through more than 45,000 reachable cells, the frontier's
+                peak open-set size remained only a few hundred entries in this representative
+                test.
+            </p>
+
+            <p>A later build measured:</p>
+
+            <pre><code>AllocationMs=0.76
+TraversabilityMs=27.00
+IntegrationMs=127.42
+DirectionMs=21.60
+
+TotalMs=176.93</code></pre>
+
+            <p>Compared with the initial implementation:</p>
+
+            <div class="result">
+                \[
+                435.54\text{ ms}
+                \rightarrow
+                176.93\text{ ms}
+                \]
+                \[
+                \boxed{\approx59\%\text{ reduction}}
+                \]
+            </div>
+
+            <figure class="figure-placeholder">
+                <div>TODO — Flow Field profiling before / after</div>
+                <figcaption>
+                    Traversability, integration, and direction generation were measured
+                    independently so optimization followed actual hotspots.
+                </figcaption>
+            </figure>
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="payoff">
+            <h2>8. The Payoff</h2>
+
+            <p>
+                The goal of Shared Navigation was not merely to make one function faster. It was
+                to change how global-navigation cost scales with group size.
+            </p>
+
+            <div class="result">
+                \[
+                N\times A^*
+                \qquad\text{vs.}\qquad
+                1\times\text{shared Flow Field}
+                \]
+            </div>
+
+            <p>On the same \(256\times256\) navigation grid, representative tests produced:</p>
+
+            <table>
+                <thead>
+                <tr>
+                    <th>Units</th>
+                    <th>Individual A*</th>
+                    <th>Shared Flow Field</th>
+                    <th>Improvement</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr><td>35</td><td>164.38 ms</td><td>181.98 ms</td><td>-10.7%</td></tr>
+                <tr><td>40</td><td>194.63 ms</td><td>186.47 ms</td><td>4.2%</td></tr>
+                <tr><td>50</td><td>239.66 ms</td><td>184.59 ms</td><td>23.0%</td></tr>
+                <tr><td>75</td><td>463.42 ms</td><td>183.92 ms</td><td>60.3%</td></tr>
+                <tr><td>100</td><td>724.96 ms</td><td>193.79 ms</td><td>73.3%</td></tr>
+                </tbody>
+            </table>
+
+            <p>
+                The first row is important: a Flow Field is not automatically faster. For 35
+                units, constructing a complete field over 65,536 cells is slightly more
+                expensive than running the individual A* searches.
+            </p>
+
+            <p>That is why the final architecture supports more than one navigation policy:</p>
+
+            <div class="result">
+                \[
+                \text{small command}\rightarrow\text{individual A*}
+                \]
+                \[
+                \text{large group}\rightarrow\text{shared Flow Field}
+                \]
+            </div>
+
+            <h3>8.1 The Crossover</h3>
+
+            <p>Individual pathfinding scales approximately as:</p>
+
+            \[
+            T_{A^*}(U)\approx U\cdot T_{\text{path}}.
+            \]
+
+            <p>A shared field behaves differently:</p>
+
+            \[
+            T_{\text{flow}}(U)
+            \approx
+            T_{\text{build}}(V)
+            +
+            U\cdot T_{\text{sample}}.
+            \]
+
+            <p>Each unit sample is constant-time:</p>
+
+            \[
+            T_{\text{sample}}=O(1).
+            \]
+
+            <p>So for practical large groups, the dominant cost approaches:</p>
+
+            <div class="result">
+                \[
+                \boxed{
+                T_{\text{flow}}(U)
+                \approx
+                T_{\text{build}}(V)
+                }
+                \]
+            </div>
+
+            <p>
+                The build is not mathematically constant: it depends on map size, reachable
+                topology, navigation radius, and goal region. The important result is that it is
+                largely independent of how many units consume it.
+            </p>
+
+            <blockquote>
+                The expensive navigation work now belongs to the group, not to each unit.
+            </blockquote>
+
+            <h3>8.2 From Small Skirmishes to Large Groups</h3>
+
+            <figure class="figure-placeholder">
+                <div>TODO — 24 vs 25 units battle footage</div>
+                <figcaption>
+                    Smaller battle combining formation, Local Steering, destination allocation,
+                    and combat positioning.
+                </figcaption>
+            </figure>
+
+            <figure class="figure-placeholder">
+                <div>TODO — Mixed infantry / Mecha group footage</div>
+                <figcaption>
+                    Heterogeneous navigation radii consuming the same group-navigation policy.
+                </figcaption>
+            </figure>
+
+            <figure class="figure-placeholder">
+                <div>TODO — 50 vs 50 battle footage</div>
+                <figcaption>
+                    Large combat scenario used as a practical stress test for movement,
+                    navigation, and tactical deployment.
+                </figcaption>
+            </figure>
+
+            <p>
+                At this point, groups of 50, 70, or more units can consume one global
+                navigation solution instead of producing the same number of independent paths.
+            </p>
+
+            <p>
+                Shared Navigation does not make animation, combat awareness, Local Steering,
+                depenetration, rendering, or unit state updates free. It solves one specific
+                scaling problem:
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{\text{global route computation}}
+                \]
+            </div>
+        </section>
+
+        <!-- ============================================================= -->
+        <section id="conclusion">
+            <h2>9. Conclusion</h2>
+
+            <p>
+                The navigation system in <em>Protocol Exodus</em> did not jump directly from A*
+                to Flow Fields. It evolved through a sequence of increasingly specific problems:
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{
+                \begin{aligned}
+                \text{Individual A*}
+                &\rightarrow\text{Destination Reservations}\\
+                &\rightarrow\text{Local Steering}\\
+                &\rightarrow\text{Topology-Preserving Formation}\\
+                &\rightarrow\text{MovementGroup}\\
+                &\rightarrow\text{Shared A*}\\
+                &\rightarrow\text{Polyline Sampling}\\
+                &\rightarrow\text{Flow Fields}
+                \end{aligned}
+                }
+                \]
+            </div>
+
+            <p>
+                The shared A* prototype demonstrated that a group did not need \(N\)
+                independent global routes. But sampling a one-dimensional polyline from
+                arbitrary positions gradually required corridor and recovery semantics.
+            </p>
+
+            <p>
+                The Flow Field changed the representation from a shared line to a spatial
+                navigation function:
+            </p>
+
+            <div class="result">
+                \[
+                \boxed{P\rightarrow\mathbf d(P)}
+                \]
+            </div>
+
+            <p>
+                Multi-source Dijkstra supplies the global integration field. A broad rectangular
+                goal region prevents large groups from collapsing onto a single point. Static
+                clearance supports heterogeneous unit radii. Clearance penalties prefer
+                comfortable routes instead of merely legal ones. Smoothed direction sampling
+                reduces grid-boundary jitter. Local Steering handles dynamic traffic. Formation
+                policy handles final topology and combat deployment.
+            </p>
+
+            <p>Most importantly, the scaling relationship changes from approximately:</p>
+
+            <div class="result">
+                \[
+                \boxed{O(UV\log V)}
+                \]
+                <p>for \(U\) independent searches, toward</p>
+                \[
+                \boxed{O(V\log V)+U\cdot O(1)}
+                \]
+                <p>for one shared field and constant-time samples.</p>
+            </div>
+
+            <p>The benchmark captures the crossover:</p>
+
+            \[
+            35\text{ units}:\qquad
+            164.38\text{ ms A*}
+            \quad\text{vs.}\quad
+            181.98\text{ ms Flow Field}
+            \]
+
+            <p>but:</p>
+
+            \[
+            100\text{ units}:\qquad
+            724.96\text{ ms A*}
+            \quad\text{vs.}\quad
+            193.79\text{ ms Flow Field}.
+            \]
+
+            <p>The lesson is not that Flow Fields are universally better than A*.</p>
+
+            <blockquote>
+                Navigation policy should match the scale of the command.
+            </blockquote>
+
+            <p>
+                One unit can own a path. A hundred units moving together should probably own a
+                navigation problem together.
+            </p>
+
+            <div class="note">
+                <strong>Current separation of responsibilities.</strong>
+                Navigation tells the group where to go. Steering lets units negotiate nearby
+                traffic. Clearance tells them where they physically fit. Formation policy
+                decides where they finally stand.
+            </div>
+
+            <p>
+                That separation is now the foundation on which the next iterations of
+                <em>Protocol Exodus</em> can scale.
+            </p>
+        </section>
+
+        <footer class="article-footer">
+            <a href="../devlog.html">← Back to Devlog</a>
+        </footer>
+    </article>
+</main>
+
+<footer class="site-footer">
+    <div class="container footer-row">
+        <span>© 2026 Olivier Trudel</span>
+        <a href="../index.html">Home</a>
+    </div>
+</footer>
+</body>
+</html>
