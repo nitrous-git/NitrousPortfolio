@@ -215,7 +215,7 @@ Vector3 limitedDirection =
 
             <figure>
                 <video preload="auto" autoplay loop muted playsinline>
-                    <source src="../assets/devlog_shared_nav/Avoidance.mp4" type="video/mp4">
+                    <source src="../assets/devlog_shared_nav/Avoidance.mp4#t=15" type="video/mp4">
                 </video>
 
                 <figcaption>
@@ -249,6 +249,29 @@ Vector3 limitedDirection =
             <blockquote>
                 Do expensive spatial work once, then make repeated queries cheap.
             </blockquote>
+
+            <figure>
+                <img
+                        src="../assets/devlog_shared_nav/depen_after.png"
+                        alt="MinHeap Structure"
+                >
+
+                <figcaption>
+                    Depenetration profiling before optimization.
+                </figcaption>
+            </figure>
+
+            <figure>
+                <img
+                        src="../assets/devlog_shared_nav/depen_before.png"
+                        alt="MinHeap Structure"
+                >
+
+                <figcaption>
+                    Depenetration profiling after optimization.
+                </figcaption>
+            </figure>
+
         </section>
 
         <!-- ============================================================= -->
@@ -256,122 +279,92 @@ Vector3 limitedDirection =
             <h2>2. The Scaling Problem: \(N\) Units, \(N\) x A*</h2>
 
             <p>
-                The original architecture was straightforward. A group Move command produced
-                one destination per unit, then each unit requested its own A* path.
+                This is the architectural experiment we are actually measuring.
             </p>
 
-            <div class="result">
-                \[
-                U\text{ units}
-                \rightarrow
-                U\text{ destinations}
-                \rightarrow
-                U\text{ A* searches}
-                \]
-            </div>
-
-            <p>Let \(V\) be grid cells, \(E\) graph edges, and \(U\) moving units.</p>
-
-            <p>With a binary heap, the usual graph-search bound is:</p>
+            <p>In the original architecture:</p>
 
             \[
-            O((V+E)\log V).
+            T(N,D)
+            \approx
+            N \times A^*(D)
             \]
 
             <p>
-                A regular grid has bounded connectivity, so \(E=O(V)\), giving the practical
-                simplification:
+                where \(N\) is the number of units in the group and \(D\) represents the
+                scale of the long-range navigation problem.
+                Both group size \(N\) and travel distance \(D\) therefore amplify the
+                command spike.
+            </p>
+
+            <p>
+                The first shared-navigation architecture moves the expensive long-range
+                search to the group level:
             </p>
 
             \[
-            O(V\log V).
+            T(N,D)
+            \approx
+            A^*_{\text{shared}}(D)
+            +
+            N \times A^*_{\text{assembly}}(\text{short})
+            +
+            N \times Steering
             \]
 
-            <p>Running this independently for an entire group gives:</p>
-
-            <div class="result">
-                \[
-                \boxed{
-                T_{\text{group}}=O(UV\log V)
-                }
-                \]
-            </div>
-
             <p>
-                The critical point was not that A* was necessarily slow. The architecture was
-                asking it to run too many times.
+                The group now pays for the long-range route once, while units can still
+                perform short assembly searches and their usual per-unit steering work.
             </p>
 
-            <h3>2.1 Dynamic Occupancy Made It Worse</h3>
-
             <p>
-                Earlier iterations experimented with traversal reservations. A unit could claim
-                its next grid cell, release its previous cell after advancing, wait when the next
-                cell belonged to another unit, and potentially request a new path when movement
-                could not continue.
-            </p>
-
-            <div class="result">
-                \[
-                \text{conflict}
-                \rightarrow
-                \text{wait}
-                \rightarrow
-                \text{replan}
-                \rightarrow
-                A^*
-                \]
-            </div>
-
-            <p>
-                That policy was gradually relaxed. Dynamic traffic became primarily a local
-                movement problem, while strict reservations remained most useful at the final
-                destination.
-            </p>
-
-            <h3>2.2 The Profiler Changed the Question</h3>
-
-            <p>
-                The pathfinder already used a min-heap and radius-aware traversal. But a
-                25-unit Move still meant roughly 25 synchronous global searches; a 50-unit Move
-                meant roughly 50.
+                The eventual target removes the per-unit assembly pathfinding as well.
+                Units directly sample the shared navigation solution:
             </p>
 
             \[
-            T(U)\propto U.
+            T(N,D)
+            \approx
+            A^*_{\text{shared}}(D)
+            +
+            N \times O(1)\text{ route sampling}
+            +
+            N \times Steering
             \]
 
-            <p>The useful question changed from:</p>
-            <blockquote>How can I make A* faster?</blockquote>
-            <p>to:</p>
-            <blockquote>
-                Why are units executing the same order solving global navigation independently?
-            </blockquote>
 
-            <p>That question led to <code>MovementGroup</code>.</p>
+            <p>
+                A Flow Field backend later changes only the global-navigation side of this
+                model. The architectural decomposition remains the same: one shared global
+                navigation solution, consumed by \(N\) units through cheap local sampling
+                and per-unit steering.
+            </p>
 
-            <figure class="figure-placeholder">
-                <div>TODO — Old N × A* profiler / command log</div>
-                <figcaption>
-                    The bottleneck was synchronous multiplication of global path searches.
-                </figcaption>
-            </figure>
-        </section>
+            \[
+            T(N,G)
+            \approx
+            FlowField(G)
+            +
+            N \times O(1)\text{ direction sampling}
+            +
+            N \times Steering
+            \]
+
+            <p> where \(G\) represents the navigable grid over which the integration field is computed. The global cost is now the construction of a single shared Flow Field, while the per-unit cost remains a constant-time direction sample followed by local steering. </p>
+
+
 
         <!-- ============================================================= -->
         <section id="shared-astar">
             <h2>3. First Attempt: One A* Path, Many Units</h2>
 
-            <p>
-                The first Shared Navigation experiment did not begin with Flow Fields. It made
-                the smallest possible architectural change: build one A* route for the group and
-                let every unit consume it.
-            </p>
+            <p> The first Shared Navigation experiment did not begin with Flow Fields. I first wanted to test a simpler idea: the classic <strong>group-leader-follow</strong> model, where one representative path describes the movement of the group and the individual units follow that shared intent. </p>
 
-            <p>
-                A <code>MovementGroup</code> owns a <code>GroupNavigator</code>, which exposes an
-                abstract navigation solution:
-            </p>
+            <p> In this case, the representative was not an actual unit. Instead, I used a <strong>fictive group leader</strong>: a virtual reference point associated with the movement group. The goal was to avoid coupling the entire group's navigation to the behavior, position, or failure state of one real unit. </p>
+
+            <p> This led to the smallest possible architectural change: build one A* route for the group representative and let every unit consume that same route. </p>
+
+            <p> A <code>MovementGroup</code> owns a <code>GroupNavigator</code>, which exposes an abstract navigation solution: </p>
 
             <pre><code >public interface INavigationSolution
 {
@@ -838,36 +831,6 @@ AddDirectionSample(currentCell, c11, w11, ref blended, ref totalWeight);</code><
                 while local separation still uses the radii of the actual pair of units.
             </p>
 
-            <figure class="figure-placeholder">
-                <div>TODO — Mixed Mecha + infantry navigation footage</div>
-                <figcaption>
-                    Mixed footprints consume one conservative global field while retaining
-                    individual local separation radii.
-                </figcaption>
-            </figure>
-
-            <h3>5.4 Flow Fields Do Not Solve Avoidance</h3>
-
-            <p>
-                A Flow Field solves global static routing. It does not know that another unit
-                happens to be standing half a meter to the side.
-            </p>
-
-            <div class="result">
-                \[
-                \text{Flow Field sample}
-                \rightarrow
-                \text{preferred velocity}
-                \rightarrow
-                \text{Local Steering}
-                \rightarrow
-                \text{static safety}
-                \rightarrow
-                \text{movement}
-                \]
-            </div>
-        </section>
-
         <!-- ============================================================= -->
         <section id="formation-policy">
             <h2>6. Navigation Is Not Formation Policy</h2>
@@ -916,10 +879,6 @@ AddDirectionSample(currentCell, c11, w11, ref blended, ref totalWeight);</code><
 
             <h3>6.2 Why Nearest-Slot Assignment Is Not Enough</h3>
 
-            <pre><code>A B C
-D E F
-G H I</code></pre>
-
             <p>
                 After the group deforms around an obstacle, assigning each unit to the nearest
                 final slot can produce crossings and invert the original spatial order.
@@ -960,6 +919,7 @@ G H I</code></pre>
                 overall ordering of the group.
             </p>
 
+
             <h3>6.3 Final Assignment from Post-Obstacle Topology</h3>
 
             <p>
@@ -979,14 +939,6 @@ G H I</code></pre>
                 \text{final slots}
                 \]
             </div>
-
-            <figure class="figure-placeholder">
-                <div>TODO — Formation deforms around obstacle then settles</div>
-                <figcaption>
-                    The formation is not kept rigid during travel; final slots are resolved when
-                    the group is close enough for exact placement to matter again.
-                </figcaption>
-            </figure>
 
             <h3>6.4 AttackPositionAllocator: Topology Applied to Combat</h3>
 
@@ -1014,27 +966,16 @@ G H I</code></pre>
                 <li>destination reservation only for useful candidates.</li>
             </ol>
 
-            <p>
-                A local search radius of four cells means at most \(9\times9=81\) candidate
-                cells per unit rather than an entire attack ring.
-            </p>
+            <figure>
+                <video preload="auto" autoplay loop muted playsinline>
+                    <source src="../assets/devlog_shared_nav/LargeGroupCombat.mp4" type="video/mp4">
+                </video>
 
-            <pre><code>15 attackers
-Cells inspected:       1215
-Clearance checks:       281
-Reservation attempts:    19
-Allocation:           13.90 ms
+                <figcaption>
+                    Large group acquiring attack positioning in combat.
+                </figcaption>
+            </figure>
 
-25 attackers
-Cells inspected:       2025
-Clearance checks:       422
-Reservation attempts:    56
-Allocation:           15.93 ms</code></pre>
-
-            <blockquote>
-                Do not repeatedly search a large space when topology already tells you where the
-                useful answer probably is.
-            </blockquote>
         </section>
 
         <!-- ============================================================= -->
@@ -1042,118 +983,85 @@ Allocation:           15.93 ms</code></pre>
             <h2>7. Making the Flow Field Actually Fast</h2>
 
             <p>
-                Replacing \(N\) A* searches with one Flow Field improves the scaling model, but a
-                badly implemented field can still be too expensive.
+                With the Flow Field working correctly, the next pass focused on reducing
+                its construction cost without changing the underlying algorithm.
             </p>
 
-            <p>For a \(256\times256\) grid:</p>
+            <p>
+                The first improvement was in <strong>traversability</strong>, where cached
+                static-clearance data could be reused more directly instead of repeatedly
+                reconstructing information already available in the grid.
+            </p>
 
-            <div class="result">
+            <p>
+                The larger gain came from the <strong>Dijkstra integration field</strong>.
+                Rather than changing Dijkstra itself, the implementation became more
+                index-oriented. A 2D grid coordinate can be flattened into a single array index:
+            </p>
+
+            <p>
                 \[
-                256^2=65\,536\text{ cells}
+                index = y \times width + x
                 \]
-            </div>
-
-            <p>A field build contains several large passes:</p>
-
-            <ol>
-                <li>allocation / reset,</li>
-                <li>traversability,</li>
-                <li>Dijkstra integration,</li>
-                <li>direction-field generation.</li>
-            </ol>
-
-            <h3>7.1 Initial Profile</h3>
-
-            <pre><code>Grid             256 x 256
-Cells            65536
-Goals            289
-Expanded          ~45194
-
-Allocation        0.82 ms
-Traversability   51.75 ms
-Integration     232.64 ms
-Direction       150.11 ms
-
-Total           435.54 ms</code></pre>
-
-            <p>
-                The useful information was not only the total. It was how that total was
-                distributed.
-            </p>
-
-            <h3>7.2 Traversability</h3>
-
-            <p>
-                Reusing cached static-clearance data more directly reduced traversability from
-                about \(51.75\) ms to around \(26\) ms:
-            </p>
-
-            <pre><code>Traversability   26.04 ms
-Integration     234.72 ms
-Direction       128.51 ms
-Total           390.36 ms</code></pre>
-
-            <h3>7.3 Dijkstra Integration</h3>
-
-            <p>
-                Integration was now dominant. The next pass focused on representation and queue
-                traffic rather than changing Dijkstra itself.
-            </p>
-
-            <p>A 2D coordinate can be flattened to:</p>
-
-            <div class="result">
-                \[
-                \boxed{i=zW+x}
-                \]
-            </div>
-
-            <p>This provides:</p>
-
-            <ul>
-                <li>contiguous field arrays,</li>
-                <li>cheap <code>settled[index]</code> access,</li>
-                <li>less coordinate conversion,</li>
-                <li>smaller queue payloads,</li>
-                <li>better cache locality.</li>
-            </ul>
-
-            <p>After the integration pass:</p>
-
-            <pre><code>Traversability   25.82 ms
-Integration     130.77 ms
-Direction       128.51 ms
-Total           286.07 ms</code></pre>
-
-            <h3>7.4 Direction-Field Indexing</h3>
-
-            <p>
-                Direction generation had now become as expensive as integration, which was a
-                strong sign that the issue was data access rather than algorithmic complexity.
             </p>
 
             <p>
-                After making the pass more index-oriented, direction generation dropped from
-                roughly \(128-150\) ms to around \(21-22\) ms:
+                This allowed the Flow Field to rely more heavily on contiguous arrays and
+                direct index access, reducing coordinate conversion, queue payload size,
+                and scattered memory access.
             </p>
 
-            <pre><code>[FlowField]
-Grid=256x256
-Cells=65536
-Goals=289
-Expanded=45290
-Enqueued=47632
-Dequeued=47632
-Duplicates=2342
-PeakOpen=512
+            <p>
+                Once integration became cheaper, <strong>direction generation</strong>
+                emerged as the next significant cost. Applying the same index-oriented
+                representation there produced an even larger reduction.
+            </p>
 
-AllocationMs=0.88
-TraversabilityMs=25.88
-IntegrationMs=127.22
-DirectionMs=21.94
+            <table>
+                <thead>
+                <tr>
+                    <th>Phase</th>
+                    <th>Earlier</th>
+                    <th>Now</th>
+                    <th>Improvement</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Traversability</td>
+                    <td>~28 ms</td>
+                    <td>25.88 ms</td>
+                    <td>small</td>
+                </tr>
+                <tr>
+                    <td>Integration</td>
+                    <td>~238 ms</td>
+                    <td>127.22 ms</td>
+                    <td><strong>~47% faster</strong></td>
+                </tr>
+                <tr>
+                    <td>Direction</td>
+                    <td>~160 ms</td>
+                    <td>21.94 ms</td>
+                    <td><strong>~86% faster</strong></td>
+                </tr>
+                <tr>
+                    <td>Total</td>
+                    <td>~438 ms</td>
+                    <td>176.06 ms</td>
+                    <td><strong>~60% faster</strong></td>
+                </tr>
+                </tbody>
+            </table>
 
-TotalMs=176.06</code></pre>
+            <p>
+                The final 256 × 256 build processed 65,536 cells with 289 goal cells,
+                expanding roughly 45,000 cells. The important result was not a new
+                pathfinding algorithm, but a better representation of the same work:
+                contiguous data, cheaper indexing, and less queue and memory overhead
+                reduced total Flow Field construction time from roughly
+                <strong>438 ms to 176 ms</strong>.
+            </p>
 
             <div class="note">
                 The algorithm did not fundamentally change. The representation did. An
@@ -1161,53 +1069,7 @@ TotalMs=176.06</code></pre>
                 conversions, abstractions, or scattered memory access.
             </div>
 
-            <h3>7.5 Queue Diagnostics</h3>
 
-            <pre><code>Cells=65536
-Goals=289
-Expanded=45281
-
-Enqueued=47549
-Dequeued=47549
-Duplicates=2268
-PeakOpen=507</code></pre>
-
-            <p>
-                Despite propagating through more than 45,000 reachable cells, the frontier's
-                peak open-set size remained only a few hundred entries in this representative
-                test.
-            </p>
-
-            <p>A later build measured:</p>
-
-            <pre><code>AllocationMs=0.76
-TraversabilityMs=27.00
-IntegrationMs=127.42
-DirectionMs=21.60
-
-TotalMs=176.93</code></pre>
-
-            <p>Compared with the initial implementation:</p>
-
-            <div class="result">
-                \[
-                435.54\text{ ms}
-                \rightarrow
-                176.93\text{ ms}
-                \]
-                \[
-                \boxed{\approx59\%\text{ reduction}}
-                \]
-            </div>
-
-            <figure class="figure-placeholder">
-                <div>TODO — Flow Field profiling before / after</div>
-                <figcaption>
-                    Traversability, integration, and direction generation were measured
-                    independently so optimization followed actual hotspots.
-                </figcaption>
-            </figure>
-        </section>
 
         <!-- ============================================================= -->
         <section id="payoff">
@@ -1217,14 +1079,6 @@ TotalMs=176.93</code></pre>
                 The goal of Shared Navigation was not merely to make one function faster. It was
                 to change how global-navigation cost scales with group size.
             </p>
-
-            <div class="result">
-                \[
-                N\times A^*
-                \qquad\text{vs.}\qquad
-                1\times\text{shared Flow Field}
-                \]
-            </div>
 
             <p>On the same \(256\times256\) navigation grid, representative tests produced:</p>
 
@@ -1263,68 +1117,19 @@ TotalMs=176.93</code></pre>
                 \]
             </div>
 
-            <h3>8.1 The Crossover</h3>
+            <h3>8.1 From Small Skirmishes to Large Groups</h3>
 
-            <p>Individual pathfinding scales approximately as:</p>
+            <figure>
+                <video preload="auto" autoplay loop muted playsinline>
+                    <source src="../assets/devlog_shared_nav/SmallGroupCombat01.mp4" type="video/mp4">
+                </video>
 
-            \[
-            T_{A^*}(U)\approx U\cdot T_{\text{path}}.
-            \]
-
-            <p>A shared field behaves differently:</p>
-
-            \[
-            T_{\text{flow}}(U)
-            \approx
-            T_{\text{build}}(V)
-            +
-            U\cdot T_{\text{sample}}.
-            \]
-
-            <p>Each unit sample is constant-time:</p>
-
-            \[
-            T_{\text{sample}}=O(1).
-            \]
-
-            <p>So for practical large groups, the dominant cost approaches:</p>
-
-            <div class="result">
-                \[
-                \boxed{
-                T_{\text{flow}}(U)
-                \approx
-                T_{\text{build}}(V)
-                }
-                \]
-            </div>
-
-            <p>
-                The build is not mathematically constant: it depends on map size, reachable
-                topology, navigation radius, and goal region. The important result is that it is
-                largely independent of how many units consume it.
-            </p>
-
-            <blockquote>
-                The expensive navigation work now belongs to the group, not to each unit.
-            </blockquote>
-
-            <h3>8.2 From Small Skirmishes to Large Groups</h3>
-
-            <figure class="figure-placeholder">
-                <div>TODO — 24 vs 25 units battle footage</div>
                 <figcaption>
                     Smaller battle combining formation, Local Steering, destination allocation,
                     and combat positioning.
                 </figcaption>
             </figure>
 
-            <figure class="figure-placeholder">
-                <div>TODO — Mixed infantry / Mecha group footage</div>
-                <figcaption>
-                    Heterogeneous navigation radii consuming the same group-navigation policy.
-                </figcaption>
-            </figure>
 
             <figure class="figure-placeholder">
                 <div>TODO — 50 vs 50 battle footage</div>
@@ -1342,124 +1147,71 @@ TotalMs=176.93</code></pre>
             <p>
                 Shared Navigation does not make animation, combat awareness, Local Steering,
                 depenetration, rendering, or unit state updates free. It solves one specific
-                scaling problem:
+                scaling problem: global route computation.
             </p>
 
-            <div class="result">
-                \[
-                \boxed{\text{global route computation}}
-                \]
-            </div>
         </section>
 
         <!-- ============================================================= -->
-        <section id="conclusion">
-            <h2>9. Conclusion</h2>
+            <section id="conclusion">
+                <h2>9. Conclusion</h2>
 
-            <p>
-                The navigation system in <em>Protocol Exodus</em> did not jump directly from A*
-                to Flow Fields. It evolved through a sequence of increasingly specific problems:
-            </p>
+                <p>
+                    The navigation system in <em>Protocol Exodus</em> evolved incrementally as
+                    larger formations exposed new problems in pathfinding, movement, and final
+                    positioning.
+                </p>
 
-            <div class="result">
-                \[
-                \boxed{
-                \begin{aligned}
-                \text{Individual A*}
-                &\rightarrow\text{Destination Reservations}\\
-                &\rightarrow\text{Local Steering}\\
-                &\rightarrow\text{Topology-Preserving Formation}\\
-                &\rightarrow\text{MovementGroup}\\
-                &\rightarrow\text{Shared A*}\\
-                &\rightarrow\text{Polyline Sampling}\\
-                &\rightarrow\text{Flow Fields}
-                \end{aligned}
-                }
-                \]
-            </div>
+                <div class="result">
+                    <p>
+                        Individual A*
+                        &rarr; Reservations
+                        &rarr; Local Steering
+                        &rarr; Formation Topology
+                    </p>
 
-            <p>
-                The shared A* prototype demonstrated that a group did not need \(N\)
-                independent global routes. But sampling a one-dimensional polyline from
-                arbitrary positions gradually required corridor and recovery semantics.
-            </p>
+                    <p>
+                        MovementGroup
+                        &rarr; Shared A*
+                        &rarr; Flow Fields
+                    </p>
+                </div>
 
-            <p>
-                The Flow Field changed the representation from a shared line to a spatial
-                navigation function:
-            </p>
+                <p>
+                    The main architectural shift was moving global navigation from a
+                    per-unit problem to a <strong>group-level navigation problem</strong>.
+                    Individual units still handle local movement, avoidance, and formation
+                    positioning, but they no longer need to independently solve the same
+                    large-scale route.
+                </p>
 
-            <div class="result">
-                \[
-                \boxed{P\rightarrow\mathbf d(P)}
-                \]
-            </div>
+                <blockquote>
+                    Navigation policy should match the scale of the command.
+                </blockquote>
 
-            <p>
-                Multi-source Dijkstra supplies the global integration field. A broad rectangular
-                goal region prevents large groups from collapsing onto a single point. Static
-                clearance supports heterogeneous unit radii. Clearance penalties prefer
-                comfortable routes instead of merely legal ones. Smoothed direction sampling
-                reduces grid-boundary jitter. Local Steering handles dynamic traffic. Formation
-                policy handles final topology and combat deployment.
-            </p>
+                <p>
+                    A single unit can own a path. A large formation can instead share a
+                    navigation solution and consume it locally.
+                </p>
 
-            <p>Most importantly, the scaling relationship changes from approximately:</p>
+                <p>
+                    Flow Fields are therefore not the end of the navigation work, but a stronger
+                    foundation for the next scaling pass. Larger maps could introduce
+                    <strong>hierarchical Flow Fields</strong>, sector or portal graphs, and
+                    higher-level route planning so that full-field generation is restricted to
+                    the parts of the map that actually matter to a movement command.
+                </p>
 
-            <div class="result">
-                \[
-                \boxed{O(UV\log V)}
-                \]
-                <p>for \(U\) independent searches, toward</p>
-                \[
-                \boxed{O(V\log V)+U\cdot O(1)}
-                \]
-                <p>for one shared field and constant-time samples.</p>
-            </div>
+                <p>
+                    That is the direction of the next experiment: keep the shared-navigation
+                    architecture, but make the global solution itself increasingly hierarchical
+                    as both map size and unit count grow.
+                </p>
 
-            <p>The benchmark captures the crossover:</p>
+            </section>
 
-            \[
-            35\text{ units}:\qquad
-            164.38\text{ ms A*}
-            \quad\text{vs.}\quad
-            181.98\text{ ms Flow Field}
-            \]
 
-            <p>but:</p>
-
-            \[
-            100\text{ units}:\qquad
-            724.96\text{ ms A*}
-            \quad\text{vs.}\quad
-            193.79\text{ ms Flow Field}.
-            \]
-
-            <p>The lesson is not that Flow Fields are universally better than A*.</p>
-
-            <blockquote>
-                Navigation policy should match the scale of the command.
-            </blockquote>
-
-            <p>
-                One unit can own a path. A hundred units moving together should probably own a
-                navigation problem together.
-            </p>
-
-            <div class="note">
-                <strong>Current separation of responsibilities.</strong>
-                Navigation tells the group where to go. Steering lets units negotiate nearby
-                traffic. Clearance tells them where they physically fit. Formation policy
-                decides where they finally stand.
-            </div>
-
-            <p>
-                That separation is now the foundation on which the next iterations of
-                <em>Protocol Exodus</em> can scale.
-            </p>
-        </section>
-
-        <footer class="article-footer">
+            <footer class="article-footer">
             <a href="../devlog.html">← Back to Devlog</a>
         </footer>
     </article>
