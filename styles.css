@@ -320,10 +320,15 @@ h3 { margin-bottom: 6px; font-size: 1.05rem; }
 
 /*---------------Reel Index page---------------- */
 
+/*.reel-section {*/
+/*    width: min(1120px, calc(100vw - 40px));*/
+/*    margin: 0 0 84px 50%;*/
+/*    transform: translateX(-50%);*/
+/*}*/
+
 .reel-section {
-    width: min(1120px, calc(100vw - 40px));
-    margin: 0 0 84px 50%;
-    transform: translateX(-50%);
+    width: 100%;
+    margin-bottom: 84px;
 }
 
 .reel-frame {
@@ -352,12 +357,13 @@ h3 { margin-bottom: 6px; font-size: 1.05rem; }
 
 @media (max-width: 760px) {
     .reel-section {
-        width: 100%;
+        width: 100vw;
+        margin-left: 50%;
         margin-bottom: 56px;
+        transform: translateX(-50%);
     }
 
     .reel-meta {
-        flex-direction: column;
-        gap: 2px;
+        padding: 0 20px;
     }
 }
