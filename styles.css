@@ -367,3 +367,465 @@ h3 { margin-bottom: 6px; font-size: 1.05rem; }
         padding: 0 20px;
     }
 }
+
+
+/* =========================================================
+   PORTFOLIO
+   ========================================================= */
+
+.portfolio-intro {
+    padding-bottom: 36px;
+}
+
+.portfolio-jump-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    margin-top: 28px;
+}
+
+.portfolio-jump-nav a {
+    color: var(--muted);
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+}
+
+.portfolio-jump-nav a:hover {
+    color: var(--text);
+}
+
+
+.portfolio-section {
+    padding-top: 70px;
+    padding-bottom: 70px;
+}
+
+.portfolio-section + .portfolio-section {
+    border-top: 1px solid var(--line);
+}
+
+.portfolio-section-intro {
+    max-width: 680px;
+    color: var(--muted);
+    margin: 0 0 32px;
+}
+
+
+.portfolio-feature-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.portfolio-feature-head h2 {
+    margin-bottom: 0;
+}
+
+.portfolio-large-copy {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--text);
+}
+
+
+
+/* =========================================================
+   NITROUS STUDIO
+   ========================================================= */
+
+.studio-layout {
+    display: grid;
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: 48px;
+    align-items: center;
+}
+
+.studio-copy p {
+    max-width: 560px;
+}
+
+.portfolio-links {
+    margin-top: 28px;
+}
+
+
+.studio-collage {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.studio-collage a {
+    overflow: hidden;
+    background: #181818;
+}
+
+.studio-collage-main {
+    grid-column: 1 / -1;
+}
+
+.studio-collage img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    aspect-ratio: 16 / 9;
+
+    transition:
+            transform 0.35s ease,
+            opacity 0.35s ease;
+}
+
+.studio-collage a:hover img {
+    transform: scale(1.025);
+    opacity: 0.9;
+}
+
+
+
+/* =========================================================
+   GAME SHOWCASE
+   ========================================================= */
+
+.portfolio-showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+
+.portfolio-showcase {
+    background: #151515;
+    overflow: hidden;
+    border: 1px solid var(--line);
+}
+
+.portfolio-showcase > a {
+    display: block;
+}
+
+.portfolio-showcase img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+
+    transition:
+            transform 0.35s ease,
+            opacity 0.35s ease;
+}
+
+.portfolio-showcase:hover img {
+    transform: scale(1.02);
+    opacity: 0.9;
+}
+
+.portfolio-showcase-info {
+    padding: 20px;
+}
+
+.portfolio-showcase-info h3 {
+    margin: 5px 0 8px;
+}
+
+.portfolio-showcase-info p {
+    color: var(--muted);
+    margin: 0;
+    font-size: 0.94rem;
+}
+
+
+
+.portfolio-callout {
+    margin-top: 34px;
+    padding: 24px 0;
+
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+}
+
+.portfolio-callout h3 {
+    margin: 4px 0;
+}
+
+.portfolio-callout p {
+    color: var(--muted);
+    max-width: 650px;
+    margin-bottom: 0;
+}
+
+
+
+/* =========================================================
+   WIDE TECHNICAL FEATURE
+   ========================================================= */
+
+.portfolio-wide-feature {
+    display: grid;
+    grid-template-columns: 1.4fr 0.8fr;
+    gap: 36px;
+    align-items: center;
+
+    margin-bottom: 44px;
+}
+
+.portfolio-wide-media {
+    display: block;
+    overflow: hidden;
+}
+
+.portfolio-wide-media img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+
+    transition:
+            transform 0.35s ease,
+            opacity 0.35s ease;
+}
+
+.portfolio-wide-media:hover img {
+    transform: scale(1.02);
+    opacity: 0.9;
+}
+
+.portfolio-wide-copy h3 {
+    font-size: 1.65rem;
+    margin: 8px 0 12px;
+}
+
+.portfolio-wide-copy p {
+    color: var(--muted);
+}
+
+
+.portfolio-media-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+.portfolio-media-pair h3 {
+    margin: 7px 0 6px;
+}
+
+.portfolio-media-pair p {
+    color: var(--muted);
+}
+
+
+.portfolio-image-link {
+    display: block;
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+
+.portfolio-image-link img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+
+    transition:
+            transform 0.35s ease,
+            opacity 0.35s ease;
+}
+
+.portfolio-image-link:hover img {
+    transform: scale(1.025);
+    opacity: 0.9;
+}
+
+
+
+/* =========================================================
+   VIDEO
+   ========================================================= */
+
+.video-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+
+.video-card {
+    border: 1px solid var(--line);
+    background: #151515;
+}
+
+.video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+
+    overflow: hidden;
+    background: #000;
+}
+
+.video-frame iframe {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+
+    border: 0;
+}
+
+
+.video-card-copy {
+    padding: 22px;
+}
+
+.video-card-copy h3 {
+    margin: 7px 0 10px;
+}
+
+.video-card-copy p {
+    color: var(--muted);
+}
+
+
+
+/* =========================================================
+   MUSIC
+   ========================================================= */
+
+.music-feature {
+    display: grid;
+    grid-template-columns: 1.3fr 0.7fr;
+    gap: 36px;
+    align-items: center;
+
+    margin-bottom: 48px;
+}
+
+.music-feature-copy h3 {
+    font-size: 1.6rem;
+    margin: 7px 0 10px;
+}
+
+.music-feature-copy p {
+    color: var(--muted);
+}
+
+
+.music-release-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 36px;
+}
+
+
+.music-release h3 {
+    margin: 7px 0 6px;
+}
+
+.music-release p {
+    color: var(--muted);
+}
+
+
+.music-cover {
+    display: block;
+    position: relative;
+
+    margin-bottom: 18px;
+    overflow: hidden;
+
+    background: #181818;
+}
+
+.music-cover img {
+    display: block;
+
+    width: 100%;
+    aspect-ratio: 1 / 1;
+
+    object-fit: cover;
+
+    transition:
+            transform 0.35s ease,
+            opacity 0.35s ease;
+}
+
+.music-cover:hover img {
+    transform: scale(1.025);
+    opacity: 0.65;
+}
+
+
+.music-cover-action {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    font-weight: bold;
+
+    opacity: 0;
+
+    transition: opacity 0.25s ease;
+}
+
+.music-cover:hover .music-cover-action {
+    opacity: 1;
+}
+
+
+
+/* =========================================================
+   CLOSING
+   ========================================================= */
+
+.portfolio-closing {
+    max-width: 750px;
+}
+
+.portfolio-closing p {
+    color: var(--muted);
+}
+
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+    .studio-layout,
+    .portfolio-wide-feature,
+    .music-feature {
+        grid-template-columns: 1fr;
+    }
+
+    .portfolio-showcase-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .portfolio-media-pair,
+    .video-grid,
+    .music-release-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .portfolio-callout,
+    .portfolio-feature-head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+}
