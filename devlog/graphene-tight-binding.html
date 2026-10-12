@@ -1,270 +1,349 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="From the graphene lattice to the Dirac equation: nearest-neighbor tight-binding derivation, an interactive Three.js lattice, and reproducible Python simulation.">
-  <title>Graphene — from the lattice to Dirac cones · Olivier Trudel</title>
-  <link rel="stylesheet" href="../styles.css">
-  <link rel="stylesheet" href="devlog-article.css">
-  <link rel="stylesheet" href="graphene/graphene.css">
-  <script>window.MathJax={loader:{load:['[tex]/boldsymbol']},tex:{packages:{'[+]':['boldsymbol']},inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{enableMenu:false,skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
-  <script id="MathJax-script" defer src="graphene/vendor/mathjax/tex-svg.js"></script>
-  <script type="importmap">{"imports":{"three":"./graphene/vendor/three/three.module.js","three/addons/":"./graphene/vendor/three/"}}</script>
-  <script defer src="graphene/page.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="From the graphene lattice to the Dirac equation: nearest-neighbor tight-binding derivation, an interactive Three.js lattice, and reproducible Python simulation.">
+    <title>Graphene — from the lattice to Dirac cones · Olivier Trudel</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="devlog-article.css">
+    <link rel="stylesheet" href="graphene/graphene.css">
+    <script>
+        window.MathJax = {
+            loader: { load: ['[tex]/boldsymbol'] },
+            tex: {
+                packages: { '[+]': ['boldsymbol'] },
+                inlineMath: [['\\(', '\\)']],
+                displayMath: [['\\[', '\\]']]
+            },
+            options: {
+                enableMenu: false,
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+            }
+        };
+    </script>
+    <script defer
+            src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js">
+    </script>
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+          }
+        }
+    </script>
+
+    <script defer src="graphene/page.js"></script>
+
 </head>
 <body class="graphene-page">
 <a class="skip-link" href="#article">Skip to content</a>
-<header class="site-header"><div class="container nav">
-  <a class="brand" href="../index.html">Olivier Trudel</a>
-  <nav class="nav-links" aria-label="Main navigation"><a href="../projects.html">Projects</a><a href="../devlog.html">Devlog</a><a href="../about.html">About</a></nav>
-</div></header>
-<main class="container" id="article">
-<article class="devlog-article graphene-article">
-<header class="article-header">
-  <a class="back-link" href="../devlog.html">← Back to Devlog</a>
-  <p class="meta">Physics & simulation · Quantum mechanics · Three.js / Python</p>
-  <h1>Graphene.<br><span>From the lattice to Dirac cones.</span></h1>
-  <p class="subtitle">A complete derivation of the nearest-neighbor tight-binding model.</p>
-  <p class="lead">Two atoms per unit cell. Three hopping paths. Interference that closes the gap. The graphene spectrum emerges from this geometry, without assuming a Dirac equation at the outset.</p>
-  <p>This notebook connects lattice geometry, fermionic operators, the discrete Schrödinger equation, and band calculations. Python results accompany each representation, while a Three.js explorer lets you manipulate the lattice and both energy surfaces.</p>
-  <div class="quick-stats" aria-label="Reference parameters">
-    <div><strong>2.46 <small>Å</small></strong><span>Triangular lattice constant a</span></div>
-    <div><strong>2.70 <small>eV</small></strong><span>Hopping amplitude t</span></div>
-    <div><strong>0 <small>eV</small></strong><span>Gap at K and K′</span></div>
-    <div><strong>8.74 × 10⁵ <small>m/s</small></strong><span>Fermi velocity</span></div>
-  </div>
+
+<header class="site-header">
+    <div class="container nav">
+        <a class="brand" href="../index.html">Olivier Trudel</a>
+        <nav class="nav-links" aria-label="Main navigation">
+            <a href="../projects.html">Projects</a>
+            <a href="../devlog.html">Devlog</a>
+            <a href="../about.html">About</a>
+        </nav>
+    </div>
 </header>
 
-<section id="explorer" aria-labelledby="explorer-title">
-  <div class="section-kicker">01 / Explore</div>
-  <h2 id="explorer-title">Geometry before equations</h2>
-  <p>The colors distinguish sublattices A and B: both sites are still identical carbon atoms. Each unit cell contains one A site and one B site. The white arrows indicate the three neighbors of the A site at the origin.</p>
-  <div class="explorer-panel">
-    <div class="viewer-toolbar" role="group" aria-label="Representation">
-      <button type="button" class="view-button active" data-view="lattice" aria-pressed="true">Real-space lattice</button>
-      <button type="button" class="view-button" data-view="bands" aria-pressed="false">3D bands</button>
-      <span class="viewer-tag" id="viewer-tag">Real space · coordinates in units of a</span>
-    </div>
-    <div class="scene" id="graphene-scene" role="img" aria-label="Interactive representation of the graphene lattice. Rotate and zoom using a mouse or touch gestures.">
-      <img class="scene-fallback" src="../assets/devlog_graphene/lattice.png" alt="Graphene lattice with A and B sites, the primitive cell, and nearest-neighbor vectors." width="1252" height="883">
-      <div class="scene-status" id="scene-status" role="status">Loading the explorer…</div>
-    </div>
-    <div class="viewer-controls">
-      <div id="lattice-controls">
-        <label>Extent <input id="extent" type="range" min="2" max="8" value="4"><output id="extent-value">9 × 9 unit cells</output></label>
-        <label><input id="show-vectors" type="checkbox" checked> Unit cell and neighbors</label>
-        <label><input id="show-orbitals" type="checkbox"> Schematic pz orbitals</label>
-      </div>
-      <div id="bands-controls" hidden>
-        <label>Hopping t <input id="hopping" type="range" min="1" max="4" value="2.7" step="0.05"><output id="hopping-value">2.70 eV</output></label>
-        <span id="band-scale">Γ: ±8.10 eV · M: ±2.70 eV</span>
-      </div>
-      <div class="camera-controls"><button id="top-view" type="button">Top view</button><button id="reset-view" type="button">Reset</button></div>
-    </div>
-    <p class="viewer-caption" id="viewer-caption"><span class="dot a-dot"></span> A <span class="dot b-dot"></span> B <span class="dot cell-dot"></span> Primitive cell · Drag: rotate · Scroll / pinch: zoom · Right-click / two fingers: pan</p>
-  </div>
-  <noscript><p class="note">The explorer requires JavaScript. The derivation and all Python figures remain available below.</p></noscript>
-  <div class="note">The lattice is strictly two-dimensional; only the camera is in 3D. The pz lobes are visual guides, not an electron-density simulation. The “3D bands” view represents energy as height in reciprocal space.</div>
-</section>
+<main class="container" id="article">
+    <article class="devlog-article graphene-article">
 
-<nav class="toc" aria-label="Contents"><strong>From atoms to the spectrum</strong><ol>
-<li><a href="#geometry">Convention, unit cell, and nearest neighbors</a></li>
-<li><a href="#reciprocal">Reciprocal lattice and Brillouin zone</a></li>
-<li><a href="#basis">Orbital basis and Schrödinger projection</a></li>
-<li><a href="#operators">Hamiltonian in operator form</a></li>
-<li><a href="#schrodinger">Discrete equations and the Bloch ansatz</a></li>
-<li><a href="#fourier">Fourier transform and Bloch gauges</a></li>
-<li><a href="#spectrum">Diagonalization and exact bands</a></li>
-<li><a href="#spinors">Spinors, pseudospin, and symmetries</a></li>
-<li><a href="#dirac">Expansion around K and K′</a></li>
-<li><a href="#observables">Velocity, filling, and density of states</a></li>
-<li><a href="#simulation">Python numerical results</a></li>
-<li><a href="#code">Complete code and reproduction</a></li>
-<li><a href="#limits">Model scope and references</a></li>
-</ol></nav>
+        <header class="article-header">
+            <a class="back-link" href="../devlog.html">← Back to Devlog</a>
+            <p class="meta">Physics &amp; simulation · Quantum mechanics · Three.js / Python</p>
+            <h1>Graphene.<br><span>From the lattice to Dirac cones.</span></h1>
+            <p class="subtitle">A complete derivation of the nearest-neighbor tight-binding model.</p>
+            <p class="lead">Two atoms per unit cell. Three hopping paths. Interference that closes the gap. The graphene spectrum emerges from this geometry, without assuming a Dirac equation at the outset.</p>
+            <p>This notebook connects lattice geometry, fermionic operators, the discrete Schrödinger equation, and band calculations. Python results accompany each representation, while a Three.js explorer lets you manipulate the lattice and both energy surfaces.</p>
+            <div class="quick-stats" aria-label="Reference parameters">
+                <div><strong>2.46 <small>Å</small></strong><span>Triangular lattice constant a</span></div>
+                <div><strong>2.70 <small>eV</small></strong><span>Hopping amplitude t</span></div>
+                <div><strong>0 <small>eV</small></strong><span>Gap at K and K′</span></div>
+                <div><strong>8.74 × 10⁵ <small>m/s</small></strong><span>Fermi velocity</span></div>
+            </div>
+        </header>
 
-<section id="geometry">
-<div class="section-kicker">02 / Geometry</div><h2>Convention, unit cell, and nearest neighbors</h2>
-<p>We denote the triangular Bravais lattice constant by \(a\), and the distance between neighboring carbon atoms by \(d\). This distinction is maintained throughout the equations, figures, and code.</p>
-<div class="equation">\[a=2.46\;\text{Å},\qquad d=\frac{a}{\sqrt3}\simeq1.4203\;\text{Å}.\]</div>
-<p>The honeycomb lattice is not itself a Bravais lattice: it consists of a triangular lattice with a two-site basis.</p>
-\[\mathbf a_1=a(1,0),\qquad \mathbf a_2=a\left(\frac12,\frac{\sqrt3}{2}\right),\qquad \mathbf R=n\mathbf a_1+m\mathbf a_2.\]
-\[\boldsymbol\tau_A=(0,0),\qquad \boldsymbol\tau_B=\left(0,\frac{a}{\sqrt3}\right),\qquad \mathbf r_{R\alpha}=\mathbf R+\boldsymbol\tau_\alpha.\]
-<p>From the A site in unit cell \(\mathbf R\), the neighboring B sites belong to cells \(\mathbf R\), \(\mathbf R-\mathbf a_2\), and \(\mathbf R+\mathbf a_1-\mathbf a_2\). Their bond vectors are therefore:</p>
-\[\begin{aligned}\boldsymbol\delta_1&=\boldsymbol\tau_B=\left(0,\frac{a}{\sqrt3}\right),\\
-\boldsymbol\delta_2&=\boldsymbol\tau_B-\mathbf a_2=\left(-\frac a2,-\frac{a}{2\sqrt3}\right),\\
-\boldsymbol\delta_3&=\boldsymbol\tau_B+\mathbf a_1-\mathbf a_2=\left(\frac a2,-\frac{a}{2\sqrt3}\right).\end{aligned}\]
-\[|\boldsymbol\delta_j|=d,\qquad \sum_{j=1}^3\boldsymbol\delta_j=0,\qquad A_c=|\mathbf a_1\times\mathbf a_2|=\frac{\sqrt3}{2}a^2.\]
-<p>The cell shown is the parallelogram spanned by \(\mathbf a_1,\mathbf a_2\). The B basis site lies inside this cell; the three bonds starting from A are not all contained within the same cell.</p>
-<figure><img loading="lazy" src="../assets/devlog_graphene/lattice.png" alt="Real-space lattice: sublattice A in cyan, B in orange, the cell in green, and three delta vectors around the origin." width="1252" height="883"><figcaption>Figure generated with Python. The axes are in Å and use the same orientation as the explorer.</figcaption></figure>
-</section>
+        <section id="explorer" aria-labelledby="explorer-title">
+            <div class="section-kicker">01 / Explore</div>
+            <h2 id="explorer-title">Geometry before equations</h2>
+            <p>The colors distinguish sublattices A and B: both sites are still identical carbon atoms. Each unit cell contains one A site and one B site. The white arrows indicate the three neighbors of the A site at the origin.</p>
+            <div class="explorer-panel">
+                <div class="viewer-toolbar" role="group" aria-label="Representation">
+                    <button type="button" class="view-button active" data-view="lattice" aria-pressed="true">Real-space lattice</button>
+                    <button type="button" class="view-button" data-view="bands" aria-pressed="false">3D bands</button>
+                    <span class="viewer-tag" id="viewer-tag">Real space · coordinates in units of a</span>
+                </div>
+                <div class="scene" id="graphene-scene" role="img" aria-label="Interactive representation of the graphene lattice. Rotate and zoom using a mouse or touch gestures.">
+                    <img class="scene-fallback" src="../assets/devlog_graphene/lattice.png" alt="Graphene lattice with A and B sites, the primitive cell, and nearest-neighbor vectors." width="1252" height="883">
+                    <div class="scene-status" id="scene-status" role="status">Loading the explorer…</div>
+                </div>
+                <div class="viewer-controls">
+                    <div id="lattice-controls">
+                        <label>Extent <input id="extent" type="range" min="2" max="8" value="4"><output id="extent-value">9 × 9 unit cells</output></label>
+                        <label><input id="show-vectors" type="checkbox" checked> Unit cell and neighbors</label>
+                        <label><input id="show-orbitals" type="checkbox"> Schematic pz orbitals</label>
+                    </div>
+                    <div id="bands-controls" hidden>
+                        <label>Hopping t <input id="hopping" type="range" min="1" max="4" value="2.7" step="0.05"><output id="hopping-value">2.70 eV</output></label>
+                        <span id="band-scale">Γ: ±8.10 eV · M: ±2.70 eV</span>
+                    </div>
+                    <div class="camera-controls">
+                        <button id="top-view" type="button">Top view</button>
+                        <button id="reset-view" type="button">Reset</button>
+                    </div>
+                </div>
+                <p class="viewer-caption" id="viewer-caption"><span class="dot a-dot"></span> A <span class="dot b-dot"></span> B <span class="dot cell-dot"></span> Primitive cell · Drag: rotate · Scroll / pinch: zoom · Right-click / two fingers: pan</p>
+            </div>
+            <noscript><p class="note">The explorer requires JavaScript. The derivation and all Python figures remain available below.</p></noscript>
+            <div class="note">The lattice is strictly two-dimensional; only the camera is in 3D. The pz lobes are visual guides, not an electron-density simulation. The “3D bands” view represents energy as height in reciprocal space.</div>
+        </section>
 
-<section id="reciprocal">
-<div class="section-kicker">03 / Reciprocal space</div><h2>The Brillouin zone</h2>
-<p>The reciprocal vectors are defined by \(\mathbf a_i\cdot\mathbf b_j=2\pi\delta_{ij}\). Solving the four relations gives:</p>
-\[\mathbf b_1=\frac{2\pi}{a}\left(1,-\frac1{\sqrt3}\right),\qquad \mathbf b_2=\frac{2\pi}{a}\left(0,\frac2{\sqrt3}\right).\]
-<p>The first Brillouin zone is the Wigner–Seitz cell of the reciprocal lattice. Its six vertices are:</p>
-\[\left(\pm\frac{4\pi}{3a},0\right),\qquad \left(\pm\frac{2\pi}{3a},\pm\frac{2\pi}{\sqrt3a}\right).\]
-<p>The signs in the second pair are independent. The six vertices form two valley classes modulo a reciprocal lattice vector. For the band diagram, we choose:</p>
-\[\Gamma=(0,0),\quad K=\left(\frac{4\pi}{3a},0\right),\quad K'=-K,\quad M=\frac{\mathbf b_1+\mathbf b_2}{2}=\left(\frac\pi a,\frac\pi{\sqrt3a}\right).\]
-\[A_{\mathrm{BZ}}=|\mathbf b_1\times\mathbf b_2|=\frac{(2\pi)^2}{A_c}=\frac{8\pi^2}{\sqrt3a^2}.\]
-<p>The path \(\Gamma\to K\to M\to\Gamma\) passes through the center, a vertex, and the midpoint of the adjacent edge. The horizontal coordinate in the diagram is the cumulative length along this path, rather than \(k_x\) alone.</p>
-</section>
+        <nav class="toc" aria-label="Contents">
+            <strong>From atoms to the spectrum</strong>
+            <ol>
+                <li><a href="#geometry">Convention, unit cell, and nearest neighbors</a></li>
+                <li><a href="#reciprocal">Reciprocal lattice and Brillouin zone</a></li>
+                <li><a href="#basis">Orbital basis and Schrödinger projection</a></li>
+                <li><a href="#operators">Hamiltonian in operator form</a></li>
+                <li><a href="#schrodinger">Discrete equations and the Bloch ansatz</a></li>
+                <li><a href="#fourier">Fourier transform and Bloch gauges</a></li>
+                <li><a href="#spectrum">Diagonalization and exact bands</a></li>
+                <li><a href="#spinors">Spinors, pseudospin, and symmetries</a></li>
+                <li><a href="#dirac">Expansion around K and K′</a></li>
+                <li><a href="#observables">Velocity, filling, and density of states</a></li>
+                <li><a href="#simulation">Python numerical results</a></li>
+                <li><a href="#code">Complete code and reproduction</a></li>
+                <li><a href="#limits">Model scope and references</a></li>
+            </ol>
+        </nav>
 
-<section id="basis">
-<div class="section-kicker">04 / Approximation</div><h2>Projecting the Schrödinger equation</h2>
-<p>In planar graphene, the \(\sigma\) bonds arise from sp² hybridization. One \(p_z\) orbital per carbon provides the \(\pi\) and \(\pi^*\) bands relevant near the Fermi level. We retain only this orbital basis, with an independent spin degree of freedom.</p>
-\[\hat h=\frac{\hat{\mathbf p}^{\,2}}{2m_e}+V_{\mathrm{crystal}}(\mathbf r),\qquad \hat h|\psi\rangle=E|\psi\rangle.\]
-\[|\psi\rangle=\sum_{R,\alpha\in\{A,B\}}c_{R\alpha}|R,\alpha\rangle.\]
-<p>Left-multiplying by \(\langle R,\alpha|\) generally produces a generalized eigenvalue problem:</p>
-\[\sum_{R'\beta}h_{R\alpha,R'\beta}c_{R'\beta}=E\sum_{R'\beta}S_{R\alpha,R'\beta}c_{R'\beta},\]
-\[h_{ij}=\langle i|\hat h|j\rangle,\qquad S_{ij}=\langle i|j\rangle.\]
-<p>The <em>orthogonal</em> tight-binding model approximates \(S_{ij}=\delta_{ij}\). It retains an identical on-site energy \(\varepsilon_0\) on A and B, and a single intersite matrix element between nearest neighbors:</p>
-\[h_{ii}=\varepsilon_0,\qquad h_{ij}=-t\;\;(i,j\text{ nearest neighbors}),\qquad h_{ij}=0\text{ otherwise},\quad t>0.\]
-<p>The sign \(-t\) is a hopping convention; \(t\) is an effective parameter, not a value calculated here from atomic orbitals. We then set \(\varepsilon_0=0\) to measure energies relative to the band-touching point.</p>
-<div class="note">Assumptions: a perfect, infinite monolayer; uniform hopping; no electron interactions, external fields, spin–orbit coupling, or on-site energy difference between A and B. Spin doubles the degeneracy without changing the 2 × 2 orbital block.</div>
-</section>
+        <section id="geometry">
+            <div class="section-kicker">02 / Geometry</div>
+            <h2>Convention, unit cell, and nearest neighbors</h2>
+            <p>We denote the triangular Bravais lattice constant by \(a\), and the distance between neighboring carbon atoms by \(d\). This distinction is maintained throughout the equations, figures, and code.</p>
+            <div class="equation">\[a=2.46\;\text{Å},\qquad d=\frac{a}{\sqrt3}\simeq1.4203\;\text{Å}.\]</div>
+            <p>The honeycomb lattice is not itself a Bravais lattice: it consists of a triangular lattice with a two-site basis.</p>
+            \[\mathbf a_1=a(1,0),\qquad \mathbf a_2=a\left(\frac12,\frac{\sqrt3}{2}\right),\qquad \mathbf R=n\mathbf a_1+m\mathbf a_2.\]
+            \[\boldsymbol\tau_A=(0,0),\qquad \boldsymbol\tau_B=\left(0,\frac{a}{\sqrt3}\right),\qquad \mathbf r_{R\alpha}=\mathbf R+\boldsymbol\tau_\alpha.\]
+            <p>From the A site in unit cell \(\mathbf R\), the neighboring B sites belong to cells \(\mathbf R\), \(\mathbf R-\mathbf a_2\), and \(\mathbf R+\mathbf a_1-\mathbf a_2\). Their bond vectors are therefore:</p>
+            \[\begin{aligned}\boldsymbol\delta_1&=\boldsymbol\tau_B=\left(0,\frac{a}{\sqrt3}\right),\\
+            \boldsymbol\delta_2&=\boldsymbol\tau_B-\mathbf a_2=\left(-\frac a2,-\frac{a}{2\sqrt3}\right),\\
+            \boldsymbol\delta_3&=\boldsymbol\tau_B+\mathbf a_1-\mathbf a_2=\left(\frac a2,-\frac{a}{2\sqrt3}\right).\end{aligned}\]
+            \[|\boldsymbol\delta_j|=d,\qquad \sum_{j=1}^3\boldsymbol\delta_j=0,\qquad A_c=|\mathbf a_1\times\mathbf a_2|=\frac{\sqrt3}{2}a^2.\]
+            <p>The cell shown is the parallelogram spanned by \(\mathbf a_1,\mathbf a_2\). The B basis site lies inside this cell; the three bonds starting from A are not all contained within the same cell.</p>
+            <figure>
+                <img loading="lazy" src="../assets/devlog_graphene/lattice.png" alt="Real-space lattice: sublattice A in cyan, B in orange, the cell in green, and three delta vectors around the origin." width="1252" height="883">
+                <figcaption>Figure generated with Python. The axes are in Å and use the same orientation as the explorer.</figcaption>
+            </figure>
+        </section>
 
-<section id="operators">
-<div class="section-kicker">05 / Second quantization</div><h2>The Hamiltonian in operator form</h2>
-<p>\(\hat a_{Rs}\) and \(\hat b_{Rs}\) annihilate an electron with spin \(s\) in the A and B orbitals of unit cell \(R\). Their adjoints create that electron. The operators obey the fermionic anticommutation relations:</p>
-\[\{\hat a_{Rs},\hat a^\dagger_{R's'}\}=\{\hat b_{Rs},\hat b^\dagger_{R's'}\}=\delta_{RR'}\delta_{ss'},\qquad \{\hat a_{Rs},\hat b^\dagger_{R's'}\}=0.\]
-<p>All anticommutators between two annihilation operators, two creation operators, or different species vanish. For a one-particle operator, second quantization gives \(\hat H=\sum_{ij,s}h_{ij}\hat c^\dagger_{is}\hat c_{js}\). Here:</p>
-<div class="equation">\[\begin{aligned}\hat H={}&\varepsilon_0\sum_{R,s}(\hat a^\dagger_{Rs}\hat a_{Rs}+\hat b^\dagger_{Rs}\hat b_{Rs})\\
-&-t\sum_{R,s}\left[\hat a^\dagger_{Rs}\left(\hat b_{Rs}+\hat b_{R-a_2,s}+\hat b_{R+a_1-a_2,s}\right)+\mathrm{h.c.}\right].\end{aligned}\]</div>
-<p>Each bond is listed exactly once from its A site. The Hermitian conjugate describes the reverse hop; neither a factor of \(1/2\) nor another sum counting the same bonds should be added.</p>
-<p>Without interactions, the operator description and the one-particle Schrödinger equation have the same spectrum. We omit spin in the following steps, then reintroduce it when counting states.</p>
-</section>
+        <section id="reciprocal">
+            <div class="section-kicker">03 / Reciprocal space</div>
+            <h2>The Brillouin zone</h2>
+            <p>The reciprocal vectors are defined by \(\mathbf a_i\cdot\mathbf b_j=2\pi\delta_{ij}\). Solving the four relations gives:</p>
+            \[\mathbf b_1=\frac{2\pi}{a}\left(1,-\frac1{\sqrt3}\right),\qquad \mathbf b_2=\frac{2\pi}{a}\left(0,\frac2{\sqrt3}\right).\]
+            <p>The first Brillouin zone is the Wigner–Seitz cell of the reciprocal lattice. Its six vertices are:</p>
+            \[\left(\pm\frac{4\pi}{3a},0\right),\qquad \left(\pm\frac{2\pi}{3a},\pm\frac{2\pi}{\sqrt3a}\right).\]
+            <p>The signs in the second pair are independent. The six vertices form two valley classes modulo a reciprocal lattice vector. For the band diagram, we choose:</p>
+            \[\Gamma=(0,0),\quad K=\left(\frac{4\pi}{3a},0\right),\quad K'=-K,\quad M=\frac{\mathbf b_1+\mathbf b_2}{2}=\left(\frac\pi a,\frac\pi{\sqrt3a}\right).\]
+            \[A_{\mathrm{BZ}}=|\mathbf b_1\times\mathbf b_2|=\frac{(2\pi)^2}{A_c}=\frac{8\pi^2}{\sqrt3a^2}.\]
+            <p>The path \(\Gamma\to K\to M\to\Gamma\) passes through the center, a vertex, and the midpoint of the adjacent edge. The horizontal coordinate in the diagram is the cumulative length along this path, rather than \(k_x\) alone.</p>
+        </section>
 
-<section id="schrodinger">
-<div class="section-kicker">06 / Discrete Schrödinger equation</div><h2>Amplitudes on the two sublattices</h2>
-\[|\psi\rangle=\sum_R\left[A_R\hat a_R^\dagger+B_R\hat b_R^\dagger\right]|0\rangle.\]
-<p>Applying \(\hat H|\psi\rangle=E|\psi\rangle\) and matching the coefficients of each localized state gives:</p>
-\[\begin{aligned}(E-\varepsilon_0)A_R&=-t\left(B_R+B_{R-a_2}+B_{R+a_1-a_2}\right),\\
-(E-\varepsilon_0)B_R&=-t\left(A_R+A_{R+a_2}+A_{R-a_1+a_2}\right).\end{aligned}\]
-<p>The reversed displacements in the second equation come from B → A hopping. For a periodic crystal, the Bloch ansatz in the cell gauge is:</p>
-\[A_R=\frac{e^{i\mathbf k\cdot\mathbf R}}{\sqrt N}u_A(\mathbf k),\qquad B_R=\frac{e^{i\mathbf k\cdot\mathbf R}}{\sqrt N}u_B(\mathbf k).\]
-<p>For example, \(B_{R-a_2}=e^{ik\cdot R}e^{-ik\cdot a_2}u_B/\sqrt N\). Factoring out the common phase gives the two equations:</p>
-\[(E-\varepsilon_0)u_A=-t f(\mathbf k)u_B,\qquad (E-\varepsilon_0)u_B=-t f^*(\mathbf k)u_A,\]
-<div class="equation">\[f(\mathbf k)=1+e^{-i\mathbf k\cdot\mathbf a_2}+e^{i\mathbf k\cdot(\mathbf a_1-\mathbf a_2)}.\]</div>
-<p>The three contributions are the three hopping paths. The zeros of their complex sum are the points where the coupling between the two Bloch amplitudes vanishes.</p>
-</section>
+        <section id="basis">
+            <div class="section-kicker">04 / Approximation</div>
+            <h2>Projecting the Schrödinger equation</h2>
+            <p>In planar graphene, the \(\sigma\) bonds arise from sp² hybridization. One \(p_z\) orbital per carbon provides the \(\pi\) and \(\pi^*\) bands relevant near the Fermi level. We retain only this orbital basis, with an independent spin degree of freedom.</p>
+            \[\hat h=\frac{\hat{\mathbf p}^{\,2}}{2m_e}+V_{\mathrm{crystal}}(\mathbf r),\qquad \hat h|\psi\rangle=E|\psi\rangle.\]
+            \[|\psi\rangle=\sum_{R,\alpha\in\{A,B\}}c_{R\alpha}|R,\alpha\rangle.\]
+            <p>Left-multiplying by \(\langle R,\alpha|\) generally produces a generalized eigenvalue problem:</p>
+            \[\sum_{R'\beta}h_{R\alpha,R'\beta}c_{R'\beta}=E\sum_{R'\beta}S_{R\alpha,R'\beta}c_{R'\beta},\]
+            \[h_{ij}=\langle i|\hat h|j\rangle,\qquad S_{ij}=\langle i|j\rangle.\]
+            <p>The <em>orthogonal</em> tight-binding model approximates \(S_{ij}=\delta_{ij}\). It retains an identical on-site energy \(\varepsilon_0\) on A and B, and a single intersite matrix element between nearest neighbors:</p>
+            \[h_{ii}=\varepsilon_0,\qquad h_{ij}=-t\;\;(i,j\text{ nearest neighbors}),\qquad h_{ij}=0\text{ otherwise},\quad t>0.\]
+            <p>The sign \(-t\) is a hopping convention; \(t\) is an effective parameter, not a value calculated here from atomic orbitals. We then set \(\varepsilon_0=0\) to measure energies relative to the band-touching point.</p>
+            <div class="note">Assumptions: a perfect, infinite monolayer; uniform hopping; no electron interactions, external fields, spin–orbit coupling, or on-site energy difference between A and B. Spin doubles the degeneracy without changing the 2 × 2 orbital block.</div>
+        </section>
 
-<section id="fourier">
-<div class="section-kicker">07 / Bloch</div><h2>Fourier transform and phase convention</h2>
-<h3>The cell gauge</h3>
-<p>For \(N\) unit cells with periodic boundary conditions, we define:</p>
-\[\hat a_R=\frac1{\sqrt N}\sum_k e^{ik\cdot R}\hat a_k,\qquad \hat b_R=\frac1{\sqrt N}\sum_k e^{ik\cdot R}\hat b_k,\qquad \hat a_k=\frac1{\sqrt N}\sum_R e^{-ik\cdot R}\hat a_R.\]
-<p>The orthogonality relation \(\sum_R e^{i(k'-k)\cdot R}=N\delta_{kk'}\) ensures conservation of crystal momentum. For a unit-cell displacement \(\boldsymbol\Delta\):</p>
-\[\begin{aligned}\sum_R\hat a_R^\dagger\hat b_{R+\Delta}
-&=\frac1N\sum_{R,k,k'}e^{-ik\cdot R}e^{ik'\cdot(R+\Delta)}\hat a_k^\dagger\hat b_{k'}\\
-&=\sum_k e^{ik\cdot\Delta}\hat a_k^\dagger\hat b_k.\end{aligned}\]
-<p>The displacements \(0,-a_2,a_1-a_2\) reproduce \(f\) exactly. Defining \(\hat\Psi_k=(\hat a_k,\hat b_k)^T\):</p>
-\[\hat H=\sum_k\hat\Psi_k^\dagger H_c(k)\hat\Psi_k,\qquad H_c(k)=\begin{pmatrix}\varepsilon_0&-tf(k)\\-tf^*(k)&\varepsilon_0\end{pmatrix}.\]
-<h3>The atomic gauge</h3>
-<p>We can include the position of atom B in its Fourier phase: \(\hat b_R=N^{-1/2}\sum_k e^{ik\cdot(R+\tau_B)}\widetilde b_k\). Then:</p>
-\[g(k)=\sum_j e^{ik\cdot\delta_j}=e^{ik\cdot\tau_B}f(k),\qquad H_a(k)=\begin{pmatrix}\varepsilon_0&-tg(k)\\-tg^*(k)&\varepsilon_0\end{pmatrix}.\]
-\[U(k)=\operatorname{diag}(1,e^{ik\cdot\tau_B}),\qquad \Psi_c=U\Psi_a,\qquad H_a=U^\dagger H_cU.\]
-<p>The matrices are related by a unitary transformation. The spinor components and their relative phase change, but \(|g|=|f|\), so the bands remain identical. In the cell gauge, \(f(k+G)=f(k)\) for any reciprocal vector \(G\).</p>
-<div class="note">All numerical calculations on this page use \(f\) in the cell gauge. The script explicitly verifies \(g=e^{ik\cdot\tau_B}f\) to avoid confusing bond vectors \(\delta_j\) with unit-cell displacements.</div>
-</section>
+        <section id="operators">
+            <div class="section-kicker">05 / Second quantization</div>
+            <h2>The Hamiltonian in operator form</h2>
+            <p>\(\hat a_{Rs}\) and \(\hat b_{Rs}\) annihilate an electron with spin \(s\) in the A and B orbitals of unit cell \(R\). Their adjoints create that electron. The operators obey the fermionic anticommutation relations:</p>
+            \[\{\hat a_{Rs},\hat a^\dagger_{R's'}\}=\{\hat b_{Rs},\hat b^\dagger_{R's'}\}=\delta_{RR'}\delta_{ss'},\qquad \{\hat a_{Rs},\hat b^\dagger_{R's'}\}=0.\]
+            <p>All anticommutators between two annihilation operators, two creation operators, or different species vanish. For a one-particle operator, second quantization gives \(\hat H=\sum_{ij,s}h_{ij}\hat c^\dagger_{is}\hat c_{js}\). Here:</p>
+            <div class="equation">\[\begin{aligned}\hat H={}&\varepsilon_0\sum_{R,s}(\hat a^\dagger_{Rs}\hat a_{Rs}+\hat b^\dagger_{Rs}\hat b_{Rs})\\
+                &-t\sum_{R,s}\left[\hat a^\dagger_{Rs}\left(\hat b_{Rs}+\hat b_{R-a_2,s}+\hat b_{R+a_1-a_2,s}\right)+\mathrm{h.c.}\right].\end{aligned}\]</div>
+            <p>Each bond is listed exactly once from its A site. The Hermitian conjugate describes the reverse hop; neither a factor of \(1/2\) nor another sum counting the same bonds should be added.</p>
+            <p>Without interactions, the operator description and the one-particle Schrödinger equation have the same spectrum. We omit spin in the following steps, then reintroduce it when counting states.</p>
+        </section>
 
-<section id="spectrum">
-<div class="section-kicker">08 / Exact spectrum</div><h2>Diagonalizing the 2 × 2 block</h2>
-<p>The Hamiltonian is Hermitian. Its eigenvalues satisfy:</p>
-\[\det[H_c-EI]=(\varepsilon_0-E)^2-t^2 f f^*=0.\]
-<div class="equation">\[E_\pm(k)=\varepsilon_0\pm t|f(k)|.\]</div>
-<p>To obtain an explicit real expression, the two nonconstant exponentials can be combined:</p>
-\[\begin{aligned}f(k)&=1+e^{-i(ak_x/2+\sqrt3ak_y/2)}+e^{i(ak_x/2-\sqrt3ak_y/2)}\\
-&=1+2\cos\left(\frac{ak_x}{2}\right)e^{-i\sqrt3ak_y/2}.\end{aligned}\]
-<p>Writing \(c=\cos(ak_x/2)\) and \(\phi=\sqrt3ak_y/2\), we have \((1+2ce^{-i\phi})(1+2ce^{i\phi})=1+4c^2+4c\cos\phi\). Therefore:</p>
-\[E_\pm=\varepsilon_0\pm t\sqrt{1+4\cos^2\left(\frac{ak_x}{2}\right)+4\cos\left(\frac{ak_x}{2}\right)\cos\left(\frac{\sqrt3ak_y}{2}\right)}.\]
-<h3>Checks at high-symmetry points</h3>
-<p>At \(\Gamma\), all phases are equal and \(f=3\). At \(K\), \(ak_x/2=2\pi/3\), so \(f=1+2(-1/2)=0\). At \(M\), \(ak_x/2=\pi/2\), so \(f=1\). The same zero occurs at \(K'\), since \(f(-k)=f^*(k)\).</p>
-<div class="table-scroll"><table><thead><tr><th>Point</th><th>f(k)</th><th>E− (eV)</th><th>E+ (eV)</th><th>Interpretation</th></tr></thead><tbody>
-<tr><td>Γ</td><td>3</td><td>−8.10</td><td>+8.10</td><td>Global extrema</td></tr>
-<tr><td>K, K′</td><td>0</td><td>0</td><td>0</td><td>Band touching</td></tr>
-<tr><td>M</td><td>1</td><td>−2.70</td><td>+2.70</td><td>Saddle points</td></tr>
-</tbody></table></div>
-<p>These values use \(\varepsilon_0=0\) and \(t=2.7\) eV. The full spectrum lies between \(-3t\) and \(+3t\); its total width is \(6t=16.2\) eV.</p>
-</section>
+        <section id="schrodinger">
+            <div class="section-kicker">06 / Discrete Schrödinger equation</div>
+            <h2>Amplitudes on the two sublattices</h2>
+            \[|\psi\rangle=\sum_R\left[A_R\hat a_R^\dagger+B_R\hat b_R^\dagger\right]|0\rangle.\]
+            <p>Applying \(\hat H|\psi\rangle=E|\psi\rangle\) and matching the coefficients of each localized state gives:</p>
+            \[\begin{aligned}(E-\varepsilon_0)A_R&=-t\left(B_R+B_{R-a_2}+B_{R+a_1-a_2}\right),\\
+            (E-\varepsilon_0)B_R&=-t\left(A_R+A_{R+a_2}+A_{R-a_1+a_2}\right).\end{aligned}\]
+            <p>The reversed displacements in the second equation come from B → A hopping. For a periodic crystal, the Bloch ansatz in the cell gauge is:</p>
+            \[A_R=\frac{e^{i\mathbf k\cdot\mathbf R}}{\sqrt N}u_A(\mathbf k),\qquad B_R=\frac{e^{i\mathbf k\cdot\mathbf R}}{\sqrt N}u_B(\mathbf k).\]
+            <p>For example, \(B_{R-a_2}=e^{ik\cdot R}e^{-ik\cdot a_2}u_B/\sqrt N\). Factoring out the common phase gives the two equations:</p>
+            \[(E-\varepsilon_0)u_A=-t f(\mathbf k)u_B,\qquad (E-\varepsilon_0)u_B=-t f^*(\mathbf k)u_A,\]
+            <div class="equation">\[f(\mathbf k)=1+e^{-i\mathbf k\cdot\mathbf a_2}+e^{i\mathbf k\cdot(\mathbf a_1-\mathbf a_2)}.\]</div>
+            <p>The three contributions are the three hopping paths. The zeros of their complex sum are the points where the coupling between the two Bloch amplitudes vanishes.</p>
+        </section>
 
-<section id="spinors">
-<div class="section-kicker">09 / Eigenstates</div><h2>Spinors, pseudospin, and symmetries</h2>
-<p>For \(f\ne0\), write \(f=\rho e^{i\theta}\). Labeling the two bands by \(\lambda=\pm1\), the equation \(-tfu_B=\lambda t\rho u_A\) gives:</p>
-\[u_\lambda(k)=\frac1{\sqrt2}\begin{pmatrix}1\\-\lambda e^{-i\theta(k)}\end{pmatrix},\qquad E_\lambda=\varepsilon_0+\lambda t\rho.\]
-<p>The states have probability \(1/2\) on each sublattice. Their relative phase encodes the pseudospin direction; pseudospin describes A/B and does not represent the electron’s real spin.</p>
-\[H_c-\varepsilon_0I=d_x\sigma_x+d_y\sigma_y,\qquad d_x=-t\operatorname{Re}f,\quad d_y=t\operatorname{Im}f,\quad d_z=0.\]
-\[\langle\boldsymbol\sigma\rangle_\lambda=\lambda\frac{(d_x,d_y,0)}{t|f|}.\]
-<p>At K and K′, \(\rho=0\), and the block equals \(\varepsilon_0I\): any normalized combination is an eigenstate and \(\theta\) is undefined. The expression above therefore applies away from the degeneracy points.</p>
-<h3>Why the bands are symmetric</h3>
-\[\{\sigma_z,H_c-\varepsilon_0I\}=0.\]
-<p>This sublattice symmetry, called chiral symmetry, pairs every energy \(E-\varepsilon_0\) with its opposite. Hopping connects A exclusively to B. Real hopping amplitudes also ensure \(H_c(-k)=H_c(k)^*\), hence \(E_\lambda(-k)=E_\lambda(k)\).</p>
-<h3>Winding and Berry phase</h3>
-<p>In the chosen gauge, along a closed contour that avoids degeneracies:</p>
-\[\mathcal A_\lambda(k)=i u_\lambda^\dagger\nabla_k u_\lambda=\frac12\nabla_k\theta,\qquad \gamma_\lambda=\oint\mathcal A_\lambda\cdot d k=\frac12\Delta\theta.\]
-<p>Around a single valley, the phase of \(f\) winds once. The Berry phase is therefore \(\pi\) modulo \(2\pi\), with opposite winding at the two valleys. This is the local Dirac limit; the connection depends on the basis choice, while the physical phase must be evaluated using a consistent Bloch convention.</p>
-</section>
+        <section id="fourier">
+            <div class="section-kicker">07 / Bloch</div>
+            <h2>Fourier transform and phase convention</h2>
+            <h3>The cell gauge</h3>
+            <p>For \(N\) unit cells with periodic boundary conditions, we define:</p>
+            \[\hat a_R=\frac1{\sqrt N}\sum_k e^{ik\cdot R}\hat a_k,\qquad \hat b_R=\frac1{\sqrt N}\sum_k e^{ik\cdot R}\hat b_k,\qquad \hat a_k=\frac1{\sqrt N}\sum_R e^{-ik\cdot R}\hat a_R.\]
+            <p>The orthogonality relation \(\sum_R e^{i(k'-k)\cdot R}=N\delta_{kk'}\) ensures conservation of crystal momentum. For a unit-cell displacement \(\boldsymbol\Delta\):</p>
+            \[\begin{aligned}\sum_R\hat a_R^\dagger\hat b_{R+\Delta}
+            &=\frac1N\sum_{R,k,k'}e^{-ik\cdot R}e^{ik'\cdot(R+\Delta)}\hat a_k^\dagger\hat b_{k'}\\
+            &=\sum_k e^{ik\cdot\Delta}\hat a_k^\dagger\hat b_k.\end{aligned}\]
+            <p>The displacements \(0,-a_2,a_1-a_2\) reproduce \(f\) exactly. Defining \(\hat\Psi_k=(\hat a_k,\hat b_k)^T\):</p>
+            \[\hat H=\sum_k\hat\Psi_k^\dagger H_c(k)\hat\Psi_k,\qquad H_c(k)=\begin{pmatrix}\varepsilon_0&-tf(k)\\-tf^*(k)&\varepsilon_0\end{pmatrix}.\]
+            <h3>The atomic gauge</h3>
+            <p>We can include the position of atom B in its Fourier phase: \(\hat b_R=N^{-1/2}\sum_k e^{ik\cdot(R+\tau_B)}\widetilde b_k\). Then:</p>
+            \[g(k)=\sum_j e^{ik\cdot\delta_j}=e^{ik\cdot\tau_B}f(k),\qquad H_a(k)=\begin{pmatrix}\varepsilon_0&-tg(k)\\-tg^*(k)&\varepsilon_0\end{pmatrix}.\]
+            \[U(k)=\operatorname{diag}(1,e^{ik\cdot\tau_B}),\qquad \Psi_c=U\Psi_a,\qquad H_a=U^\dagger H_cU.\]
+            <p>The matrices are related by a unitary transformation. The spinor components and their relative phase change, but \(|g|=|f|\), so the bands remain identical. In the cell gauge, \(f(k+G)=f(k)\) for any reciprocal vector \(G\).</p>
+            <div class="note">All numerical calculations on this page use \(f\) in the cell gauge. The script explicitly verifies \(g=e^{ik\cdot\tau_B}f\) to avoid confusing bond vectors \(\delta_j\) with unit-cell displacements.</div>
+        </section>
 
-<section id="dirac">
-<div class="section-kicker">10 / Continuum limit</div><h2>The Dirac equation emerges from the lattice</h2>
-<p>Write \(k=K_\xi+q\), with \(K_\xi=\xi K\) and \(\xi=+1\) for K, \(-1\) for K′. The continuum regime requires \(a|q|\ll1\). We expand \(f\), rather than energy alone, to preserve the spinor structure.</p>
-\[\partial_{k_x}f=-a\sin\left(\frac{ak_x}{2}\right)e^{-i\sqrt3ak_y/2},\qquad
-\partial_{k_y}f=-i\sqrt3a\cos\left(\frac{ak_x}{2}\right)e^{-i\sqrt3ak_y/2}.\]
-\[f(K_\xi)=0,\qquad \left.\partial_{k_x}f\right|_{K_\xi}=-\xi\frac{\sqrt3a}{2},\qquad \left.\partial_{k_y}f\right|_{K_\xi}=i\frac{\sqrt3a}{2}.\]
-\[f(K_\xi+q)=\frac{\sqrt3a}{2}(-\xi q_x+iq_y)+O(a^2|q|^2).\]
-<p>Substituting this expansion into the off-diagonal entries gives:</p>
-<div class="equation">\[H_\xi(q)=\varepsilon_0I+\hbar v_F\begin{pmatrix}0&\xi q_x-iq_y\\\xi q_x+iq_y&0\end{pmatrix}=\varepsilon_0I+\hbar v_F(\xi q_x\sigma_x+q_y\sigma_y).\]</div>
-\[\hbar v_F=\frac{\sqrt3}{2}at=\frac32dt,\qquad E_\pm(K_\xi+q)=\varepsilon_0\pm\hbar v_F|q|+O(ta^2|q|^2).\]
-<p>The cone is isotropic to first order; lattice corrections restore angular dependence at higher energies. No mass appears because the on-site energies on A and B are identical.</p>
-<h3>Real-space form and time dependence</h3>
-<p>For a slowly varying envelope, \(q\to-i\nabla\). Removing the common time-dependent phase associated with \(\varepsilon_0\), the equation becomes:</p>
-\[i\hbar\partial_t\psi_\xi(\mathbf r,t)=-i\hbar v_F(\xi\sigma_x\partial_x+\sigma_y\partial_y)\psi_\xi(\mathbf r,t).\]
-<p>This is a massless Dirac equation in two dimensions, with \(v_F\) replacing the speed of light. The envelope has two A/B components; valley and real spin provide additional indices.</p>
-<h3>What would a mass term mean?</h3>
-<p>If the on-site energies became \(\varepsilon_A=\varepsilon_0+\Delta\) and \(\varepsilon_B=\varepsilon_0-\Delta\), we would add \(\Delta\sigma_z\). The spectrum would be \(\varepsilon_0\pm\sqrt{t^2|f|^2+\Delta^2}\), with a gap of \(2|\Delta|\). This term is set to zero in the pristine graphene simulated here.</p>
-</section>
+        <section id="spectrum">
+            <div class="section-kicker">08 / Exact spectrum</div>
+            <h2>Diagonalizing the 2 × 2 block</h2>
+            <p>The Hamiltonian is Hermitian. Its eigenvalues satisfy:</p>
+            \[\det[H_c-EI]=(\varepsilon_0-E)^2-t^2 f f^*=0.\]
+            <div class="equation">\[E_\pm(k)=\varepsilon_0\pm t|f(k)|.\]</div>
+            <p>To obtain an explicit real expression, the two nonconstant exponentials can be combined:</p>
+            \[\begin{aligned}f(k)&=1+e^{-i(ak_x/2+\sqrt3ak_y/2)}+e^{i(ak_x/2-\sqrt3ak_y/2)}\\
+            &=1+2\cos\left(\frac{ak_x}{2}\right)e^{-i\sqrt3ak_y/2}.\end{aligned}\]
+            <p>Writing \(c=\cos(ak_x/2)\) and \(\phi=\sqrt3ak_y/2\), we have \((1+2ce^{-i\phi})(1+2ce^{i\phi})=1+4c^2+4c\cos\phi\). Therefore:</p>
+            \[E_\pm=\varepsilon_0\pm t\sqrt{1+4\cos^2\left(\frac{ak_x}{2}\right)+4\cos\left(\frac{ak_x}{2}\right)\cos\left(\frac{\sqrt3ak_y}{2}\right)}.\]
+            <h3>Checks at high-symmetry points</h3>
+            <p>At \(\Gamma\), all phases are equal and \(f=3\). At \(K\), \(ak_x/2=2\pi/3\), so \(f=1+2(-1/2)=0\). At \(M\), \(ak_x/2=\pi/2\), so \(f=1\). The same zero occurs at \(K'\), since \(f(-k)=f^*(k)\).</p>
+            <div class="table-scroll">
+                <table>
+                    <thead>
+                    <tr><th>Point</th><th>f(k)</th><th>E− (eV)</th><th>E+ (eV)</th><th>Interpretation</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr><td>Γ</td><td>3</td><td>−8.10</td><td>+8.10</td><td>Global extrema</td></tr>
+                    <tr><td>K, K′</td><td>0</td><td>0</td><td>0</td><td>Band touching</td></tr>
+                    <tr><td>M</td><td>1</td><td>−2.70</td><td>+2.70</td><td>Saddle points</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>These values use \(\varepsilon_0=0\) and \(t=2.7\) eV. The full spectrum lies between \(-3t\) and \(+3t\); its total width is \(6t=16.2\) eV.</p>
+        </section>
 
-<section id="observables">
-<div class="section-kicker">11 / Consequences</div><h2>Velocity, filling, and density of states</h2>
-<h3>Fermi velocity and group velocity</h3>
-\[v_F=\frac{(\sqrt3/2)(2.46\times10^{-10}\;\mathrm m)(2.7\;\mathrm{eV})}{6.582119569\times10^{-16}\;\mathrm{eV\,s}}\simeq8.74\times10^5\;\mathrm{m/s}.\]
-<p>For a nondegenerate band, the group velocity is:</p>
-\[\mathbf v_\lambda(k)=\frac1\hbar\nabla_k E_\lambda=\frac{\lambda t}{\hbar}\frac{\operatorname{Re}[f^*\nabla_k f]}{|f|}.\]
-<p>Near a valley, \(\mathbf v_\lambda\simeq\lambda v_F\,\mathbf q/|\mathbf q|\). Exactly at the touching point, the cone’s directional derivative does not define a unique velocity vector.</p>
-<h3>Neutral graphene is a semimetal</h3>
-<p>There are two orbitals per unit cell, two bands per spin, and two spin states. Each carbon contributes one pz electron, giving two electrons per unit cell: at zero temperature, the valence band is filled and the conduction band is empty. The chemical potential of the neutral model is \(\mu=\varepsilon_0\).</p>
-<p>The bands touch at the valleys. There is neither a band gap nor an extended Fermi surface at neutrality: in the ideal limit, the density of states vanishes at the touching point.</p>
-<h3>Density of states in the Dirac limit</h3>
-<p>Per unit area, a circular region of radius \(q\) contains \(g\pi q^2/(2\pi)^2=gq^2/(4\pi)\) conduction states. The factor \(g=g_sg_v=2\times2=4\) counts spin and the two valleys; the six zone vertices must not be counted again.</p>
-\[n_+(E)=\frac{g(E-\varepsilon_0)^2}{4\pi(\hbar v_F)^2},\qquad D(E)=\frac{g|E-\varepsilon_0|}{2\pi(\hbar v_F)^2}.\]
-<p>This expression holds near neutrality. In the full spectrum, the saddle points at M produce van Hove singularities at \(E=\varepsilon_0\pm t\); a purely linear description does not capture them.</p>
-</section>
+        <section id="spinors">
+            <div class="section-kicker">09 / Eigenstates</div>
+            <h2>Spinors, pseudospin, and symmetries</h2>
+            <p>For \(f\ne0\), write \(f=\rho e^{i\theta}\). Labeling the two bands by \(\lambda=\pm1\), the equation \(-tfu_B=\lambda t\rho u_A\) gives:</p>
+            \[u_\lambda(k)=\frac1{\sqrt2}\begin{pmatrix}1\\-\lambda e^{-i\theta(k)}\end{pmatrix},\qquad E_\lambda=\varepsilon_0+\lambda t\rho.\]
+            <p>The states have probability \(1/2\) on each sublattice. Their relative phase encodes the pseudospin direction; pseudospin describes A/B and does not represent the electron’s real spin.</p>
+            \[H_c-\varepsilon_0I=d_x\sigma_x+d_y\sigma_y,\qquad d_x=-t\operatorname{Re}f,\quad d_y=t\operatorname{Im}f,\quad d_z=0.\]
+            \[\langle\boldsymbol\sigma\rangle_\lambda=\lambda\frac{(d_x,d_y,0)}{t|f|}.\]
+            <p>At K and K′, \(\rho=0\), and the block equals \(\varepsilon_0I\): any normalized combination is an eigenstate and \(\theta\) is undefined. The expression above therefore applies away from the degeneracy points.</p>
+            <h3>Why the bands are symmetric</h3>
+            \[\{\sigma_z,H_c-\varepsilon_0I\}=0.\]
+            <p>This sublattice symmetry, called chiral symmetry, pairs every energy \(E-\varepsilon_0\) with its opposite. Hopping connects A exclusively to B. Real hopping amplitudes also ensure \(H_c(-k)=H_c(k)^*\), hence \(E_\lambda(-k)=E_\lambda(k)\).</p>
+            <h3>Winding and Berry phase</h3>
+            <p>In the chosen gauge, along a closed contour that avoids degeneracies:</p>
+            \[\mathcal A_\lambda(k)=i u_\lambda^\dagger\nabla_k u_\lambda=\frac12\nabla_k\theta,\qquad \gamma_\lambda=\oint\mathcal A_\lambda\cdot d k=\frac12\Delta\theta.\]
+            <p>Around a single valley, the phase of \(f\) winds once. The Berry phase is therefore \(\pi\) modulo \(2\pi\), with opposite winding at the two valleys. This is the local Dirac limit; the connection depends on the basis choice, while the physical phase must be evaluated using a consistent Bloch convention.</p>
+        </section>
 
-<section id="simulation">
-<div class="section-kicker">12 / Simulation</div><h2>From the analytical result to Python calculations</h2>
-<p>The program uses NumPy to construct and diagonalize the \(H(k)\) blocks, and Matplotlib for the 2D and 3D figures. The images below are outputs of the included script, with \(a=2.46\) Å, \(t=2.7\) eV, and \(\varepsilon_0=0\).</p>
-<h3>Band diagram</h3>
-<figure><img loading="lazy" src="../assets/devlog_graphene/bands.png" alt="Valence and conduction bands along Γ K M Γ: ±8.1 eV at Γ, zero-energy touching at K, and ±2.7 eV at M." width="1535" height="927"><figcaption>250 samples per segment, plus the final point. Γ, K, and M are included exactly along the path.</figcaption></figure>
-<p>Band touching at K follows from the vanishing structure factor, rather than a correction imposed on the plot. The standard path contains K; K′ is tested separately in the code.</p>
-<h3>2D map in the first zone</h3>
-<figure><img loading="lazy" src="../assets/devlog_graphene/energy-map.png" alt="Conduction-band map over a hexagonal Brillouin zone, with the Γ K M Γ path and minima at all six vertices." width="1348" height="1032"><figcaption>A 361 × 361 grid, masked outside the hexagon. The valence band is the negative of this map.</figcaption></figure>
-<p>A Cartesian grid does not necessarily contain every K vertex. The exact zero is therefore verified by evaluating their coordinates directly, independently of image resolution.</p>
-<h3>Both energy surfaces</h3>
-<figure><img loading="lazy" src="../assets/devlog_graphene/dispersion-3d.png" alt="Opposite three-dimensional valence and conduction surfaces over the first hexagonal zone, touching at the valleys." width="1266" height="1047"><figcaption>The horizontal axes are components of k in Å⁻¹; the vertical axis is energy in eV. The surfaces are subsampled only for Matplotlib rendering.</figcaption></figure>
-<h3>Where the Dirac approximation stops being exact</h3>
-<figure><img loading="lazy" src="../assets/devlog_graphene/dirac-limit.png" alt="Comparison of the exact tight-binding bands with the linear Dirac approximation around K along a qy = 0 cut." width="1553" height="858"><figcaption>A cut around K, with qy = 0. The slope is the same near q = 0; nonlinear corrections appear as we move away from the valley.</figcaption></figure>
-<h3>Numerical checks</h3>
-<p>The script fails immediately if any of these checks fails: Hermiticity, reciprocal orthogonality, bond distances, gauge equivalence, periodicity, k → −k inversion, high-symmetry energies, or the Dirac slope. It also compares the closed-form expression with <code>numpy.linalg.eigvalsh</code> at 200 reproducible points.</p>
-<div class="result"><strong>Γ: ±8.10 eV · K/K′: 0 · M: ±2.70 eV</strong><br><span id="validation-summary">Numerical checks passed. Values and precision are recorded in results.json.</span></div>
-<p class="downloads"><a href="../assets/devlog_graphene/results.json" download>JSON results ↓</a><a href="../assets/devlog_graphene/bands.csv" download>Band data CSV ↓</a></p>
-</section>
+        <section id="dirac">
+            <div class="section-kicker">10 / Continuum limit</div>
+            <h2>The Dirac equation emerges from the lattice</h2>
+            <p>Write \(k=K_\xi+q\), with \(K_\xi=\xi K\) and \(\xi=+1\) for K, \(-1\) for K′. The continuum regime requires \(a|q|\ll1\). We expand \(f\), rather than energy alone, to preserve the spinor structure.</p>
+            \[\partial_{k_x}f=-a\sin\left(\frac{ak_x}{2}\right)e^{-i\sqrt3ak_y/2},\qquad
+            \partial_{k_y}f=-i\sqrt3a\cos\left(\frac{ak_x}{2}\right)e^{-i\sqrt3ak_y/2}.\]
+            \[f(K_\xi)=0,\qquad \left.\partial_{k_x}f\right|_{K_\xi}=-\xi\frac{\sqrt3a}{2},\qquad \left.\partial_{k_y}f\right|_{K_\xi}=i\frac{\sqrt3a}{2}.\]
+            \[f(K_\xi+q)=\frac{\sqrt3a}{2}(-\xi q_x+iq_y)+O(a^2|q|^2).\]
+            <p>Substituting this expansion into the off-diagonal entries gives:</p>
+            <div class="equation">\[H_\xi(q)=\varepsilon_0I+\hbar v_F\begin{pmatrix}0&\xi q_x-iq_y\\\xi q_x+iq_y&0\end{pmatrix}=\varepsilon_0I+\hbar v_F(\xi q_x\sigma_x+q_y\sigma_y).\]</div>
+            \[\hbar v_F=\frac{\sqrt3}{2}at=\frac32dt,\qquad E_\pm(K_\xi+q)=\varepsilon_0\pm\hbar v_F|q|+O(ta^2|q|^2).\]
+            <p>The cone is isotropic to first order; lattice corrections restore angular dependence at higher energies. No mass appears because the on-site energies on A and B are identical.</p>
+            <h3>Real-space form and time dependence</h3>
+            <p>For a slowly varying envelope, \(q\to-i\nabla\). Removing the common time-dependent phase associated with \(\varepsilon_0\), the equation becomes:</p>
+            \[i\hbar\partial_t\psi_\xi(\mathbf r,t)=-i\hbar v_F(\xi\sigma_x\partial_x+\sigma_y\partial_y)\psi_\xi(\mathbf r,t).\]
+            <p>This is a massless Dirac equation in two dimensions, with \(v_F\) replacing the speed of light. The envelope has two A/B components; valley and real spin provide additional indices.</p>
+            <h3>What would a mass term mean?</h3>
+            <p>If the on-site energies became \(\varepsilon_A=\varepsilon_0+\Delta\) and \(\varepsilon_B=\varepsilon_0-\Delta\), we would add \(\Delta\sigma_z\). The spectrum would be \(\varepsilon_0\pm\sqrt{t^2|f|^2+\Delta^2}\), with a gap of \(2|\Delta|\). This term is set to zero in the pristine graphene simulated here.</p>
+        </section>
 
-<section id="code">
-<div class="section-kicker">13 / Reproduce</div><h2>The complete Python code</h2>
-<p>The calculation runs locally. The website displays precomputed images, while the JavaScript explorer recalculates the same analytical dispersion when t changes. No Python backend is required to host this page.</p>
-<pre><code>python -m pip install -r devlog/graphene/requirements.txt
+        <section id="observables">
+            <div class="section-kicker">11 / Consequences</div>
+            <h2>Velocity, filling, and density of states</h2>
+            <h3>Fermi velocity and group velocity</h3>
+            \[v_F=\frac{(\sqrt3/2)(2.46\times10^{-10}\;\mathrm m)(2.7\;\mathrm{eV})}{6.582119569\times10^{-16}\;\mathrm{eV\,s}}\simeq8.74\times10^5\;\mathrm{m/s}.\]
+            <p>For a nondegenerate band, the group velocity is:</p>
+            \[\mathbf v_\lambda(k)=\frac1\hbar\nabla_k E_\lambda=\frac{\lambda t}{\hbar}\frac{\operatorname{Re}[f^*\nabla_k f]}{|f|}.\]
+            <p>Near a valley, \(\mathbf v_\lambda\simeq\lambda v_F\,\mathbf q/|\mathbf q|\). Exactly at the touching point, the cone’s directional derivative does not define a unique velocity vector.</p>
+            <h3>Neutral graphene is a semimetal</h3>
+            <p>There are two orbitals per unit cell, two bands per spin, and two spin states. Each carbon contributes one pz electron, giving two electrons per unit cell: at zero temperature, the valence band is filled and the conduction band is empty. The chemical potential of the neutral model is \(\mu=\varepsilon_0\).</p>
+            <p>The bands touch at the valleys. There is neither a band gap nor an extended Fermi surface at neutrality: in the ideal limit, the density of states vanishes at the touching point.</p>
+            <h3>Density of states in the Dirac limit</h3>
+            <p>Per unit area, a circular region of radius \(q\) contains \(g\pi q^2/(2\pi)^2=gq^2/(4\pi)\) conduction states. The factor \(g=g_sg_v=2\times2=4\) counts spin and the two valleys; the six zone vertices must not be counted again.</p>
+            \[n_+(E)=\frac{g(E-\varepsilon_0)^2}{4\pi(\hbar v_F)^2},\qquad D(E)=\frac{g|E-\varepsilon_0|}{2\pi(\hbar v_F)^2}.\]
+            <p>This expression holds near neutrality. In the full spectrum, the saddle points at M produce van Hove singularities at \(E=\varepsilon_0\pm t\); a purely linear description does not capture them.</p>
+        </section>
+
+        <section id="simulation">
+            <div class="section-kicker">12 / Simulation</div>
+            <h2>From the analytical result to Python calculations</h2>
+            <p>The program uses NumPy to construct and diagonalize the \(H(k)\) blocks, and Matplotlib for the 2D and 3D figures. The images below are outputs of the included script, with \(a=2.46\) Å, \(t=2.7\) eV, and \(\varepsilon_0=0\).</p>
+            <h3>Band diagram</h3>
+            <figure>
+                <img loading="lazy" src="../assets/devlog_graphene/bands.png" alt="Valence and conduction bands along Γ K M Γ: ±8.1 eV at Γ, zero-energy touching at K, and ±2.7 eV at M." width="1535" height="927">
+                <figcaption>250 samples per segment, plus the final point. Γ, K, and M are included exactly along the path.</figcaption>
+            </figure>
+            <p>Band touching at K follows from the vanishing structure factor, rather than a correction imposed on the plot. The standard path contains K; K′ is tested separately in the code.</p>
+            <h3>2D map in the first zone</h3>
+            <figure>
+                <img loading="lazy" src="../assets/devlog_graphene/energy-map.png" alt="Conduction-band map over a hexagonal Brillouin zone, with the Γ K M Γ path and minima at all six vertices." width="1348" height="1032">
+                <figcaption>A 361 × 361 grid, masked outside the hexagon. The valence band is the negative of this map.</figcaption>
+            </figure>
+            <p>A Cartesian grid does not necessarily contain every K vertex. The exact zero is therefore verified by evaluating their coordinates directly, independently of image resolution.</p>
+            <h3>Both energy surfaces</h3>
+            <figure>
+                <img loading="lazy" src="../assets/devlog_graphene/dispersion-3d.png" alt="Opposite three-dimensional valence and conduction surfaces over the first hexagonal zone, touching at the valleys." width="1266" height="1047">
+                <figcaption>The horizontal axes are components of k in Å⁻¹; the vertical axis is energy in eV. The surfaces are subsampled only for Matplotlib rendering.</figcaption>
+            </figure>
+            <h3>Where the Dirac approximation stops being exact</h3>
+            <figure>
+                <img loading="lazy" src="../assets/devlog_graphene/dirac-limit.png" alt="Comparison of the exact tight-binding bands with the linear Dirac approximation around K along a qy = 0 cut." width="1553" height="858">
+                <figcaption>A cut around K, with qy = 0. The slope is the same near q = 0; nonlinear corrections appear as we move away from the valley.</figcaption>
+            </figure>
+            <h3>Numerical checks</h3>
+            <p>The script fails immediately if any of these checks fails: Hermiticity, reciprocal orthogonality, bond distances, gauge equivalence, periodicity, k → −k inversion, high-symmetry energies, or the Dirac slope. It also compares the closed-form expression with <code>numpy.linalg.eigvalsh</code> at 200 reproducible points.</p>
+            <div class="result">
+                <strong>Γ: ±8.10 eV · K/K′: 0 · M: ±2.70 eV</strong><br>
+                <span id="validation-summary">Numerical checks passed. Values and precision are recorded in results.json.</span>
+            </div>
+            <p class="downloads">
+                <a href="../assets/devlog_graphene/results.json" download>JSON results ↓</a>
+                <a href="../assets/devlog_graphene/bands.csv" download>Band data CSV ↓</a>
+            </p>
+        </section>
+
+        <section id="code">
+            <div class="section-kicker">13 / Reproduce</div>
+            <h2>The complete Python code</h2>
+            <p>The calculation runs locally. The website displays precomputed images, while the JavaScript explorer recalculates the same analytical dispersion when t changes. No Python backend is required to host this page.</p>
+            <pre><code>python -m pip install -r devlog/graphene/requirements.txt
 python devlog/graphene/simulate.py
 
 # A finer grid and a custom output directory:
@@ -273,9 +352,15 @@ python devlog/graphene/simulate.py --grid 601 --output results/graphene
 # Preview the website from the portfolio root:
 python -m http.server 8000
 # http://localhost:8000/devlog/graphene-tight-binding.html</code></pre>
-<p>With no options, figures and data are written to <code>assets/devlog_graphene/</code>. The functions <code>structure_factor</code>, <code>hamiltonian</code> and <code>energies</code> also accept arrays of k points.</p>
-<div class="code-toolbar"><a href="graphene/simulate.py" download>Download simulate.py ↓</a><button type="button" id="copy-python">Copy code</button><span id="copy-status" role="status"></span></div>
-<details class="source-details"><summary>Show the complete script · NumPy + Matplotlib</summary><pre><code id="python-source" class="language-python">&quot;&quot;&quot;Monolayer graphene, orthogonal nearest-neighbor tight binding.
+            <p>With no options, figures and data are written to <code>assets/devlog_graphene/</code>. The functions <code>structure_factor</code>, <code>hamiltonian</code> and <code>energies</code> also accept arrays of k points.</p>
+            <div class="code-toolbar">
+                <a href="graphene/simulate.py" download>Download simulate.py ↓</a>
+                <button type="button" id="copy-python">Copy code</button>
+                <span id="copy-status" role="status"></span>
+            </div>
+            <details class="source-details">
+                <summary>Show the complete script · NumPy + Matplotlib</summary>
+                <pre><code id="python-source" class="language-python">&quot;&quot;&quot;Monolayer graphene, orthogonal nearest-neighbor tight binding.
 Run: python devlog/graphene/simulate.py
 Units: lengths in Å, k in Å⁻¹, energies in eV. No web backend required.
 &quot;&quot;&quot;
@@ -473,23 +558,38 @@ def main():
 
 if __name__ == &quot;__main__&quot;:
     main()
-</code></pre></details>
-</section>
+</code></pre>
+            </details>
+        </section>
 
-<section id="limits">
-<div class="section-kicker">14 / Perspective</div><h2>What this model explains</h2>
-<p>The calculation starts with discrete geometry and reveals Dirac excitations at low energy. The gap closes through interference between the three hopping paths; the two-component structure comes directly from the A/B basis.</p>
-<p>Beyond this first study, next-nearest-neighbor hopping can break electron–hole symmetry, an A/B contrast can open a gap, and edges can create states absent from the periodic model. Interactions, spin–orbit effects, strain, and multilayers require additional terms. Quantitative comparison over a broad energy range would also require more parameters or an ab initio calculation.</p>
-<p>The finite patch shown in Three.js is used to inspect the geometry. The spectrum presented here belongs to an infinite periodic crystal; it is not the spectrum of a finite flake with edge states.</p>
-<h3>References and tools</h3>
-<ul class="references">
-<li>A. H. Castro Neto et al., <a href="https://arxiv.org/abs/0709.1163">The electronic properties of graphene</a>, Rev. Mod. Phys. 81, 109 (2009). General reference for the π bands and Dirac description.</li>
-<li><a href="https://threejs.org/manual/pages/installation.html">Three.js — Installation</a> and <a href="https://threejs.org/docs/pages/OrbitControls.html">OrbitControls</a>. Three.js r180, distributed under its MIT license.</li>
-<li><a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.eigvalsh.html">NumPy — eigvalsh</a> and <a href="https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.mplot3d.axes3d.Axes3D.plot_surface.html">Matplotlib — plot_surface</a>.</li>
-</ul>
-<p class="small-print">Derivation and calculations use the convention stated here. Figures are generated by the included script. The structure factor, its phases, and the valley coordinates are fixed together.</p>
-</section>
-<footer class="article-footer"><a href="../devlog.html">← Back to Devlog</a><a href="#article">Back to top ↑</a></footer>
-</article></main>
-<footer class="site-footer"><div class="container footer-row"><span>© 2026 Olivier Trudel</span><span>Physics · Mathematics · Simulation</span></div></footer>
-</body></html>
+        <section id="limits">
+            <div class="section-kicker">14 / Perspective</div>
+            <h2>What this model explains</h2>
+            <p>The calculation starts with discrete geometry and reveals Dirac excitations at low energy. The gap closes through interference between the three hopping paths; the two-component structure comes directly from the A/B basis.</p>
+            <p>Beyond this first study, next-nearest-neighbor hopping can break electron–hole symmetry, an A/B contrast can open a gap, and edges can create states absent from the periodic model. Interactions, spin–orbit effects, strain, and multilayers require additional terms. Quantitative comparison over a broad energy range would also require more parameters or an ab initio calculation.</p>
+            <p>The finite patch shown in Three.js is used to inspect the geometry. The spectrum presented here belongs to an infinite periodic crystal; it is not the spectrum of a finite flake with edge states.</p>
+            <h3>References and tools</h3>
+            <ul class="references">
+                <li>A. H. Castro Neto et al., <a href="https://arxiv.org/abs/0709.1163">The electronic properties of graphene</a>, Rev. Mod. Phys. 81, 109 (2009). General reference for the π bands and Dirac description.</li>
+                <li><a href="https://threejs.org/manual/pages/installation.html">Three.js — Installation</a> and <a href="https://threejs.org/docs/pages/OrbitControls.html">OrbitControls</a>. Three.js r180, distributed under its MIT license.</li>
+                <li><a href="https://numpy.org/doc/stable/reference/generated/numpy.linalg.eigvalsh.html">NumPy — eigvalsh</a> and <a href="https://matplotlib.org/stable/api/_as_gen/mpl_toolkits.mplot3d.axes3d.Axes3D.plot_surface.html">Matplotlib — plot_surface</a>.</li>
+            </ul>
+            <p class="small-print">Derivation and calculations use the convention stated here. Figures are generated by the included script. The structure factor, its phases, and the valley coordinates are fixed together.</p>
+        </section>
+
+        <footer class="article-footer">
+            <a href="../devlog.html">← Back to Devlog</a>
+            <a href="#article">Back to top ↑</a>
+        </footer>
+
+    </article>
+</main>
+
+<footer class="site-footer">
+    <div class="container footer-row">
+        <span>© 2026 Olivier Trudel</span>
+        <span>Physics · Mathematics · Simulation</span>
+    </div>
+</footer>
+</body>
+</html>

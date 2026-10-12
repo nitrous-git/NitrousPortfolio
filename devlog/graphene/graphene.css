@@ -1,80 +1,474 @@
 /* Isolated additions to styles.css and devlog-article.css. */
-.graphene-page { --cyan:#73c8dd; --amber:#edae73; --green:#c7db9c; }
-.graphene-article { max-width:900px; }
-.graphene-article h1 { font-size:clamp(2.7rem,6vw,4.7rem); line-height:1.07; }
-.graphene-article h1 span { color:#aaa; }
-.graphene-article .article-header { padding-bottom:34px; }
-.graphene-article .lead { margin:25px 0 20px; max-width:760px; color:#ddd; }
-.graphene-article p { color:#bbb; }
-.graphene-article h2 { font-size:clamp(1.6rem,3vw,2.05rem); line-height:1.25; letter-spacing:-.025em; }
-.graphene-article h3 { color:#e0e0e0; }
-.section-kicker { margin-bottom:14px; color:var(--cyan); font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; }
-.quick-stats { display:grid; grid-template-columns:repeat(4,1fr); margin-top:34px; border-block:1px solid var(--line); }
-.quick-stats>div { padding:22px 14px 22px 0; }
-.quick-stats strong { display:block; color:#eee; font-size:1.25rem; font-weight:500; }
-.quick-stats small { font-size:.75rem; color:#999; }
-.quick-stats span { display:block; margin-top:5px; color:#999; font-size:.73rem; }
-.graphene-article .toc { margin-top:50px; background:#141414; }
-.graphene-article .toc ol { columns:2; column-gap:36px; font-size:.92rem; }
-.graphene-article .toc li { break-inside:avoid; margin-top:7px; }
-.explorer-panel { border:1px solid #353535; background:#0b1014; }
-.viewer-toolbar { display:flex; flex-wrap:wrap; align-items:center; padding:12px; gap:8px; border-bottom:1px solid #2b3034; }
-.graphene-page button { font:inherit; font-size:.82rem; cursor:pointer; border:1px solid #3b4145; background:#181e22; color:#bbb; padding:9px 13px; border-radius:3px; }
-.graphene-page button:hover { background:#252e34; color:#fff; }
-.graphene-page button:focus-visible,.graphene-page input:focus-visible,.graphene-page a:focus-visible,.graphene-page summary:focus-visible { outline:2px solid var(--cyan); outline-offset:4px; }
-.graphene-page button.active { border-color:var(--cyan); color:var(--cyan); background:#12242a; }
-.viewer-tag { color:#7e939e; font-size:.7rem; margin-left:auto; }
-.scene { position:relative; width:100%; height:470px; overflow:hidden; }
-.scene canvas { display:block; width:100%; height:100%; touch-action:none; }
-.scene .scene-fallback { width:100%; height:100%; object-fit:contain; }
-.scene.interactive .scene-fallback { display:none; }
-.scene-status { position:absolute; left:16px; bottom:14px; right:16px; font-size:.76rem; color:#c5d8e3; background:#0b1014de; padding:7px 10px; pointer-events:none; }
-.scene-status.ready { display:none; }
-.viewer-controls { display:flex; align-items:center; flex-wrap:wrap; gap:15px; padding:15px; border-top:1px solid #2b3034; }
-.viewer-controls #lattice-controls,.viewer-controls #bands-controls { display:flex; align-items:center; flex-wrap:wrap; gap:15px; }
-.viewer-controls [hidden] { display:none!important; }
-.viewer-controls label { display:flex; align-items:center; gap:7px; font-size:.75rem; color:#bbb; }
-.viewer-controls input[type="range"] { width:85px; accent-color:var(--cyan); }
-.viewer-controls input[type="checkbox"] { accent-color:var(--cyan); }
-.viewer-controls output,#band-scale { color:#7e939e; font-size:.7rem; }
-.camera-controls { display:flex; gap:6px; margin-left:auto; }
-.camera-controls button { font-size:.72rem; padding:7px 10px; }
-.graphene-article .viewer-caption { font-size:.72rem; color:#84959f; margin:0; padding:12px 15px; border-top:1px solid #2b3034; }
-.dot { display:inline-block; width:7px; height:7px; border-radius:50%; margin:0 4px 1px 9px; }
-.a-dot{background:var(--cyan)} .b-dot{background:var(--amber)} .cell-dot{background:var(--green)}
-.equation { padding:1px 15px; margin:24px 0; background:#151b1e; border-left:2px solid var(--cyan); }
-.graphene-article mjx-container { color:#e2e2e2; }
-.graphene-article figure { border:1px solid var(--line); background:#111; }
-.graphene-article figure img { display:block; width:100%; height:auto; }
-.graphene-article figcaption { padding:13px 17px; border-top:1px solid var(--line); font-size:.8rem; line-height:1.6; color:#888; }
-.table-scroll { overflow-x:auto; }
-.table-scroll table { min-width:580px; }
-.graphene-article .note { border-left-color:#536973; color:#aaa; font-size:.9rem; }
-.graphene-article .result { border-color:#3b525b; background:#141c20; line-height:1.8; }
-.graphene-article .result span { color:#91a5af; font-size:.82rem; }
-.downloads,.code-toolbar { display:flex; flex-wrap:wrap; gap:18px; align-items:center; }
-.downloads a,.code-toolbar a { color:var(--cyan); font-size:.85rem; border-bottom:1px solid #37515b; padding-bottom:3px; }
-.source-details { margin-top:22px; border:1px solid var(--line); }
-.source-details summary { padding:17px; cursor:pointer; color:#bbb; font-size:.85rem; }
-.source-details pre { margin:0; border:0; border-top:1px solid var(--line); max-height:650px; overflow:auto; }
-.graphene-article pre { line-height:1.65; }
-#copy-status { color:var(--green); font-size:.75rem; }
-.graphene-article .small-print { color:#777; font-size:.8rem; }
-.graphene-article .references { font-size:.9rem; }
-.graphene-article .references a { color:var(--cyan); }
-.article-footer { display:flex; justify-content:space-between; gap:18px; font-size:.85rem; }
-.skip-link { position:absolute; left:15px; top:-70px; padding:10px 14px; background:#152a32; z-index:100; }
-.skip-link:focus { top:10px; }
-@media(max-width:760px) {
-  .quick-stats { grid-template-columns:1fr 1fr; }
-  .quick-stats>div { padding:15px 10px 15px 0; }
-  .graphene-article .toc ol { columns:1; }
-  .scene { height:350px; }
-  .viewer-tag { width:100%; margin:3px 0 0; }
-  .viewer-controls { gap:10px; }
-  .camera-controls { margin-left:0; }
-  .graphene-article h1 { font-size:clamp(2.45rem,9vw,3.4rem); }
-  .graphene-article .equation { padding-inline:8px; }
+
+.graphene-page {
+    --cyan: #73c8dd;
+    --amber: #edae73;
+    --green: #c7db9c;
 }
-@media(prefers-reduced-motion:reduce) { * { scroll-behavior:auto!important; } }
-@media print { .site-header,.site-footer,.toc,.viewer-controls,.viewer-toolbar,.code-toolbar,.source-details,.skip-link { display:none; } .scene canvas{display:none} .scene.interactive .scene-fallback {display:block} .scene-status{display:none} }
+
+.graphene-article {
+    max-width: 900px;
+}
+
+.graphene-article h1 {
+    font-size: clamp(2.7rem, 6vw, 4.7rem);
+    line-height: 1.07;
+}
+
+.graphene-article h1 span {
+    color: #aaa;
+}
+
+.graphene-article .article-header {
+    padding-bottom: 34px;
+}
+
+.graphene-article .lead {
+    margin: 25px 0 20px;
+    max-width: 760px;
+    color: #ddd;
+}
+
+.graphene-article p {
+    color: #bbb;
+}
+
+.graphene-article h2 {
+    font-size: clamp(1.6rem, 3vw, 2.05rem);
+    line-height: 1.25;
+    letter-spacing: -.025em;
+}
+
+.graphene-article h3 {
+    color: #e0e0e0;
+}
+
+.section-kicker {
+    margin-bottom: 14px;
+    color: var(--cyan);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.quick-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 34px;
+    border-block: 1px solid var(--line);
+}
+
+.quick-stats > div {
+    padding: 22px 14px 22px 0;
+}
+
+.quick-stats strong {
+    display: block;
+    color: #eee;
+    font-size: 1.25rem;
+    font-weight: 500;
+}
+
+.quick-stats small {
+    font-size: .75rem;
+    color: #999;
+}
+
+.quick-stats span {
+    display: block;
+    margin-top: 5px;
+    color: #999;
+    font-size: .73rem;
+}
+
+.graphene-article .toc {
+    margin-top: 50px;
+    background: #141414;
+}
+
+.graphene-article .toc ol {
+    columns: 2;
+    column-gap: 36px;
+    font-size: .92rem;
+}
+
+.graphene-article .toc li {
+    break-inside: avoid;
+    margin-top: 7px;
+}
+
+.explorer-panel {
+    border: 1px solid #353535;
+    background: #0b1014;
+}
+
+.viewer-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 12px;
+    gap: 8px;
+    border-bottom: 1px solid #2b3034;
+}
+
+.graphene-page button {
+    font: inherit;
+    font-size: .82rem;
+    cursor: pointer;
+    border: 1px solid #3b4145;
+    background: #181e22;
+    color: #bbb;
+    padding: 9px 13px;
+    border-radius: 3px;
+}
+
+.graphene-page button:hover {
+    background: #252e34;
+    color: #fff;
+}
+
+.graphene-page button:focus-visible,
+.graphene-page input:focus-visible,
+.graphene-page a:focus-visible,
+.graphene-page summary:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 4px;
+}
+
+.graphene-page button.active {
+    border-color: var(--cyan);
+    color: var(--cyan);
+    background: #12242a;
+}
+
+.viewer-tag {
+    color: #7e939e;
+    font-size: .7rem;
+    margin-left: auto;
+}
+
+.scene {
+    position: relative;
+    width: 100%;
+    height: 470px;
+    overflow: hidden;
+}
+
+.scene canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+}
+
+.scene .scene-fallback {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.scene.interactive .scene-fallback {
+    display: none;
+}
+
+.scene-status {
+    position: absolute;
+    left: 16px;
+    bottom: 14px;
+    right: 16px;
+    font-size: .76rem;
+    color: #c5d8e3;
+    background: #0b1014de;
+    padding: 7px 10px;
+    pointer-events: none;
+}
+
+.scene-status.ready {
+    display: none;
+}
+
+.viewer-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    border-top: 1px solid #2b3034;
+}
+
+.viewer-controls #lattice-controls,
+.viewer-controls #bands-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.viewer-controls [hidden] {
+    display: none !important;
+}
+
+.viewer-controls label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: .75rem;
+    color: #bbb;
+}
+
+.viewer-controls input[type="range"] {
+    width: 85px;
+    accent-color: var(--cyan);
+}
+
+.viewer-controls input[type="checkbox"] {
+    accent-color: var(--cyan);
+}
+
+.viewer-controls output,
+#band-scale {
+    color: #7e939e;
+    font-size: .7rem;
+}
+
+.camera-controls {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+}
+
+.camera-controls button {
+    font-size: .72rem;
+    padding: 7px 10px;
+}
+
+.graphene-article .viewer-caption {
+    font-size: .72rem;
+    color: #84959f;
+    margin: 0;
+    padding: 12px 15px;
+    border-top: 1px solid #2b3034;
+}
+
+.dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin: 0 4px 1px 9px;
+}
+
+.a-dot {
+    background: var(--cyan);
+}
+
+.b-dot {
+    background: var(--amber);
+}
+
+.cell-dot {
+    background: var(--green);
+}
+
+.equation {
+    padding: 1px 15px;
+    margin: 24px 0;
+    background: #151b1e;
+    border-left: 2px solid var(--cyan);
+}
+
+.graphene-article mjx-container {
+    color: #e2e2e2;
+}
+
+.graphene-article figure {
+    border: 1px solid var(--line);
+    background: #111;
+}
+
+.graphene-article figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.graphene-article figcaption {
+    padding: 13px 17px;
+    border-top: 1px solid var(--line);
+    font-size: .8rem;
+    line-height: 1.6;
+    color: #888;
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+.table-scroll table {
+    min-width: 580px;
+}
+
+.graphene-article .note {
+    border-left-color: #536973;
+    color: #aaa;
+    font-size: .9rem;
+}
+
+.graphene-article .result {
+    border-color: #3b525b;
+    background: #141c20;
+    line-height: 1.8;
+}
+
+.graphene-article .result span {
+    color: #91a5af;
+    font-size: .82rem;
+}
+
+.downloads,
+.code-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: center;
+}
+
+.downloads a,
+.code-toolbar a {
+    color: var(--cyan);
+    font-size: .85rem;
+    border-bottom: 1px solid #37515b;
+    padding-bottom: 3px;
+}
+
+.source-details {
+    margin-top: 22px;
+    border: 1px solid var(--line);
+}
+
+.source-details summary {
+    padding: 17px;
+    cursor: pointer;
+    color: #bbb;
+    font-size: .85rem;
+}
+
+.source-details pre {
+    margin: 0;
+    border: 0;
+    border-top: 1px solid var(--line);
+    max-height: 650px;
+    overflow: auto;
+}
+
+.graphene-article pre {
+    line-height: 1.65;
+}
+
+#copy-status {
+    color: var(--green);
+    font-size: .75rem;
+}
+
+.graphene-article .small-print {
+    color: #777;
+    font-size: .8rem;
+}
+
+.graphene-article .references {
+    font-size: .9rem;
+}
+
+.graphene-article .references a {
+    color: var(--cyan);
+}
+
+.article-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    font-size: .85rem;
+}
+
+.skip-link {
+    position: absolute;
+    left: 15px;
+    top: -70px;
+    padding: 10px 14px;
+    background: #152a32;
+    z-index: 100;
+}
+
+.skip-link:focus {
+    top: 10px;
+}
+
+@media (max-width: 760px) {
+    .quick-stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .quick-stats > div {
+        padding: 15px 10px 15px 0;
+    }
+
+    .graphene-article .toc ol {
+        columns: 1;
+    }
+
+    .scene {
+        height: 350px;
+    }
+
+    .viewer-tag {
+        width: 100%;
+        margin: 3px 0 0;
+    }
+
+    .viewer-controls {
+        gap: 10px;
+    }
+
+    .camera-controls {
+        margin-left: 0;
+    }
+
+    .graphene-article h1 {
+        font-size: clamp(2.45rem, 9vw, 3.4rem);
+    }
+
+    .graphene-article .equation {
+        padding-inline: 8px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        scroll-behavior: auto !important;
+    }
+}
+
+@media print {
+    .site-header,
+    .site-footer,
+    .toc,
+    .viewer-controls,
+    .viewer-toolbar,
+    .code-toolbar,
+    .source-details,
+    .skip-link {
+        display: none;
+    }
+
+    .scene canvas {
+        display: none;
+    }
+
+    .scene.interactive .scene-fallback {
+        display: block;
+    }
+
+    .scene-status {
+        display: none;
+    }
+}
