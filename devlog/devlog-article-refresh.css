@@ -1,0 +1,140 @@
+/* Graphene-inspired article polish — opt-in preview.
+   Load AFTER ../styles.css and devlog-article.css.
+   Activate on an article with: class="devlog-article article-refresh"
+   Does not affect Graphene or other devlogs until opted in. */
+
+.devlog-article.article-refresh {
+    --article-accent: #73c8dd;
+    max-width: 880px;
+}
+
+/* Typographic hierarchy and article rhythm */
+.devlog-article.article-refresh .article-header {
+    padding-bottom: 34px;
+}
+
+/*.devlog-article.article-refresh .article-header .meta {*/
+/*    color: var(--article-accent);*/
+/*    letter-spacing: .12em;*/
+/*}*/
+
+.devlog-article.article-refresh h1 {
+    font-size: clamp(2.6rem, 6vw, 4.5rem);
+    line-height: 1.07;
+}
+
+.devlog-article.article-refresh h2 {
+    font-size: clamp(1.6rem, 3vw, 2.05rem);
+    line-height: 1.25;
+    letter-spacing: -.025em;
+}
+
+.devlog-article.article-refresh h3 {
+    color: #e0e0e0;
+}
+
+.devlog-article.article-refresh p {
+    color: #bbb;
+}
+
+.devlog-article.article-refresh .lead {
+    max-width: 760px;
+    color: #ddd;
+}
+
+/* Optional manual kicker before selected h2 headings */
+.devlog-article.article-refresh .section-kicker {
+    margin-bottom: 13px;
+    color: var(--article-accent);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+/* Technical content surfaces */
+.devlog-article.article-refresh .toc {
+    margin-top: 44px;
+    background: #141414;
+}
+
+.devlog-article.article-refresh .toc ol {
+    columns: 2;
+    column-gap: 32px;
+}
+
+.devlog-article.article-refresh .toc li {
+    break-inside: avoid;
+}
+
+.devlog-article.article-refresh .note {
+    border-left-color: #536973;
+    background: #15191b;
+    color: #b7c1c5;
+    font-size: .93rem;
+}
+
+.devlog-article.article-refresh .result {
+    border-color: #3b525b;
+    background: #141c20;
+    line-height: 1.8;
+}
+
+/* Add a .equation wrapper only around important display equations. */
+.devlog-article.article-refresh .equation {
+    padding: 1px 15px;
+    margin: 24px 0;
+    border-left: 2px solid var(--article-accent);
+    background: #151b1e;
+}
+
+.devlog-article.article-refresh .equation mjx-container[display="true"] {
+    margin: 23px 0 !important;
+}
+
+/* Make content hyperlinks discoverable without recoloring global navigation. */
+.devlog-article.article-refresh section a,
+.devlog-article.article-refresh .article-header .note a,
+.devlog-article.article-refresh .article-footer a {
+    color: var(--article-accent);
+    text-decoration: underline;
+    text-decoration-color: #37515b;
+    text-underline-offset: 3px;
+}
+
+.devlog-article.article-refresh .toc a {
+    color: #c0ced3;
+}
+
+.devlog-article.article-refresh .toc a:hover,
+.devlog-article.article-refresh .back-link:hover {
+    color: var(--article-accent);
+}
+
+.devlog-article.article-refresh a:focus-visible {
+    outline: 2px solid var(--article-accent);
+    outline-offset: 4px;
+}
+
+/* Framed images and editorial captions */
+.devlog-article.article-refresh figure:not(.figure-placeholder) {
+    border: 1px solid var(--line);
+    background: #111;
+}
+
+.devlog-article.article-refresh figure:not(.figure-placeholder) > figcaption {
+    padding: 13px 17px;
+    margin: 0;
+    border-top: 1px solid var(--line);
+    color: #999;
+    font-size: .8rem;
+    line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+    .devlog-article.article-refresh .toc ol {
+        columns: 1;
+    }
+    .devlog-article.article-refresh .equation {
+        padding-inline: 8px;
+    }
+}
