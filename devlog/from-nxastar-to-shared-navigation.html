@@ -13,6 +13,8 @@
 
     <link rel="stylesheet" href="../styles.css" />
     <link rel="stylesheet" href="devlog-article.css" />
+    <link rel="stylesheet" href="devlog-article-refresh.css" />
+
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/styles/github-dark.min.css">
 
@@ -50,7 +52,7 @@
 </header>
 
 <main class="container">
-    <article class="devlog-article">
+    <article class="devlog-article article-refresh">
         <header class="article-header">
             <a class="back-link" href="../devlog.html">← Back to Devlog</a>
 
@@ -123,6 +125,8 @@
 
         <!-- ============================================================= -->
         <section id="navigation-stack">
+            <div class="section-kicker">01 / NAVIGATION</div>
+
             <h2>1. The Navigation Stack</h2>
 
             <p>
@@ -276,6 +280,8 @@ Vector3 limitedDirection =
 
         <!-- ============================================================= -->
         <section id="scaling-problem">
+            <div class="section-kicker">02 / COMPLEXITY</div>
+
             <h2>2. The Scaling Problem: \(N\) Units, \(N\) x A*</h2>
 
             <p>
@@ -356,6 +362,8 @@ Vector3 limitedDirection =
 
         <!-- ============================================================= -->
         <section id="shared-astar">
+            <div class="section-kicker">03 / PATH SAMPLING</div>
+
             <h2>3. First Attempt: One A* Path, Many Units</h2>
 
             <p> The first Shared Navigation experiment did not begin with Flow Fields. I first wanted to test a simpler idea: the classic <strong>group-leader-follow</strong> model, where one representative path describes the movement of the group and the individual units follow that shared intent. </p>
@@ -499,6 +507,8 @@ routeDirection.y = 0f;
 
         <!-- ============================================================= -->
         <section id="flow-fields">
+            <div class="section-kicker">04 / FLOW FIELDS</div>
+
             <h2>4. Flow Fields: Making Navigation Spatial</h2>
 
             <p>The representation changed from:</p>
@@ -758,6 +768,8 @@ AddDirectionSample(currentCell, c11, w11, ref blended, ref totalWeight);</code><
 
         <!-- ============================================================= -->
         <section id="clearance-local-motion">
+            <div class="section-kicker">05 / STATIC CLEARANCE FIELDS</div>
+
             <h2>5. Static Clearance, Mixed Radii and Local Movement</h2>
 
             <p>
@@ -833,6 +845,8 @@ AddDirectionSample(currentCell, c11, w11, ref blended, ref totalWeight);</code><
 
         <!-- ============================================================= -->
         <section id="formation-policy">
+            <div class="section-kicker">06 / TOPOLOGY</div>
+
             <h2>6. Navigation Is Not Formation Policy</h2>
 
             <p>
@@ -990,6 +1004,8 @@ AddDirectionSample(currentCell, c11, w11, ref blended, ref totalWeight);</code><
 
         <!-- ============================================================= -->
         <section id="optimization">
+            <div class="section-kicker">07 / OPTIMIZATION</div>
+
             <h2>7. Making the Flow Field Actually Fast</h2>
 
             <p>
@@ -1083,6 +1099,8 @@ AddDirectionSample(currentCell, c11, w11, ref blended, ref totalWeight);</code><
 
         <!-- ============================================================= -->
         <section id="payoff">
+            <div class="section-kicker">08 / RESULTS &amp; BENCHMARK</div>
+
             <h2>8. The Payoff</h2>
 
             <p>
@@ -1166,6 +1184,8 @@ AddDirectionSample(currentCell, c11, w11, ref blended, ref totalWeight);</code><
 
         <!-- ============================================================= -->
             <section id="conclusion">
+                <div class="section-kicker">09 / CONCLUSION</div>
+
                 <h2>9. Conclusion</h2>
 
                 <p>

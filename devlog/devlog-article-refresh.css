@@ -13,11 +13,6 @@
     padding-bottom: 34px;
 }
 
-/*.devlog-article.article-refresh .article-header .meta {*/
-/*    color: var(--article-accent);*/
-/*    letter-spacing: .12em;*/
-/*}*/
-
 .devlog-article.article-refresh h1 {
     font-size: clamp(2.6rem, 6vw, 4.5rem);
     line-height: 1.07;
