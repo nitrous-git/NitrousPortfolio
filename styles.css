@@ -4,6 +4,8 @@
     --muted: #999;
     --line: #2b2b2b;
     --max-width: 1080px;
+    --line-strong: #454545;
+    --accent-2: #b09aff;
 }
 
 * { box-sizing: border-box; }
@@ -828,4 +830,368 @@ h3 { margin-bottom: 6px; font-size: 1.05rem; }
         flex-direction: column;
     }
 
+}
+
+
+/* =========================================================
+   Styling-exp SITE POLISH
+   ========================================================= */
+.nav-links a {
+    color: #c5c5c5;
+    transition: color .16s ease;
+}
+
+.nav-links a:hover,
+.nav-links a[aria-current="page"] {
+    color: var(--text);
+}
+
+.nav-links a[aria-current="page"] {
+    text-decoration: underline;
+    text-decoration-color: var(--accent-2);
+    text-underline-offset: 6px;
+}
+
+a:focus-visible {
+    outline: 2px solid var(--accent-2);
+    outline-offset: 4px;
+}
+
+/* Homepage hero */
+.home-hero {
+    max-width: none;
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(250px, .7fr);
+    align-items: center;
+    gap: clamp(36px, 6vw, 84px);
+    margin-bottom: 54px;
+}
+
+.home-hero h1 {
+    max-width: 720px;
+    font-size: clamp(2.75rem, 5.3vw, 4.4rem);
+    line-height: 1.07;
+}
+
+.home-hero .lead {
+    max-width: 650px;
+    margin-bottom: 27px;
+    line-height: 1.75;
+}
+
+.home-hero-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 13px 23px;
+}
+
+.home-hero-actions a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 42px;
+    font-size: .93rem;
+    font-weight: 600;
+    transition: color .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.hero-action-primary {
+    padding: 9px 15px;
+    border: 1px solid rgba(176, 154, 255, .4);
+    background: rgba(176, 154, 255, .075);
+    border-radius: 3px;
+    color: #f3edff;
+}
+
+.hero-action-primary:hover {
+    background: rgba(176, 154, 255, .13);
+    border-color: var(--accent-2);
+    text-decoration: none;
+}
+
+.hero-action-secondary {
+    color: #bbb;
+}
+
+.hero-action-secondary:hover {
+    color: #fff;
+    text-decoration: none;
+}
+
+.home-hero-art {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    min-width: 0;
+}
+
+.home-hero-art::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 10%;
+    background: radial-gradient(ellipse, rgba(112, 67, 215, .18), transparent 68%);
+    filter: blur(15px);
+}
+
+.home-hero-art img {
+    width: min(100%, 295px);
+    height: auto;
+    filter: drop-shadow(0 0 18px rgba(111, 64, 222, .23));
+}
+
+.home-page .reel-section {
+    margin-bottom: 68px;
+}
+
+.home-page .reel-frame {
+    border-color: #353535;
+}
+
+.home-page .reel-video {
+    height: 100%;
+    object-fit: cover;
+}
+
+.home-page .section-head {
+    margin-bottom: 25px;
+}
+
+.home-page .section-head > a {
+    color: #c2b5ed;
+}
+
+/* Portfolio hierarchy and spacing */
+.portfolio-page .portfolio-intro {
+    max-width: 880px;
+    padding-bottom: 39px;
+    margin-bottom: 0;
+}
+
+.portfolio-page .portfolio-intro h1 {
+    font-size: clamp(3rem, 6vw, 4.4rem);
+    line-height: 1.07;
+}
+
+.portfolio-page .portfolio-intro .lead {
+    max-width: 740px;
+    margin-bottom: 0;
+    line-height: 1.75;
+}
+
+.portfolio-page .portfolio-jump-nav {
+    gap: 12px 25px;
+    padding-top: 22px;
+    margin-top: 29px;
+    border-top: 1px solid var(--line);
+}
+
+.portfolio-page .portfolio-jump-nav a {
+    padding-bottom: 4px;
+    color: #bcbcbc;
+    border-bottom: 1px solid transparent;
+}
+
+.portfolio-page .portfolio-jump-nav a:hover {
+    color: #e5dcff;
+    border-bottom-color: var(--accent-2);
+    text-decoration: none;
+}
+
+.portfolio-page .portfolio-section {
+    margin-top: 0;
+    padding: 59px 0 65px;
+    scroll-margin-top: 25px;
+}
+
+.portfolio-page #studio {
+    padding-top: 36px;
+}
+
+.portfolio-page .portfolio-feature-head,
+.portfolio-page .section-head {
+    margin-bottom: 27px;
+}
+
+.portfolio-page .portfolio-feature-head h2,
+.portfolio-page .section-head h2 {
+    font-size: clamp(1.55rem, 2.6vw, 1.95rem);
+    letter-spacing: -.025em;
+    line-height: 1.2;
+    margin-top: 5px;
+}
+
+.portfolio-page .portfolio-feature-head .meta,
+.portfolio-page .section-head .meta {
+    font-size: .75rem;
+    letter-spacing: .11em;
+}
+
+.portfolio-page .section-head a,
+.portfolio-page a.text-link {
+    color: #c2b5ed;
+}
+
+.portfolio-page .portfolio-section-intro {
+    margin-bottom: 30px;
+    color: #aaa;
+    line-height: 1.75;
+}
+
+.portfolio-page .studio-layout {
+    gap: 38px;
+}
+
+.portfolio-page .studio-copy p:not(.portfolio-large-copy) {
+    color: #b7b7b7;
+}
+
+.portfolio-page .studio-collage a,
+.portfolio-page .portfolio-wide-media,
+.portfolio-page .portfolio-image-link,
+.portfolio-page .music-cover {
+    border: 1px solid #343434;
+    border-radius: 3px;
+}
+
+.portfolio-page .portfolio-showcase {
+    border-color: #343434;
+    border-radius: 3px;
+    transition: border-color .18s ease;
+}
+
+.portfolio-page .portfolio-showcase:hover,
+.portfolio-page .video-card:hover {
+    border-color: #555;
+}
+
+.portfolio-page .portfolio-showcase-info {
+    padding: 21px;
+}
+
+.portfolio-page .portfolio-showcase-info h3 {
+    font-size: 1.12rem;
+}
+
+.portfolio-page .portfolio-showcase-info p {
+    line-height: 1.7;
+}
+
+.portfolio-page .portfolio-callout {
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-left: 2px solid #796aa7;
+    background: #151418;
+}
+
+.portfolio-page .portfolio-wide-feature {
+    gap: 40px;
+}
+
+.portfolio-page .portfolio-wide-copy h3 {
+    letter-spacing: -.02em;
+}
+
+.portfolio-page .video-card {
+    border-color: #343434;
+    border-radius: 3px;
+    overflow: hidden;
+    transition: border-color .18s ease;
+}
+
+.portfolio-page .video-card-copy p,
+.portfolio-page .music-feature-copy p,
+.portfolio-page .music-release p {
+    line-height: 1.75;
+}
+
+.portfolio-page .portfolio-closing {
+    max-width: none;
+    border-top: 1px solid var(--line);
+    padding-top: 48px;
+}
+
+.portfolio-page .portfolio-closing > p {
+    max-width: 710px;
+}
+
+@media (max-width: 800px) {
+    .home-hero {
+        grid-template-columns: minmax(0, 1fr) minmax(170px, .48fr);
+        gap: 24px;
+    }
+
+    .home-hero h1 {
+        font-size: clamp(2.5rem, 5.3vw, 3.5rem);
+    }
+
+    .portfolio-page .portfolio-section {
+        padding: 49px 0 53px;
+    }
+
+    .portfolio-page .studio-layout {
+        gap: 26px;
+    }
+}
+
+@media (max-width: 600px) {
+    .home-hero {
+        position: relative;
+        display: block;
+        margin-bottom: 42px;
+    }
+
+    .home-hero-copy {
+        position: relative;
+        z-index: 1;
+    }
+
+    .home-hero h1 {
+        font-size: clamp(2.6rem, 10vw, 3.5rem);
+    }
+
+    .home-hero-art {
+        position: absolute;
+        top: -16px;
+        right: -12px;
+        width: min(39vw, 160px);
+        aspect-ratio: 1;
+        opacity: .15;
+        pointer-events: none;
+    }
+
+    .home-hero .lead {
+        margin-bottom: 23px;
+    }
+
+    .home-hero .lead br {
+        display: none;
+    }
+
+    .home-hero-actions {
+        gap: 8px 16px;
+    }
+
+    .portfolio-page .portfolio-intro {
+        padding-bottom: 29px;
+    }
+
+    .portfolio-page .portfolio-jump-nav {
+        gap: 10px 18px;
+    }
+
+    .portfolio-page .portfolio-callout {
+        padding: 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-hero-actions a,
+    .nav-links a,
+    .portfolio-page .portfolio-showcase,
+    .portfolio-page .video-card {
+        transition: none;
+    }
 }
