@@ -12,6 +12,7 @@
 
     <link rel="stylesheet" href="../styles.css" />
     <link rel="stylesheet" href="devlog-article.css" />
+    <link rel="stylesheet" href="devlog-article-refresh.css">
 
     <link
             rel="stylesheet"
@@ -48,6 +49,7 @@
         <a class="brand" href="../index.html">Olivier Trudel</a>
 
         <nav class="nav-links">
+            <a href="../portfolio.html">Portfolio</a>
             <a href="../projects.html">Projects</a>
             <a href="../devlog.html">Devlog</a>
             <a href="../about.html">About</a>
@@ -56,7 +58,7 @@
 </header>
 
 <main class="container">
-    <article class="devlog-article">
+    <article class="devlog-article article-refresh">
 
         <header class="article-header">
             <a class="back-link" href="../devlog.html">← Back to Devlog</a>
@@ -118,6 +120,8 @@
 
         <!-- ============================================================= -->
         <section id="pixels-to-rays">
+            <div class="section-kicker">01 / CAMERA &amp; PROJECTION</div>
+
             <h2>1. From Pixels to Rays</h2>
 
             <p>
@@ -338,12 +342,12 @@ Ray ray(C, dir);</code></pre>
 
             <div class="result">
                 \[
-                \boxed{
+
                 t_{intersect}
                 =
                 -\frac{(P_0-Q)\cdot\mathbf n}
                        {\mathbf r\cdot\mathbf n}
-                }
+
                 \]
             </div>
 
@@ -414,6 +418,7 @@ Ray ray(C, dir);</code></pre>
 
         <!-- ============================================================= -->
         <section id="intersecting-scene">
+            <div class="section-kicker">02 / RAYTRACING</div>
             <h2>2. Intersecting the Scene</h2>
 
             <p>
@@ -563,6 +568,7 @@ Ray ray(C, dir);</code></pre>
 
         <!-- ============================================================= -->
         <section id="shading">
+            <div class="section-kicker">03 / ILLUMINATION</div>
             <h2>3. Shading the Hit Point</h2>
 
             <p>
@@ -571,8 +577,8 @@ Ray ray(C, dir);</code></pre>
                 the complete result as a decomposition:
             </p>
 
+            <div class="equation">
             \[
-            \boxed{
             L(p,\mathbf V)
             =
             L_{\text{emission}}
@@ -587,8 +593,8 @@ Ray ray(C, dir);</code></pre>
             \right)
             +
             k_rL_{\text{refl}}
-            }
             \]
+            </div>
 
             <p>
                 Where  \(\mathcal L\) represents all punctual lights in the scene. <br>
@@ -800,6 +806,8 @@ for (Object* objPtr : scene.objects)
 
         <!-- ============================================================= -->
         <section id="reflections">
+            <div class="section-kicker">04 / REFLECTIONS</div>
+
             <h2>4. Recursive Mirror Reflections</h2>
 
             <p>
@@ -815,13 +823,13 @@ for (Object* objPtr : scene.objects)
 
             <div class="result">
                 \[
-                \boxed{
+
                 \mathbf R
                 =
                 \mathbf I
                 -
                 2(\mathbf I\cdot\mathbf N)\mathbf N
-                }
+
                 \]
             </div>
 
@@ -873,6 +881,8 @@ if (trace(
 
         <!-- ============================================================= -->
         <section id="area-lights">
+            <div class="section-kicker">05 / SOFT SHADOWS</div>
+
             <h2>5. From Hard Shadows to Area Lights</h2>
 
             <p>
@@ -976,6 +986,8 @@ Vector v = w.cross(u, 0.0).normalized();</code></pre>
 
         <!-- ============================================================= -->
         <section id="disk-sampling">
+            <div class="section-kicker">06 / MONTE CARLO &amp SAMPLING</div>
+
             <h2>6. Uniform Disk Sampling and Monte Carlo</h2>
 
             <p>
@@ -1045,9 +1057,9 @@ Vector v = w.cross(u, 0.0).normalized();</code></pre>
 
             <div class="result">
                 \[
-                \boxed{
+
                 r=R\sqrt{\xi_1}
-                }
+
                 \]
             </div>
 
@@ -1058,9 +1070,9 @@ Vector v = w.cross(u, 0.0).normalized();</code></pre>
 
             <div class="result">
                 \[
-                \boxed{
+
                 \theta=2\pi\xi_2
-                }
+
                 \]
             </div>
 
@@ -1134,13 +1146,13 @@ Vector sample_pos = light.position + offset;</code></pre>
 
             <div class="result">
                 \[
-                \boxed{
+
                 \bar L_{\text{direct}}(p)
                 \approx
                 \frac{1}{N}
                 \sum_{i=1}^{N}
                 f(p,x_i)
-                }
+
                 \]
             </div>
 
@@ -1212,6 +1224,7 @@ specular += material.specular * light.specular * specular_sum * inv_samples;
 
         <!-- ============================================================= -->
         <section id="conclusion">
+            <div class="section-kicker">07 / CONCLUSION</div>
             <h2>7. Conclusion</h2>
 
             <p>
