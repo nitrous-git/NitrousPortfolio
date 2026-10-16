@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Two Views of Fluid Motion — Olivier Trudel</title>
+<meta name="description" content="Deriving and comparing an Eulerian streamfunction-vorticity solver with Lagrangian SPH for the classical lid-driven cavity benchmark, using Python and the Ghia reference data.">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="devlog-article.css">
+<link rel="stylesheet" href="devlog-article-refresh.css">
+<link rel="stylesheet" href="../devlog/lid-driven/lid-driven-cavity.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/styles/github-dark.min.css">
+<script>window.MathJax={tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},options:{enableMenu:false,skipHtmlTags:['script','noscript','style','textarea','pre','code']}};</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.12.0/highlight.min.js" onload="window.hljs&&hljs.highlightAll()"></script>
+</head><body>
+<header class="site-header"><div class="container nav"><a class="brand" href="../index.html">Olivier Trudel</a><nav class="nav-links" aria-label="Main navigation"><a href="../portfolio.html">Portfolio</a><a href="../projects.html">Projects</a><a href="../devlog.html">Devlog</a><a href="../about.html">About</a></nav></div></header>
+<main class="container" id="article"><article class="devlog-article article-refresh">
+<header class="article-header">
+<a class="back-link" href="../devlog.html">← Back to Devlog</a>
+<p class="meta">Computational Physics · Fluid Dynamics · Python · Numerical Methods</p>
+<h1>Two Views of Fluid Motion</h1>
+<p class="subtitle">Streamfunction–Vorticity and Smoothed Particle Hydrodynamics in a Lid-Driven Cavity</p>
+<p class="lead">A moving wall inside a square cavity generates a remarkably challenging flow: strong near-wall gradients, a central vortex, and smaller corner eddies. I used this classical CFD benchmark to derive and compare an Eulerian finite-difference solver with a mesh-free Lagrangian particle method.</p>
+<div class="fluid-stats" aria-label="Simulation overview">
+    <div><strong>2</strong><span>Numerical formulations</span></div>
+    <div><strong>50 × 50</strong><span>Grid nodes</span></div>
+    <div><strong>576</strong><span>Fluid particles</span></div>
+    <div><strong>100–1000</strong><span>Re tested (grid)</span></div>
+</div>
+<!--<figure class="hero-figure"><a href="../assets/devlog_lid_driven_cavity/06_euler_Re100_velocity_vorticity_centerline.png" target="_blank" rel="noopener noreferrer"><img src="../assets/devlog_lid_driven_cavity/grid_Re100_vorticity.png" alt="Original streamlines and vorticity field from the grid-based driven cavity solver at Reynolds number 100" width="582" height="490"></a><figcaption>Original grid-solver streamline and vorticity field at \(Re=100\). Open the figure for the full three-panel source output.</figcaption></figure>-->
+<div class="note"><strong>About this experiment.</strong> This article adapts my 2025 numerical-physics final project. Equations and observations follow the <a href="https://github.com/nitrous-git/LidDrivenCavity_FluidSimulation">original repository</a> and the exported notebook report. All stated benchmark errors are <em>original reported values</em>, not independently rerun measurements.</div>
+</header>
+<nav class="toc" aria-label="Table of contents"><strong>In this article</strong><ol><li><a href="#benchmark">The lid-driven cavity</a></li>
+<li><a href="#governing-equations">The continuum equations</a></li>
+<li><a href="#grid-solver">Streamfunction–vorticity</a></li>
+<li><a href="#grid-validation">Validating the grid solver</a></li>
+<li><a href="#sph-method">SPH: a particle formulation</a></li>
+<li><a href="#sph-validation">Validating SPH</a></li>
+<li><a href="#comparison">The Ghia comparison</a></li>
+<li><a href="#conclusion">Discussion and conclusion</a></li></ol></nav>
+<section id="benchmark" aria-labelledby="benchmark-heading">
+<div class="section-kicker">01 / THE BENCHMARK</div>
+<h2 id="benchmark-heading">1. The Lid-Driven Cavity Benchmark</h2>
+<p>A square cavity filled with viscous fluid may seem like a simple numerical problem: all four boundaries are solid, and the upper wall moves horizontally at a constant velocity. Yet this configuration creates a rich recirculating flow. The moving lid transfers momentum into the cavity, driving a primary vortex and, as viscosity decreases, smaller secondary eddies near the corners.</p>
+<p>The <em>lid-driven cavity</em> is a standard computational-fluid-dynamics benchmark precisely because the geometry is simple but the flow stresses the treatment of wall boundaries, velocity gradients, and numerical resolution. My objective was to solve it using two markedly different formulations:</p>
+<ul>
+<li>An <strong>Eulerian streamfunction–vorticity solver</strong>, which evolves fields on a stationary two-dimensional grid.</li>
+<li>A <strong>Lagrangian Smoothed Particle Hydrodynamics (SPH) solver</strong>, in which fluid is represented by interacting particles moving through the domain.</li>
+</ul>
+<p>The key question is not whether both methods produce a swirling pattern. It is how accurately they reproduce the same flow and where their numerical assumptions start to matter.</p>
+<figure><a href="../assets/devlog_lid_driven_cavity/01_cavity_geometry.png" rel="noopener noreferrer" target="_blank" title="Open original figure"><img alt="Cavity geometry with a moving lid" src="../assets/devlog_lid_driven_cavity/01_cavity_geometry.png"/></a><figcaption><em>Figure 1 — The lid-driven cavity. The top boundary translates with velocity \(U_{\mathrm{lid}}\); the other three walls are stationary. The normal velocity vanishes on every wall.</em></figcaption></figure>
+
+<p>For cavity length \(L\), kinematic viscosity \(\nu\), and lid speed \(U_{\mathrm{lid}}\), the dimensionless Reynolds number is</p>
+<div class="equation">\[
+\boxed{Re = \frac{U_{\mathrm{lid}}L}{\nu}.}
+\]</div>
+<p>It measures the relative importance of inertial and viscous effects. In this experiment, I first compared both solvers at \(Re=100\), then used the grid solver to examine the development of more complex vortices at \(Re=400\) and \(Re=1000\).</p>
+
+</section><section id="governing-equations" aria-labelledby="governing-equations-heading">
+<div class="section-kicker">02 / CONTINUUM MECHANICS</div>
+<h2 id="governing-equations-heading">2. From Navier–Stokes to Two Numerical Viewpoints</h2>
+<p>For an incompressible Newtonian fluid with constant density, the governing equations are</p>
+<div class="equation">\[
+\boxed{
+\frac{\partial\mathbf{u}}{\partial t}
++(\mathbf{u}\cdot\nabla)\mathbf{u}
+=-\frac{1}{\rho}\nabla p+\nu\nabla^2\mathbf{u}
+}
+\]</div>
+<p>and</p>
+<div class="equation">\[
+\boxed{\nabla\cdot\mathbf{u}=0.}
+\]</div>
+<p>Here \(\mathbf{u}=(u,v)\) is the velocity field, \(p\) the pressure, \(\rho\) the density, and \(\nu\) the kinematic viscosity. The nonlinear advection term, pressure gradient, and viscous diffusion all contribute to the motion.</p>
+<p>The two algorithms differ in <em>what is discretized</em>.</p>
+<p>In the <strong>Eulerian description</strong>, the computational locations remain fixed while velocity and vorticity change over time. In the <strong>Lagrangian description</strong>, positions move with the fluid, so the material derivative</p>
+<div class="math-display">\[
+\frac{D\mathbf{u}}{Dt}
+=\frac{\partial\mathbf{u}}{\partial t}
++(\mathbf{u}\cdot\nabla)\mathbf{u}
+\]</div>
+<p>naturally combines local acceleration and convection. This difference is the organizing principle for the two implementations below.</p>
+
+</section><section id="grid-solver" aria-labelledby="grid-solver-heading">
+<div class="section-kicker">03 / THE EULERIAN SOLVER</div>
+<h2 id="grid-solver-heading">3. Solver I — Streamfunction and Vorticity on a Grid</h2>
+<h3>3.1 Eliminating pressure in two dimensions</h3>
+<p>Rather than advancing pressure and both velocity components independently, the grid solver uses a <em>streamfunction</em> \(\psi(x,y,t)\), defined by</p>
+<div class="equation">\[
+u=\frac{\partial\psi}{\partial y},\qquad
+v=-\frac{\partial\psi}{\partial x}.
+\]</div>
+<p>This choice enforces the incompressibility constraint directly:</p>
+<div class="equation">\[
+\nabla\cdot\mathbf{u}
+=\frac{\partial^2\psi}{\partial x\partial y}
+-\frac{\partial^2\psi}{\partial y\partial x}=0,
+\]</div>
+<p>assuming the usual smoothness conditions for equality of mixed derivatives.</p>
+<p>The out-of-plane vorticity is</p>
+<div class="equation">\[
+\omega=\frac{\partial v}{\partial x}
+-\frac{\partial u}{\partial y}.
+\]</div>
+<p>Substituting the streamfunction derivatives gives</p>
+<div class="equation">\[
+\omega=-\frac{\partial^2\psi}{\partial x^2}
+-\frac{\partial^2\psi}{\partial y^2}
+=-\nabla^2\psi,
+\]</div>
+<p>so the streamfunction is recovered by solving a Poisson equation:</p>
+<div class="equation">\[
+\boxed{\nabla^2\psi=-\omega.}
+\]</div>
+<p>To derive the second equation, take the curl of the momentum equation. The pressure term disappears because \(\nabla\times\nabla p=0\) when density is constant. The remaining equation evolves vorticity by convection and diffusion:</p>
+<div class="equation">\[
+\boxed{
+\frac{\partial\omega}{\partial t}
++u\frac{\partial\omega}{\partial x}
++v\frac{\partial\omega}{\partial y}
+=\nu\nabla^2\omega.
+}
+\]</div>
+<p>We have thus replaced the original pressure–velocity system with a coupled pair: transport vorticity, solve a Poisson equation for \(\psi\), and reconstruct the velocity field.</p>
+<h3>3.2 Finite-difference discretization</h3>
+<p>On a uniform grid of spacing \(h\), the five-point Laplacian is</p>
+<div class="equation">\[
+\nabla_h^2\psi_{i,j}=
+\frac{\psi_{i+1,j}+\psi_{i-1,j}+\psi_{i,j+1}+\psi_{i,j-1}-4\psi_{i,j}}{h^2}.
+\]</div>
+<p>Inserting \(\nabla^2\psi=-\omega\) and isolating the center value yields the Poisson update</p>
+<div class="equation">\[
+\boxed{
+\psi_{i,j}^{*}=
+\frac{\psi_{i+1,j}+\psi_{i-1,j}+\psi_{i,j+1}+\psi_{i,j-1}+h^2\omega_{i,j}}{4}.
+}
+\]</div>
+<p>The implementation uses Gauss–Seidel iteration with successive over-relaxation (SOR):</p>
+<div class="equation">\[
+\psi_{i,j}^{\mathrm{new}}=
+(1-\alpha_{\mathrm{SOR}})\psi_{i,j}^{\mathrm{old}}
++\alpha_{\mathrm{SOR}}\psi_{i,j}^{*},
+\qquad\alpha_{\mathrm{SOR}}=1.2.
+\]</div>
+<p>The velocity is reconstructed with centered derivatives,</p>
+<div class="equation">\[
+u_{i,j}\approx\frac{\psi_{i,j+1}-\psi_{i,j-1}}{2h},\qquad
+v_{i,j}\approx-\frac{\psi_{i+1,j}-\psi_{i-1,j}}{2h},
+\]</div>
+<p>and the vorticity transport is approximated using centered spatial differences. The conceptual forward-time update is</p>
+<div class="equation">\[
+\omega_{i,j}^{n+1}=\omega_{i,j}^{n}
++\Delta t\left[
+-u_{i,j}^nD_x\omega_{i,j}^n
+-v_{i,j}^nD_y\omega_{i,j}^n
++\nu\nabla_h^2\omega_{i,j}^n
+\right].
+\]</div>
+<p><em>Implementation note:</em> the actual source applies its relaxation factor within the in-place vorticity update; this differs from a strict simultaneous forward-Euler transport step. That detail matters when interpreting its stability and reproducibility.</p>
+<div class="code-label">From the Jupyter notebook · Poisson/SOR iteration</div><pre><code class="language-python"># In the notebook: array u represents the streamfunction ψ,
+# array w represents vorticity ω.
+residual = 0.25 * (
+    w[i,j] * h**2
+    + u[i+1,j] + u[i-1,j]
+    + u[i,j+1] + u[i,j-1]
+) - u_prev[i,j]
+u[i,j] += omega * residual</code></pre><h3>3.3 Wall conditions and solver loop</h3>
+<p>The no-slip velocity conditions are</p>
+<div class="equation">\[
+\begin{aligned}
+\mathbf{u}(x,0)&amp;=(0,0),\\
+\mathbf{u}(0,y)&amp;=(0,0),\\
+\mathbf{u}(L,y)&amp;=(0,0),\\
+\mathbf{u}(x,L)&amp;=(U_{\mathrm{lid}},0).
+\end{aligned}
+\]</div>
+<p>Because the walls are impermeable, the streamfunction can be fixed to the same constant on the cavity boundary. Wall vorticity must then be estimated consistently with the tangential velocity. For example, the moving-lid condition used in the report is</p>
+<div class="equation">\[
+\omega_{i,N-1}=
+-\frac{2}{h^2}(\psi_{i,N-2}-\psi_{i,N-1})
+-\frac{2U_{\mathrm{lid}}}{h}.
+\]</div>
+<p>The repeated numerical process is straightforward:</p>
+<ol>
+<li>Relax \(\psi\) to approximately satisfy its Poisson equation.</li>
+<li>Reconstruct the velocity from \(\psi\).</li>
+<li>Advance the interior vorticity using convection and diffusion.</li>
+<li>Apply the wall-vorticity conditions and repeat.</li>
+</ol>
+<p>The baseline experiment used \(50\times50\) grid nodes, \(U_{\mathrm{lid}}=1\), \(\Delta t=0.01\), and 2,000 time steps. The notebook uses \(h=1/N\); for a boundary-inclusive set of 50 grid nodes, the geometric spacing would instead be \(1/(N-1)\). That discrepancy is retained here as an implementation limitation.</p>
+
+</section><section id="grid-validation" aria-labelledby="grid-validation-heading">
+<div class="section-kicker">04 / GRID VALIDATION</div>
+<h2 id="grid-validation-heading">4. Validating the Grid Solver</h2>
+<h3>4.1 Energy balance</h3>
+<p>A useful diagnostic comes from multiplying Navier–Stokes by the velocity and integrating over the cavity. With energy per unit density defined as</p>
+<div class="math-display">\[
+E(t)=\frac12\int_\Omega |\mathbf{u}|^2\,dA,
+\]</div>
+<p>an integration by parts separates transport through the boundary, viscous dissipation within the fluid, and viscous work supplied by the lid. Since the wall-normal velocity is zero everywhere and stationary walls do no mechanical work, the balance reduces to</p>
+<div class="equation">\[
+\boxed{
+\frac{dE}{dt}=
+-\nu\int_\Omega|\nabla\mathbf{u}|^2\,dA
++\nu\int_{\text{lid}}\mathbf{u}\cdot(\nabla\mathbf{u}\cdot\mathbf{n})\,dS.
+}
+\]</div>
+<p>The first term removes kinetic energy through viscosity. The second injects energy through the moving boundary. At steady state, the two contributions balance.</p>
+<p>The numerical code evaluates</p>
+<div class="math-display">\[
+E_h=\frac{h^2}{2}\sum_{i,j}(u_{i,j}^2+v_{i,j}^2).
+\]</div>
+<p>The original energy plot approaches a plateau near \(E_h\approx0.038\) after the initial transient, consistent with a flow approaching a stationary regime.</p>
+<h3>4.2 Incompressibility check</h3>
+<p>The divergence theorem gives</p>
+<div class="math-display">\[
+\int_\Omega\nabla\cdot\mathbf{u}\,dA
+=\oint_{\partial\Omega}\mathbf{u}\cdot\mathbf{n}\,dS=0
+\]</div>
+<p>for a cavity with no normal flow through its walls. The recorded signed discrete divergence integral fluctuates close to numerical roundoff, of order \(10^{-17}\).</p>
+<figure><a href="../assets/devlog_lid_driven_cavity/02_euler_energy_divergence_Re100.png" rel="noopener noreferrer" target="_blank" title="Open original figure"><img alt="Grid solver energy and integrated divergence" src="../assets/devlog_lid_driven_cavity/02_euler_energy_divergence_Re100.png"/></a><figcaption><em>Figure 2 — Grid solver at \(Re=100\): kinetic energy approaches a plateau; signed integrated divergence remains near zero.</em></figcaption></figure>
+
+<p>An important distinction is that the <em>integral</em> of divergence can vanish even when nonzero local divergence errors cancel. The result is a useful consistency check, but pointwise or RMS divergence is a stronger diagnostic. In addition, the streamfunction formulation already makes the velocity field discretely divergence-free in the compatible interior stencil.</p>
+
+</section><section id="sph-method" aria-labelledby="sph-method-heading">
+<div class="section-kicker">05 / THE LAGRANGIAN SOLVER</div>
+<h2 id="sph-method-heading">5. Solver II — Smoothed Particle Hydrodynamics</h2>
+<p>The grid solution advances flow quantities at fixed locations. SPH instead follows discrete fluid particles that carry mass, position, velocity, density, and pressure. Local field quantities are estimated by weighted sums over those particles.</p>
+<h3>5.1 From the Dirac delta to a smoothing kernel</h3>
+<p>Begin with the identity</p>
+<div class="equation">\[
+f(\mathbf{r})=\int_\Omega f(\mathbf{r}')\,
+\delta(\mathbf{r}-\mathbf{r}')\,d\mathbf{r}'.
+\]</div>
+<p>Replace the Dirac delta with a normalized smoothing kernel \(W(\mathbf{r}-\mathbf{r}',h)\), which approaches the delta distribution as the smoothing length \(h\) tends to zero. Approximate the remaining integral by particle volumes \(m_j/\rho_j\):</p>
+<div class="equation">\[
+\boxed{
+f(\mathbf{r}_i)\approx\sum_j\frac{m_j}{\rho_j}
+ f(\mathbf{r}_j)W(\mathbf{r}_i-\mathbf{r}_j,h).
+}
+\]</div>
+<p>Spatial derivatives can be estimated by differentiating the kernel:</p>
+<div class="equation">\[
+\nabla f(\mathbf{r}_i)\approx
+\sum_j\frac{m_j}{\rho_j}f(\mathbf{r}_j)\nabla W_{ij}.
+\]</div>
+<p>For the two-dimensional Gaussian used in the source,</p>
+<div class="equation">\[
+\boxed{
+W(\mathbf{r}_{ij},h)=\frac{1}{\pi h^2}
+\exp\left(-\frac{|\mathbf{r}_{ij}|^2}{h^2}\right).
+}
+\]</div>
+<p>Its gradient and Laplacian follow analytically:</p>
+<div class="equation">\[
+\nabla W_{ij}=
+-\frac{2\mathbf{r}_{ij}}{\pi h^4}
+\exp\left(-\frac{|\mathbf{r}_{ij}|^2}{h^2}\right),
+\]</div>
+<div class="equation">\[
+\nabla^2W_{ij}=
+\frac{4(|\mathbf{r}_{ij}|^2-h^2)}{\pi h^6}
+\exp\left(-\frac{|\mathbf{r}_{ij}|^2}{h^2}\right).
+\]</div>
+<div class="note"><strong>Geometric interpretation.</strong> The smoothing length \(h\) defines the scale at which a particle samples its surroundings. Nearby particles contribute strongly; contributions decay rapidly with separation under the Gaussian kernel.</div>
+<div class="code-label">Gaussian smoothing kernel · reformatted from the notebook</div><pre><code class="language-python">@numba.njit
+def W_2D(dx, dy, h):
+    r2 = dx**2 + dy**2
+    return np.exp(-r2 / h**2) / (np.pi * h**2)
+
+@numba.njit
+def gradW_2D(dx, dy, h):
+    r2 = dx**2 + dy**2
+    factor = -2.0 * np.exp(-r2 / h**2) / (np.pi * h**4)
+    return factor * dx, factor * dy</code></pre><h3>5.2 Particle pressure and viscosity</h3>
+<p>Following a fluid particle, the material form of momentum conservation is</p>
+<div class="equation">\[
+\frac{D\mathbf{u}}{Dt}=-\frac1\rho\nabla p+\nu\nabla^2\mathbf{u}.
+\]</div>
+<p>To obtain reciprocal pairwise pressure interactions, the notebook uses a symmetric form:</p>
+<div class="equation">\[
+\mathbf{a}_i^{\mathrm{pressure}}=
+-\sum_jm_j\left(\frac{p_i}{\rho_i^2}
++\frac{p_j}{\rho_j^2}\right)\nabla W_{ij}.
+\]</div>
+<p>The viscous contribution depends on velocity differences between interacting particles:</p>
+<div class="equation">\[
+\mathbf{a}_i^{\mathrm{visc}}=
+\nu\sum_jm_j\frac{\mathbf{u}_j-\mathbf{u}_i}{\rho_j}
+\nabla^2W_{ij}.
+\]</div>
+<p>Together,</p>
+<div class="equation">\[
+\boxed{
+\frac{D\mathbf{u}_i}{Dt}=
+-\sum_jm_j\left(\frac{p_i}{\rho_i^2}
++\frac{p_j}{\rho_j^2}\right)\nabla W_{ij}
++\nu\sum_jm_j\frac{\mathbf{u}_j-\mathbf{u}_i}{\rho_j}
+\nabla^2W_{ij}.
+}
+\]</div>
+<p>Density is determined by a kernel-weighted mass sum,</p>
+<div class="equation">\[
+\rho_i=\sum_jm_jW_{ij},
+\]</div>
+<p>and converted to pressure through a Tait-type equation of state,</p>
+<div class="equation">\[
+\boxed{
+p_i=B\left[\left(\frac{\rho_i}{\rho_0}\right)^\gamma-1\right].
+}
+\]</div>
+<p>The implementation also <strong>clamps negative pressure to zero</strong>, a numerical choice absent from the idealized equation above. This is a weakly-compressible pressure closure, not an exact algebraic incompressibility constraint.</p>
+<h3>5.3 Integration and boundaries</h3>
+<p>Once the acceleration is known, particle positions are advanced with a position-Verlet update,</p>
+<div class="equation">\[
+\boxed{
+\mathbf{r}_i^{n+1}=2\mathbf{r}_i^n-\mathbf{r}_i^{n-1}
++\Delta t^2\mathbf{a}_i^n.
+}
+\]</div>
+<p>The code estimates velocity from successive positions using</p>
+<div class="equation">\[
+\mathbf{u}_i^n\approx\frac{\mathbf{r}_i^n-\mathbf{r}_i^{n-1}}{\Delta t}.
+\]</div>
+<p>Boundary conditions are less direct for mobile particles. The experiment places <em>ghost particles</em> along all four walls. Their assigned velocities represent stationary walls or the moving lid, and they participate in the particle density and force sums. The code additionally clamps fluid positions within the cavity to prevent escape.</p>
+<div class="note"><strong>Boundary model.</strong> Stationary ghost particles line the side and bottom walls, while top-wall ghosts carry the prescribed horizontal lid velocity. Their inclusion in the interaction sums approximates the missing neighbors beyond the cavity.</div>
+<p>This is a practical first treatment, but it does not enforce no-slip with the same precision as specifying velocities on a fixed grid. The code calculates interactions against all fluid and ghost particles rather than using a spatial neighbor search, implying quadratic pairwise work as particle count grows.</p>
+<p>For \(Re=100\), the source sets \(U_{\mathrm{lid}}=10\), \(\nu=0.1\), \(h=0.04\), \(\rho_0=500\), \(B=1000\), \(\gamma=7\), and \(\Delta t=0.002\). Although the parameter <code>N</code> is set to 600, square-lattice construction actually produces \(24\times24=576\) fluid particles.</p>
+
+<div class="code-label">Particle update · notebook implementation</div><pre><code class="language-python">a = getAcc(pos, pos_old, ghost_pos, ghost_vel,
+           m, h, rho0, B, gamma, nu, dt)
+pos_new = pos + (pos - pos_old) + a * dt**2
+pos_new = enforce_boundaries(pos_new)
+pos_old = pos.copy()
+pos = pos_new.copy()</code></pre></section><section id="sph-validation" aria-labelledby="sph-validation-heading">
+<div class="section-kicker">06 / PARTICLE VALIDATION</div>
+<h2 id="sph-validation-heading">6. SPH Validation: Startup, Energy, and Particle Motion</h2>
+<p>The SPH energy diagnostic takes the natural particle form</p>
+<div class="math-display">\[
+E_{\mathrm{SPH}}=\frac12\sum_i m_i|\mathbf{u}_i|^2.
+\]</div>
+<p>The early part of the simulation exhibits a substantial energy transient as boundary-induced viscous motion and the initially non-equilibrated pressure field redistribute momentum. The trajectory then approaches an oscillating plateau, unlike the smoother grid-based result. This is consistent with the source's observations but does not, by itself, establish the accuracy of a steady-state SPH solution.</p>
+<p>The SPH divergence is estimated using relative velocity differences:</p>
+<div class="math-display">\[
+(\nabla\cdot\mathbf{u})_i\approx
+\sum_j\frac{m_j}{\rho_j}
+(\mathbf{u}_j-\mathbf{u}_i)\cdot\nabla W_{ij}.
+\]</div>
+<p>The numerical experiment integrates it approximately as</p>
+<div class="math-display">\[
+D_{\mathrm{SPH}}\approx\sum_i\frac{m_i}{\rho_i}
+(\nabla\cdot\mathbf{u})_i.
+\]</div>
+<p>As with the grid diagnostic, a small signed integral can hide strong local errors. A better later test would show both the distribution of particle densities and RMS local divergence.</p>
+<figure><a href="../assets/devlog_lid_driven_cavity/05_sph_energy_divergence_Re100.png" rel="noopener noreferrer" target="_blank" title="Open original figure"><img alt="SPH energy and integrated divergence" src="../assets/devlog_lid_driven_cavity/05_sph_energy_divergence_Re100.png"/></a><figcaption><em>Figure 3 — Original SPH startup response and signed divergence integral. Note that SPH and grid energy quantities use different mass/density conventions and should not be compared by their raw magnitudes.</em></figcaption></figure>
+
+<p>The particle snapshots offer a more intuitive view of the dynamics: the moving lid organizes the initial particle motion into a sustained recirculating flow.</p>
+<figure><a href="../assets/devlog_lid_driven_cavity/07_sph_flow_evolution_eight_snapshots.png" rel="noopener noreferrer" target="_blank" title="Open original figure"><img alt="Eight SPH snapshots" src="../assets/devlog_lid_driven_cavity/07_sph_flow_evolution_eight_snapshots.png"/></a><figcaption><em>Figure 4 — Eight recorded states of the SPH experiment, showing fluid particles, boundary ghosts, and local velocity directions. The plotting cell advances an already-evolved particle state, so the printed frame labels are relative to this additional run rather than time from original initialization.</em></figcaption></figure>
+
+
+
+<h3>Companion experiment: interactive 2D SPH</h3>
+<p>The repository also contains <a href="https://github.com/nitrous-git/LidDrivenCavity_FluidSimulation/blob/main/InteractiveSPH_2DSim.py"><code>InteractiveSPH_2DSim.py</code></a>, a separate real-time Pygame sandbox. It starts with 200 particles and a paintable 20 × 20 obstacle grid. Unlike the cavity benchmark, the interactive prototype includes gravity, collisions and a leapfrog update; its viscosity is implemented as velocity damping rather than the notebook's kernel-Laplacian term. It is therefore an exploratory companion, <strong>not</strong> a second run of the published cavity benchmark.</p>
+<div class="note"><strong>Interactive controls in the source.</strong> Left click paints occupied cells and right click clears them. Pressing <code>1</code> enables a middle-click impulse, while <code>2</code> enables adding a particle.</div>
+</section><section id="comparison" aria-labelledby="comparison-heading">
+<div class="section-kicker">07 / BENCHMARK RESULTS</div>
+<h2 id="comparison-heading">7. Comparing Against Ghia et al. (1982)</h2>
+<h3>7.1 The baseline at Re = 100</h3>
+<p>A direct comparison is possible using the horizontal velocity \(u\) along the vertical centerline \(x=L/2\). Ghia et al.'s reference table provides sampled velocities at known heights, which I compared against the numerical centerline profiles.</p>
+<figure><a href="../assets/devlog_lid_driven_cavity/06_euler_Re100_velocity_vorticity_centerline.png" rel="noopener noreferrer" target="_blank" title="Open original figure"><img alt="Grid solver at Re100" src="../assets/devlog_lid_driven_cavity/06_euler_Re100_velocity_vorticity_centerline.png"/></a><figcaption><em>Figure 5 — Original grid-based result at \(Re=100\): the velocity vector field, vorticity and streamlines, and centerline comparison. The centerline plot in the source has its vertical axis inverted (the moving lid is drawn at the bottom).</em></figcaption></figure>
+
+<p>The grid simulation clearly reproduces a large, stable primary recirculation cell. Its reported velocity error is 2.73% on the selected high-magnitude reference samples.</p>
+<figure><a href="../assets/devlog_lid_driven_cavity/sph_centerline_Re100_source.png" rel="noopener noreferrer" target="_blank" title="Open original figure"><img alt="SPH horizontal velocity compared with Ghia at Re100" src="../assets/devlog_lid_driven_cavity/sph_centerline_Re100_source.png"/></a><figcaption><em>Figure 6 — Original SPH centerline velocity comparison at \(Re=100\). The original composite also contained a vorticity map, but it is intentionally omitted here because the plotted derivative axes require correction. The original chart reverses the physical vertical orientation.</em></figcaption></figure>
+
+<p>At \(Re=100\), SPH produces qualitatively recognizable recirculation, but its velocity profile departs more noticeably from the benchmark, particularly approaching the moving wall. The reported masked error is 23.9665%.</p>
+<h3>7.2 Reading the error metric correctly</h3>
+<p>I used a pointwise relative error</p>
+<div class="math-display">\[
+E_{\mathrm{rel}}(y_i)=
+\frac{|u_{\mathrm{num}}(y_i)-u_{\mathrm{Ghia}}(y_i)|}
+{|u_{\mathrm{Ghia}}(y_i)|},
+\]</div>
+<p>then averages over a <strong>filtered</strong> subset to avoid values where the reference velocity is close to zero:</p>
+<div class="math-display">\[
+\overline{E}_{\mathrm{rel}}=\frac{100\%}{N_{\mathrm{selected}}}
+\sum_{i\in\mathrm{selected}}E_{\mathrm{rel}}(y_i).
+\]</div>
+<p>At \(Re=100\), both methods use \(|u_{\mathrm{Ghia}}|&gt;0.7\). With the 17 values present in the source table, only four near-lid points satisfy that criterion. The numbers therefore describe a <strong>selected high-speed part of the profile</strong>, not average error along the whole centerline.</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Method</th>
+<th style="text-align:right">\(Re\)</th>
+<th style="text-align:right">Reported masked error</th>
+<th>Reference filter</th>
+<th style="text-align:right">Selected Ghia points</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Grid \(\psi-\omega\)</td>
+<td style="text-align:right">100</td>
+<td style="text-align:right">2.73%</td>
+<td>\(|u_{\mathrm{Ghia}}|&gt;0.7\)</td>
+<td style="text-align:right">4/17</td>
+</tr>
+<tr>
+<td>SPH</td>
+<td style="text-align:right">100</td>
+<td style="text-align:right">23.9665%</td>
+<td>\(|u_{\mathrm{Ghia}}|&gt;0.7\)</td>
+<td style="text-align:right">4/17</td>
+</tr>
+<tr>
+<td>Grid \(\psi-\omega\)</td>
+<td style="text-align:right">400</td>
+<td style="text-align:right">5.36%</td>
+<td>\(|u_{\mathrm{Ghia}}|&gt;0.5\)</td>
+<td style="text-align:right">5/17</td>
+</tr>
+<tr>
+<td>Grid \(\psi-\omega\)</td>
+<td style="text-align:right">1000</td>
+<td style="text-align:right">12.36%</td>
+<td>\(|u_{\mathrm{Ghia}}|&gt;0.5\)</td>
+<td style="text-align:right">4/17</td>
+</tr>
+</tbody>
+</table></div>
+<p>The matched \(Re=100\) masks still establish a useful contrast between these <em>specific implementations</em>. For stronger future quantitative comparisons, it would be preferable to report an additional normalized whole-profile \(L_2\) error using a consistent sampling and normalization procedure.</p>
+<h3>7.3 Higher Reynolds numbers: grid solver only</h3>
+<p>As \(Re\) increases from 100 to 400 and then 1000, viscous effects are less dominant relative to inertia, and the flow develops sharper gradients and secondary corner vortices. These structures increasingly challenge the 50×50 mesh.</p>
+<figure><a href="../assets/devlog_lid_driven_cavity/09_euler_Re400_velocity_vorticity_centerline.png" rel="noopener noreferrer" target="_blank" title="Open original figure"><img alt="Grid solver at Re400" src="../assets/devlog_lid_driven_cavity/09_euler_Re400_velocity_vorticity_centerline.png"/></a><figcaption><em>Figure 7 — Original grid solver output at \(Re=400\), with an emerging secondary corner vortex.</em></figcaption></figure>
+
+<figure><a href="../assets/devlog_lid_driven_cavity/10_euler_Re1000_velocity_vorticity_centerline.png" rel="noopener noreferrer" target="_blank" title="Open original figure"><img alt="Grid solver at Re1000" src="../assets/devlog_lid_driven_cavity/10_euler_Re1000_velocity_vorticity_centerline.png"/></a><figcaption><em>Figure 8 — Original grid solver output at \(Re=1000\), showing a more structured recirculating flow and greater centerline discrepancy.</em></figcaption></figure>
+
+<p>The reported masked reference error rises to 5.36% at \(Re=400\) and 12.36% at \(Re=1000\). Since the reference-value mask is different from the one used at \(Re=100\), these percentages are not a fully uniform convergence study. Nonetheless, the plots and reported values motivate the expected numerical limitations: thin boundary layers and small corner vortices demand increased spatial resolution and more careful time integration.</p>
+<p>The notebook tested SPH <strong>only at \(Re=100\)</strong>. Any statement about its performance at 400 or 1000 must remain a proposal or prediction for future experiments, not an observed result.</p>
+
+<div class="note"><strong>Vorticity reconstruction.</strong> The original notebook interpolates particle velocities onto a Cartesian grid and differentiates them using <code>np.gradient</code>, but assigns the returned derivative axes in reverse order. The velocity profile above is retained; the SPH vorticity color map is omitted pending a corrected run. Here is the indexing needed to compute \(\omega_z=\partial_x v-\partial_y u\):</div><div class="code-label">Publication note · corrected derivative indexing (not a rerun)</div><pre><code class="language-python"># Axis 0 is y; axis 1 is x (NumPy image-grid convention).
+dv_dy, dv_dx = np.gradient(VI, dy_grid, dx_grid)
+du_dy, du_dx = np.gradient(UI, dy_grid, dx_grid)
+vorticity = dv_dx - du_dy</code></pre></section><section id="conclusion" aria-labelledby="conclusion-heading">
+<div class="section-kicker">08 / DISCUSSION</div>
+<h2 id="conclusion-heading">8. What These Experiments Revealed</h2>
+<p>The most revealing difference between the two solvers is not simply that one uses a grid and the other uses particles. It is how their representations change the meaning of differentiation, boundary conditions, numerical stability, and computational cost.</p>
+<p>The <strong>streamfunction–vorticity method</strong> is especially convenient for a two-dimensional incompressible cavity. The divergence-free condition is encoded by construction, the walls are represented directly on the grid, and the resulting velocity profile can be compared against established benchmark values. Its accuracy nevertheless declines when finer flow structures must be represented on a relatively coarse mesh.</p>
+<p>The <strong>SPH method</strong> replaces fixed-grid differentiation with kernel-weighted particle interactions. That grants a flexible Lagrangian description of motion but introduces sensitivity to kernel resolution, particle distribution, artificial compressibility, and wall modelling. In this first implementation, those limitations appear as a less accurate centerline profile and a more oscillatory energy history. The brute-force pairwise implementation also makes scaling expensive without a neighbor-search acceleration structure.</p>
+<p>The practical next steps would be to reconcile the grid spacing, validate the vorticity reconstruction, use stronger local incompressibility diagnostics, improve ghost-boundary treatment, and rerun controlled comparisons under consistent error metrics. The original experiment already establishes a clear computational lesson: <strong>two discretizations of the same governing equations can reproduce the same qualitative flow while delivering substantially different quantitative accuracy.</strong></p>
+
+</section>
+<footer class="article-footer"><p><strong>Source and reproducibility.</strong> <a href="https://github.com/nitrous-git/LidDrivenCavity_FluidSimulation">Simulation repository</a> · <a href="https://github.com/nitrous-git/LidDrivenCavity_FluidSimulation/blob/main/LidDrivenFluid_Notebook.ipynb">Jupyter notebook</a> · <a href="https://github.com/nitrous-git/LidDrivenCavity_FluidSimulation/blob/main/InteractiveSPH_2DSim.py">Interactive SPH prototype</a>. The plots are preserved from the original report; listed limitations should be accounted for before making quantitative claims beyond the source.</p><p><strong>Reference:</strong> U. Ghia, K. N. Ghia and C. T. Shin, “High-Re solutions for incompressible flow using the Navier–Stokes equations and a multigrid method,” <em>Journal of Computational Physics</em>, vol. 48, no. 3, pp. 387–411, 1982.</p><p><a href="../devlog.html">← Back to Devlog</a></p></footer>
+</article></main></body></html>

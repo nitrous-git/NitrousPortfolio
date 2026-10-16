@@ -1,0 +1,19 @@
+/* Fluid cavity devlog — additions to devlog-article.css + devlog-article-refresh.css. */
+.devlog-article.article-refresh .fluid-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin:32px 0 22px;background:var(--line);border:1px solid var(--line)}
+.fluid-stats>div{background:#151719;min-width:0;padding:17px 12px;display:flex;flex-direction:column;gap:7px}
+.fluid-stats strong{font-size:clamp(1.12rem,2.5vw,1.42rem);letter-spacing:-.035em;line-height:1.2;color:#e8eff1}
+.fluid-stats span{color:#98a3a7;font-size:.73rem;line-height:1.45}
+.devlog-article.article-refresh .hero-figure{margin:30px 0}
+.devlog-article.article-refresh figure img{max-height:none;object-fit:contain}
+.devlog-article.article-refresh figure>a{display:block;cursor:zoom-in}
+.devlog-article.article-refresh figure>a:focus-visible{outline:2px solid var(--article-accent);outline-offset:4px}
+.devlog-article.article-refresh .code-label{color:var(--article-accent);font-size:.76rem;letter-spacing:.025em;margin-top:25px;margin-bottom:-12px}
+.devlog-article.article-refresh .table-scroll{overflow-x:auto;margin:25px 0}
+.devlog-article.article-refresh .table-scroll table{min-width:620px;margin:0}
+.devlog-article.article-refresh .math-display{margin:24px 0;overflow-x:auto}
+.devlog-article.article-refresh figcaption em{font-style:normal}
+.devlog-article.article-refresh figure img[src*="01_cavity_geometry"]{width:min(100%,370px);margin:auto;background:#fff}
+.devlog-article.article-refresh figure img[src*="sph_centerline"]{max-width:630px;margin:auto}
+.devlog-article.article-refresh figure img[src*="07_sph_flow"]{background:#fff}
+.devlog-article.article-refresh .article-footer{color:#999;font-size:.88rem;line-height:1.8}
+@media(max-width:650px){.devlog-article.article-refresh .fluid-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.devlog-article.article-refresh .fluid-stats strong{font-size:1.25rem}}
