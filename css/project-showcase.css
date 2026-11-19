@@ -3,7 +3,7 @@
     --showcase-width: 1640px;
     --showcase-content-width: 1180px;
     --showcase-accent: var(--accent-2, #b09aff);
-    padding: 34px 0 96px;
+    padding: 0 0 96px;
 }
 .showcase-wide { width: min(var(--showcase-width), calc(100% - 64px)); margin-inline: auto; }
 .showcase-container { width: min(var(--showcase-content-width), calc(100% - 64px)); margin-inline: auto; }
@@ -14,11 +14,9 @@
 .project-showcase-page [hidden] { display: none !important; }
 
 /* Cinematic hero */
-.showcase-hero { margin-bottom: 80px; }
-.showcase-hero-media { position: relative; min-height: 320px; aspect-ratio: 16 / 8; overflow: hidden; isolation: isolate; background: #080808; border: 1px solid var(--line); }
-.showcase-hero-video, .showcase-hero-poster { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
-.showcase-hero-video { visibility: hidden; }
-.showcase-hero-video.is-ready { visibility: visible; }
+.showcase-hero { width: 100%; margin-bottom: 80px; }
+.showcase-hero-media { position: relative; width: 100%; height: clamp(320px, 50vw, 82vh); height: clamp(320px, 50vw, 82svh); overflow: hidden; isolation: isolate; background: #080808; }
+.showcase-hero-video { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; transform: scale(1.025); }
 .showcase-hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.38) 50%, rgba(0,0,0,.28)); pointer-events: none; }
 .showcase-hero-content { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; pointer-events: none; }
 .showcase-hero-content .showcase-eyebrow { color: #dedede; letter-spacing: .22em; }
@@ -29,7 +27,7 @@
 .showcase-motion-toggle:focus-visible { outline: 2px solid var(--showcase-accent); outline-offset: 3px; }
 
 /* Overview & project facts */
-.showcase-overview { display: grid; grid-template-columns: minmax(190px,.7fr) minmax(0,2fr); gap: clamp(40px,7vw,110px); padding: 10px 0 80px; border-bottom: 1px solid var(--line); }
+.showcase-overview { display: grid; grid-template-columns: minmax(190px, 0.7fr) minmax(0, 2fr); gap: clamp(40px, 5vw, 90px); padding: 10px 0 80px; border-bottom: 1px solid var(--line); }
 .showcase-facts { padding-top: 7px; }
 .showcase-fact { margin-bottom: 34px; padding-left: 18px; border-left: 1px solid #494052; }
 .showcase-fact h3 { margin-bottom: 10px; color: var(--showcase-accent); font-size: .86rem; font-weight: 600; letter-spacing: .075em; text-transform: uppercase; }
@@ -96,9 +94,9 @@
     .showcase-hero { margin-bottom: 55px; }
 }
 @media (max-width: 650px) {
-    .project-showcase-page { padding: 20px 0 60px; }
+    .project-showcase-page { padding: 0 0 60px; }
     .showcase-wide, .showcase-container { width: calc(100% - 32px); }
-    .showcase-hero-media { aspect-ratio: 4 / 3; min-height: 260px; }
+    .showcase-hero-media { height: auto; aspect-ratio: 4 / 3; min-height: 260px; }
     .showcase-hero-content { padding: 12px; }
     .showcase-hero-content h1 { font-size: clamp(1.65rem,8vw,3.6rem); }
     .showcase-hero-content .showcase-eyebrow { font-size: .61rem; letter-spacing: .12em; }

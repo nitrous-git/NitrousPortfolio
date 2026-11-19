@@ -24,12 +24,10 @@
 
 <main class="project-showcase-page">
     <!-- CINEMATIC HERO -->
-    <section class="showcase-hero showcase-wide" aria-labelledby="project-title">
+    <section class="showcase-hero" aria-labelledby="project-title">
         <div class="showcase-hero-media">
-            <!-- The image stays visible if the optional local reel is missing. -->
-            <img class="showcase-hero-poster" src="assets/img/Underworld_horizontal01.png" alt="" fetchpriority="high" />
-            <video class="showcase-hero-video" muted loop playsinline preload="metadata" poster="assets/img/Underworld_horizontal01.png" aria-hidden="true">
-                <source src="assets/underworld/Underworld_Reel.mp4" type="video/mp4" />
+            <video class="showcase-hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true">
+                <source src="assets/underworld/Underworld_Reel.mp4#t=4" type="video/mp4" />
             </video>
             <div class="showcase-hero-overlay"></div>
             <div class="showcase-hero-content">
@@ -37,16 +35,16 @@
                 <h1 id="project-title">UNDERWORLD</h1>
                 <p>Descend into Darkness</p>
             </div>
-            <button class="showcase-motion-toggle" type="button" hidden aria-label="Pause background video">Pause</button>
+            <button class="showcase-motion-toggle" type="button" aria-label="Pause background video">Pause</button>
         </div>
-        <div class="showcase-hero-footer">
+        <div class="showcase-hero-footer showcase-wide">
             <span>2D Action-Adventure Platformer</span>
             <span>Unity · C# · Pixel Art</span>
         </div>
     </section>
 
     <!-- PROJECT OVERVIEW -->
-    <section class="showcase-overview showcase-container" aria-labelledby="overview-title">
+    <section class="showcase-overview showcase-wide" aria-labelledby="overview-title">
         <aside class="showcase-facts" aria-label="Project facts">
             <div class="showcase-fact">
                 <h3>Roles</h3>
@@ -91,7 +89,7 @@
     </section>
 
     <!-- TECHNICAL SHOWCASE HEADER -->
-    <section class="showcase-container showcase-section-heading">
+    <section class="showcase-wide showcase-section-heading">
         <span class="showcase-eyebrow">DEVELOPMENT BREAKDOWN</span>
         <h2>Gameplay &amp; Technical Systems</h2>
         <p>A closer look at the gameplay systems, architectural decisions and design work behind Underworld.</p>
@@ -119,12 +117,10 @@
             </div>
         </div>
         <figure class="showcase-media">
-            <!-- Optional video. The existing artwork is shown until it loads. -->
-            <img class="showcase-media-fallback" src="assets/img/Underworld_horizontal01.png" alt="Underworld artwork" loading="lazy" />
-            <video class="showcase-optional-video" controls playsinline preload="metadata" poster="assets/img/Underworld_horizontal01.png" hidden aria-label="Combat demonstration">
+            <video controls autoplay muted loop playsinline preload="metadata" aria-label="Combat demonstration">
                 <source src="assets/underworld/CombatSystem.mp4" type="video/mp4" />
             </video>
-            <figcaption data-video-caption="Combat demonstration — melee attacks, parrying and ability execution.">Underworld — visual preview.</figcaption>
+            <figcaption>Combat demonstration — melee attacks, parrying and ability execution.</figcaption>
         </figure>
     </section>
 
@@ -149,10 +145,10 @@
             </div>
         </div>
         <figure class="showcase-media">
-            <video class="showcase-optional-video" controls playsinline preload="metadata" poster="assets/img/Underworld_horizontal01.png" hidden aria-label="Combat demonstration">
-                <source src="assets/underworld/CameraSystem.mp4" type="video/mp4" />
+            <video controls autoplay muted loop playsinline preload="metadata" aria-label="Dynamic camera demonstration">
+                <source src="assets/underworld/CameraSystem.mp4#t=12" type="video/mp4" />
             </video>
-            <figcaption data-image-caption="Dynamic camera system — C# implementation.">Environmental framing and traversal.</figcaption>
+            <figcaption>Dynamic camera system — environmental framing and traversal.</figcaption>
         </figure>
     </section>
 
@@ -177,11 +173,10 @@
             </div>
         </div>
         <figure class="showcase-media">
-            <img class="showcase-media-fallback" src="assets/img/Underworld_horizontal02.png" alt="Underworld artwork" loading="lazy" />
-            <video class="showcase-optional-video" controls playsinline preload="metadata" poster="assets/img/Underworld_horizontal02.png" hidden aria-label="Boss encounter demonstration">
-                <source src="assets/underworld/BossEncounter.mp4" type="video/mp4" />
+            <video controls autoplay muted loop playsinline preload="metadata" aria-label="Boss encounter demonstration">
+                <source src="assets/underworld/BossEncounter.mp4#t=15" type="video/mp4" />
             </video>
-            <figcaption data-video-caption="Boss encounter demonstration — attack sequencing and multi-phase combat.">Underworld — visual preview.</figcaption>
+            <figcaption>Boss encounter demonstration — attack sequencing and multi-phase combat.</figcaption>
         </figure>
     </section>
 
@@ -217,81 +212,32 @@
 </footer>
 
 <script>
-    // Progressive enhancement: show working media only; keep artwork when optional files are absent.
     const heroVideo = document.querySelector('.showcase-hero-video');
     const motionToggle = document.querySelector('.showcase-motion-toggle');
+    const videos = document.querySelectorAll('.project-showcase-page video');
     const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
-    let manuallyPaused = false;
-    let heroReady = false;
+
     function updateMotionLabel() {
         motionToggle.textContent = heroVideo.paused ? 'Play' : 'Pause';
         motionToggle.setAttribute('aria-label', heroVideo.paused ? 'Play background video' : 'Pause background video');
     }
-    function updateHeroMotion() {
-        if (!heroReady) return;
-        if (motionPreference.matches || manuallyPaused) heroVideo.pause();
-        else heroVideo.play().catch(updateMotionLabel);
+
+    function respectMotionPreference() {
+        videos.forEach(video => {
+            video.autoplay = !motionPreference.matches;
+            if (motionPreference.matches) video.pause();
+        });
         updateMotionLabel();
     }
-    heroVideo.addEventListener('loadeddata', () => {
-        heroReady = true;
-        heroVideo.classList.add('is-ready');
-        motionToggle.hidden = false;
-        updateHeroMotion();
-    });
-    function restoreHeroPoster() {
-        heroReady = false;
-        heroVideo.classList.remove('is-ready');
-        motionToggle.hidden = true;
-    }
-    heroVideo.addEventListener('error', restoreHeroPoster);
-    heroVideo.querySelector('source').addEventListener('error', restoreHeroPoster);
+
     heroVideo.addEventListener('play', updateMotionLabel);
     heroVideo.addEventListener('pause', updateMotionLabel);
     motionToggle.addEventListener('click', () => {
-        manuallyPaused = !heroVideo.paused;
-        if (manuallyPaused) heroVideo.pause();
-        else heroVideo.play().catch(updateMotionLabel);
+        if (heroVideo.paused) heroVideo.play().catch(updateMotionLabel);
+        else heroVideo.pause();
     });
-    if (motionPreference.addEventListener) motionPreference.addEventListener('change', updateHeroMotion);
-    if (heroVideo.readyState >= 2) {
-        heroReady = true;
-        heroVideo.classList.add('is-ready');
-        motionToggle.hidden = false;
-        updateHeroMotion();
-    }
-
-    document.querySelectorAll('.showcase-optional-video').forEach(video => {
-        const figure = video.closest('figure');
-        const fallback = figure.querySelector('.showcase-media-fallback');
-        const caption = figure.querySelector('figcaption');
-        const fallbackCaption = caption.textContent;
-        function showVideo() {
-            video.hidden = false;
-            fallback.hidden = true;
-            caption.textContent = caption.dataset.videoCaption;
-        }
-        function showFallback() {
-            video.hidden = true;
-            fallback.hidden = false;
-            caption.textContent = fallbackCaption;
-        }
-        video.addEventListener('loadedmetadata', showVideo);
-        video.addEventListener('error', showFallback);
-        video.querySelector('source').addEventListener('error', showFallback);
-        if (video.readyState >= 1) showVideo();
-    });
-
-    document.querySelectorAll('[data-optional-image]').forEach(img => {
-        const candidate = new Image();
-        candidate.onload = () => {
-            img.src = candidate.src;
-            img.alt = img.dataset.optionalAlt;
-            const caption = img.closest('figure').querySelector('figcaption');
-            caption.textContent = caption.dataset.imageCaption;
-        };
-        candidate.src = img.dataset.optionalImage;
-    });
+    motionPreference.addEventListener('change', respectMotionPreference);
+    respectMotionPreference();
 </script>
 </body>
 </html>
