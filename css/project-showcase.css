@@ -65,7 +65,15 @@
 
 /* Media */
 .showcase-media { min-width: 0; margin: 0; }
-.showcase-media img, .showcase-media video { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: #0a0a0a; border: 1px solid #343434; border-radius: 3px; }
+.showcase-media img, .showcase-media video, .showcase-media iframe
+{
+    display: block;
+    width: 100%; aspect-ratio: 16 / 9;
+    object-fit: contain;
+    background: #0a0a0a;
+    border: 1px solid #343434;
+    border-radius: 3px;
+}
 .showcase-media figcaption { margin-top: 12px; color: var(--muted); font-size: .79rem; line-height: 1.6; }
 
 /* Gallery */

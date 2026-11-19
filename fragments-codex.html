@@ -3,419 +3,294 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fragments of the CodeX — Case Study</title>
-    <meta name="description" content="Case study for Fragments of the CodeX, a UE5 vertical slice powered by the CodeX combat orchestration framework." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <title>Fragment of the CodeX — Olivier Trudel</title>
+    <meta name="description" content="Fragment of the CodeX — an Unreal Engine 5 dark-fantasy action-adventure Soulslike. A technical showcase of boss AI, interconnected world design and data-driven gameplay systems." />
     <link rel="stylesheet" href="styles.css" />
-    <style>
-        .codex-page {
-            display: grid;
-            gap: 26px;
-        }
-
-        .codex-cover-card,
-        .codex-section-card,
-        .codex-gallery-card {
-            border: 1px solid var(--line);
-            background: var(--panel);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-
-        .codex-cover-media {
-            position: relative;
-            min-height: 470px;
-            background:
-                    linear-gradient(180deg, rgba(4, 8, 14, 0.06), rgba(4, 8, 14, 0.62)),
-                    linear-gradient(145deg, #28190f 0%, #614226 28%, #151924 64%, #0d121b 100%);
-        }
-
-        .codex-cover-media img {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-            display: block;
-        }
-
-        .codex-cover-overlay {
-            position: absolute;
-            inset: 0;
-            background:
-                    linear-gradient(180deg, rgba(8, 10, 16, 0.04) 0%, rgba(8, 10, 16, 0.18) 35%, rgba(8, 10, 16, 0.86) 100%),
-                    radial-gradient(circle at 72% 24%, rgba(255, 200, 112, 0.18), transparent 20%);
-            z-index: 1;
-        }
-
-        .codex-cover-content {
-            position: absolute;
-            left: 28px;
-            right: 28px;
-            bottom: 26px;
-            z-index: 2;
-            display: flex;
-            justify-content: space-between;
-            align-items: end;
-            gap: 24px;
-        }
-
-        .codex-cover-copy {
-            max-width: 760px;
-        }
-
-        .codex-cover-copy h1 {
-            max-width: none;
-            font-size: clamp(2.4rem, 5vw, 4.7rem);
-            margin-top: 10px;
-        }
-
-        .codex-cover-copy p {
-            margin-top: 14px;
-            max-width: 64ch;
-            color: #d8e2f1;
-            font-size: 1.03rem;
-        }
-
-        .codex-cover-side {
-            min-width: 245px;
-            padding: 16px 18px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.09);
-            background: rgba(8, 12, 18, 0.6);
-            backdrop-filter: blur(10px);
-        }
-
-        .codex-cover-side .label {
-            display: block;
-            color: var(--accent-3);
-            text-transform: uppercase;
-            letter-spacing: 0.14em;
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .codex-cover-side strong {
-            display: block;
-            font-size: 1.05rem;
-            margin-bottom: 8px;
-        }
-
-        .codex-cover-side p {
-            color: #c8d4e7;
-            font-size: 0.94rem;
-        }
-
-        .codex-overview-grid,
-        .codex-tech-grid {
-            display: grid;
-            grid-template-columns: 1.08fr 0.92fr;
-            gap: 24px;
-        }
-
-        .codex-section-card {
-            padding: 26px;
-        }
-
-        .codex-section-card p + p {
-            margin-top: 16px;
-        }
-
-        .codex-facts {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
-            margin-top: 20px;
-        }
-
-        .codex-facts div {
-            padding: 16px;
-            border-radius: 18px;
-            border: 1px solid rgba(255,255,255,0.06);
-            background: rgba(255,255,255,0.025);
-        }
-
-        .codex-facts span {
-            display: block;
-            color: var(--muted-2);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 8px;
-        }
-
-        .codex-facts strong {
-            display: block;
-            color: var(--text);
-            font-size: 0.98rem;
-            line-height: 1.35;
-        }
-
-        .codex-list {
-            margin: 18px 0 0;
-            padding-left: 18px;
-            color: var(--muted);
-        }
-
-        .codex-list li + li {
-            margin-top: 10px;
-        }
-
-        .codex-gallery-card {
-            padding: 24px;
-        }
-
-        .codex-gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-            margin-top: 18px;
-        }
-
-        .codex-shot {
-            border-radius: 18px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.06);
-            background: rgba(255,255,255,0.02);
-        }
-
-        .codex-shot img {
-            display: block;
-            width: 100%;
-            aspect-ratio: 16 / 10;
-            object-fit: cover;
-            background: #0b1018;
-        }
-
-        .codex-shot-caption {
-            padding: 12px 14px 14px;
-        }
-
-        .codex-shot-caption strong {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 0.96rem;
-        }
-
-        .codex-shot-caption p {
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        @media (max-width: 980px) {
-            .codex-cover-content,
-            .codex-overview-grid,
-            .codex-tech-grid,
-            .codex-gallery-grid {
-                grid-template-columns: 1fr;
-                display: grid;
-            }
-
-            .codex-cover-side {
-                min-width: 0;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .codex-cover-media {
-                min-height: 530px;
-            }
-
-            .codex-cover-content {
-                left: 18px;
-                right: 18px;
-                bottom: 18px;
-            }
-
-            .codex-section-card,
-            .codex-gallery-card {
-                padding: 20px;
-            }
-
-            .codex-facts {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="css/project-showcase.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 </head>
 <body>
-<div class="page-noise"></div>
-<div class="page-glow glow-1"></div>
-<div class="page-glow glow-2"></div>
-
 <header class="site-header">
     <div class="container nav">
         <a class="brand" href="index.html">Olivier Trudel</a>
-        <nav class="nav-links">
-            <a href="projects.html">Projects</a>
+        <nav class="nav-links" aria-label="Main navigation">
+            <a href="portfolio.html">Portfolio</a>
+            <a href="projects.html" aria-current="page">Projects</a>
             <a href="devlog.html">Devlog</a>
             <a href="about.html">About</a>
         </nav>
     </div>
 </header>
 
-<main class="section">
-    <div class="container codex-page">
-        <section class="codex-cover-card reveal">
-            <div class="codex-cover-media">
-                <img src="assets/img/FOTCodeX_hori01_short.png" alt="Fragments of the CodeX cover screenshot" />
-                <div class="codex-cover-overlay"></div>
-                <div class="codex-cover-content">
-                    <div class="codex-cover-copy">
-                        <p class="eyebrow">Unreal Engine 5.6 · Vertical Slice · CodeX Framework</p>
-                        <h1>Fragments of the CodeX</h1>
-                        <p>
-                            A cinematic third-person action-adventure vertical slice set in broken timelines and collapsing worlds.
-                            It is designed to feel mysterious, dangerous, and epic, while also serving as the clearest expression
-                            of my Blueprint-first gameplay architecture work.
-                        </p>
-                        <div class="project-tags case-hero-tags" style="margin-top:18px;">
-                            <span>UE5.6</span>
-                            <span>Blueprint-first</span>
-                            <span>Combat Framework</span>
-                            <span>Traversal</span>
-                            <span>Boss Systems</span>
-                        </div>
-                    </div>
-
-                    <aside class="codex-cover-side">
-                        <span class="label">Project status</span>
-                        <strong>In development vertical slice</strong>
-                        <p>Built as both a playable experience and a framework validation project for future bosses, encounters, and worlds.</p>
-                    </aside>
-                </div>
+<main class="project-showcase-page">
+    <!-- CINEMATIC HERO -->
+    <section class="showcase-hero" aria-labelledby="project-title">
+        <div class="showcase-hero-media">
+            <img class="showcase-hero-video" data-media-fallback src="assets/img/FOTCodeX_hori01_short.png" alt="" />
+            <video class="showcase-hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true" hidden>
+                <source src="assets/codex/CodeX_Reel.mp4" type="video/mp4" />
+            </video>
+            <div class="showcase-hero-overlay"></div>
+            <div class="showcase-hero-content">
+                <span class="showcase-eyebrow">NITROUS STUDIO — IN DEVELOPMENT</span>
+                <h1 id="project-title">FRAGMENT OF THE CODEX</h1>
+                <p>Journey through a fractured world</p>
             </div>
-        </section>
+            <button class="showcase-motion-toggle" type="button" aria-label="Pause background video" hidden>Pause</button>
+        </div>
+        <div class="showcase-hero-footer showcase-wide">
+            <span>Third-Person Action-Adventure · Soulslike</span>
+            <span>Unreal Engine 5 · Blueprints · Gameplay Architecture</span>
+        </div>
+    </section>
 
-        <section class="codex-overview-grid">
-            <article class="codex-section-card reveal">
-                <p class="case-kicker">Game overview</p>
-                <h2>Broken time, fractured worlds, combat realms</h2>
-                <p>
-                    The fiction follows the public game pitch closely: time is broken, the worlds have splintered, and the player crosses
-                    ruined realities in search of the lost Fragments of the CodeX. The experience starts with atmosphere and mystery, then
-                    pushes the player into traversal, world transitions, and boss-driven combat spaces where reality itself feels unstable.
-                </p>
-                <p>
-                    The slice is intentionally structured like a real action-adventure experience rather than a disconnected combat demo.
-                    The Desert Rift opening, fractured transitions, and combat arenas all serve the same fantasy-sci-fi identity, while
-                    preserving a clear gameplay flow from exploration to confrontation.
-                </p>
-                <div class="hero-actions" style="margin-top:24px;">
-                    <a href="https://nitrous-studio.itch.io/fragment-of-the-codex" class="btn btn-primary">View on itch.io</a>
-                    <a href="projects.html" class="btn btn-secondary">Back to Projects</a>
-                </div>
-            </article>
-
-            <article class="codex-section-card reveal">
-                <p class="case-kicker">Project snapshot</p>
-                <h2>What this page is really about</h2>
-                <div class="codex-facts">
-                    <div>
-                        <span>Engine</span>
-                        <strong>Unreal Engine 5.6 with World Partition</strong>
-                    </div>
-                    <div>
-                        <span>Core approach</span>
-                        <strong>Blueprint-first component-based gameplay framework</strong>
-                    </div>
-                    <div>
-                        <span>Design pillar</span>
-                        <strong>Exploration, traversal, boss flow, and atmosphere</strong>
-                    </div>
-                    <div>
-                        <span>Portfolio value</span>
-                        <strong>Strongest signal for gameplay systems and architecture</strong>
-                    </div>
-                </div>
-            </article>
-        </section>
-
-        <section class="codex-tech-grid">
-            <article class="codex-section-card reveal">
-                <p class="case-kicker">Framework and systems</p>
-                <h2>Technical side of the production</h2>
-                <p>
-                    Fragments of the CodeX is where the underlying framework work becomes visible. The goal is not to hard-script one polished
-                    boss fight and stop there. The goal is to build a reusable gameplay spine that can support multiple bosses, traversal devices,
-                    encounter types, world transitions, and future slice expansion without collapsing into one-off Blueprint logic.
-                </p>
-                <ul class="codex-list">
-                    <li><strong>Blueprint component-based framework:</strong> systems are split into reusable modules instead of being buried inside one giant character or boss Blueprint.</li>
-                    <li><strong>Stack-based FSM architecture:</strong> boss behavior and encounter flow are driven by layered, state-oriented logic that is easier to extend and reason about than ad hoc scripting.</li>
-                    <li><strong>CodeX combat orchestration layer:</strong> shared combat structure, boss sequencing, timing, and behavioral control are treated as first-class systems.</li>
-                    <li><strong>Traversal and transition pipeline:</strong> teleporter logic, reveal effects, world transitions, and section-to-section flow are part of the same authored experience.</li>
-                    <li><strong>World Partition and streamed sections:</strong> large-scale level structure supports the feeling of crossing broken spaces without flattening everything into one arena.</li>
-                    <li><strong>Vertical slice validation:</strong> every feature has to work both as a player-facing moment and as proof that the framework can scale.</li>
-                </ul>
-            </article>
-
-            <article class="codex-section-card reveal">
-                <p class="case-kicker">Why it matters</p>
-                <h2>Professional value in the portfolio</h2>
-                <p>
-                    This project makes my technical profile much clearer. Underworld proves I can contribute to a shipped game. Fragments of the CodeX
-                    proves I think structurally: systems boundaries, reusable gameplay architecture, boss design abstractions, pacing pipelines,
-                    and the relationship between fiction, flow, and implementation.
-                </p>
-                <ul class="codex-list">
-                    <li>Shows advanced UE5 gameplay-systems thinking instead of isolated feature work.</li>
-                    <li>Connects architecture decisions directly to player-facing experience.</li>
-                    <li>Frames Blueprint work as intentional engineering, not quick prototyping only.</li>
-                    <li>Supports a longer-term vision beyond one vertical slice.</li>
-                </ul>
-            </article>
-        </section>
-
-        <section class="codex-gallery-card reveal">
-            <p class="case-kicker">Screenshots</p>
-            <h2>Selected in-game views</h2>
-            <p style="margin-top:12px; max-width:72ch;">
-                These screens help show the intended arc of the slice: a strong atmospheric opening, fractured-space traversal,
-                and combat spectacle anchored by authored encounter flow.
-            </p>
-
-            <div class="codex-gallery-grid">
-                <figure class="codex-shot">
-                    <img src="https://img.itch.zone/aW1hZ2UvNDQ0OTEwNi8yNjUxODEwMC5wbmc%3D/347x500/BmMY9H.png" alt="Fragments of the CodeX Desert Rift opening screenshot" />
-                    <figcaption class="codex-shot-caption">
-                        <strong>Desert Rift introduction</strong>
-                        <p>The opening scene establishes tone, scale, and the slow-burn fantasy of entering a broken world.</p>
-                    </figcaption>
-                </figure>
-
-                <figure class="codex-shot">
-                    <img src="https://img.itch.zone/aW1hZ2UvNDQ0OTEwNi8yNjUxODEwMS5wbmc%3D/347x500/%2FV1EIG.png" alt="Fragments of the CodeX fractured world screenshot" />
-                    <figcaption class="codex-shot-caption">
-                        <strong>World-space transition mood</strong>
-                        <p>Layered environments and surreal spaces reinforce the fantasy-sci-fi identity of the slice.</p>
-                    </figcaption>
-                </figure>
-
-                <figure class="codex-shot">
-                    <img src="https://img.itch.zone/aW1hZ2UvNDQ0OTEwNi8yNjUxODEwMy5wbmc%3D/347x500/xZnpnC.png" alt="Fragments of the CodeX combat screenshot" />
-                    <figcaption class="codex-shot-caption">
-                        <strong>Boss-driven combat pressure</strong>
-                        <p>The combat layer is designed around spectacle, timing, and reusable encounter logic rather than one-off scripting.</p>
-                    </figcaption>
-                </figure>
+    <!-- PROJECT OVERVIEW -->
+    <section class="showcase-overview showcase-wide" aria-labelledby="overview-title">
+        <aside class="showcase-facts" aria-label="Project facts">
+            <div class="showcase-fact">
+                <h3>Roles</h3>
+                <p>Gameplay Programmer<br />Game Designer<br />Technical &amp; Level Designer</p>
             </div>
-        </section>
-    </div>
+            <div class="showcase-fact">
+                <h3>Technologies</h3>
+                <p>Unreal Engine 5<br />Blueprints<br />Gameplay Tags<br />Behavior Trees<br />World Partition<br />UMG</p>
+            </div>
+            <div class="showcase-fact">
+                <h3>Project</h3>
+                <p>Nitrous Studio<br />Independent development</p>
+            </div>
+            <div class="showcase-fact">
+                <h3>Status</h3>
+                <p>In development<br />Playable vertical slice</p>
+            </div>
+        </aside>
+        <div class="showcase-overview-copy">
+            <span class="showcase-eyebrow">ABOUT THE PROJECT</span>
+            <h2 id="overview-title">Project overview</h2>
+            <p><strong>Fragment of the CodeX</strong> is a third-person dark-fantasy action-adventure Soulslike developed in Unreal Engine 5 under <strong>Nitrous Studio</strong>.</p>
+            <p>Set within a fractured world, the game brings together interconnected environments, expressive melee combat and encounters against powerful champions. Its gameplay combines deliberate weapon-based combat with distinct abilities such as Shadow Strike and weapon attunements.</p>
+            <p>At its core is a <strong>Blueprint-first, component-based gameplay architecture</strong>, designed to support reusable combat systems, enemy and boss behaviors, world traversal and progression. The project is both a playable experience and an ongoing exploration of scalable gameplay engineering.</p>
+            <h3>My contributions</h3>
+            <p>My work spans the design and implementation of the gameplay framework as well as its integration into an authored game experience:</p>
+            <ul class="showcase-contributions">
+                <li>Stack-based boss state machines, attack sequencing and encounter orchestration.</li>
+                <li>Enemy awareness, Behavior Trees, melee and ranged behaviors, and group combat coordination.</li>
+                <li>Player combat styles, animation-driven actions, defensive mechanics and Shadow Strike.</li>
+                <li>Interconnected level layouts, traversal systems, checkpoints and cinematic transitions.</li>
+                <li>Data-driven inventory, equipment, weapon switching and runtime stat integration.</li>
+                <li>UMG interfaces, character and weapon previews, HUD and gameplay feedback.</li>
+            </ul>
+            <div class="showcase-actions">
+                <a class="showcase-button" href="https://nitrous-studio.itch.io/fragment-of-the-codex" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-brands fa-itch-io" aria-hidden="true"></i> View on itch.io <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- TECHNICAL SHOWCASE HEADER -->
+    <section class="showcase-wide showcase-section-heading">
+        <span class="showcase-eyebrow">DEVELOPMENT BREAKDOWN</span>
+        <h2>Gameplay &amp; Technical Systems</h2>
+        <p>A closer look at the gameplay architecture, encounter systems and world design behind Fragment of the CodeX.</p>
+    </section>
+
+    <!-- 01 — AI & BOSS ARCHITECTURE -->
+    <section class="showcase-feature showcase-wide">
+        <div class="showcase-feature-copy">
+            <span class="showcase-eyebrow">01 / GAMEPLAY AI &amp; COMBAT ORCHESTRATION</span>
+            <h2>Combat AI &amp; Boss Architecture</h2>
+            <p class="showcase-feature-intro">Two complementary AI architectures support authored boss encounters and reactive enemies within a shared combat framework.</p>
+            <div class="showcase-detail">
+                <h3>Stack-Based Boss State Machine</h3>
+                <p>The boss framework uses <code>BP_BaseBoss</code>, <code>BPI_BossState</code> and reusable state objects derived from <code>BP_BossStateBase</code>. A stack-based FSM separates attack sequences and state transitions from the boss character's core responsibilities.</p>
+                <p>Boss-specific states can be combined with shared behaviors, allowing distinct movesets without rebuilding the underlying state machine for each encounter.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Boss Director &amp; Encounter Lifecycle</h3>
+                <p>The Director and Metrics components separate orchestration and runtime combat information from individual attack implementations. Attack animations, damage windows, movement and effects are coordinated with an encounter lifecycle that includes introduction, activation and fog-gate traversal.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Behavior Trees &amp; Group Combat</h3>
+                <p>Regular enemies use Unreal's Behavior Trees and Blackboard data for reactive decision-making. Awareness, patrol, pursuit and combat behaviors are separated from attack execution, while group coordination limits simultaneous attackers to improve encounter readability.</p>
+            </div>
+        </div>
+        <figure class="showcase-media">
+            <iframe
+                    src="https://www.youtube.com/embed/gB9ak8p043o?autoplay=1&mute=1&loop=1&playlist=gB9ak8p043o&controls=0&playsinline=1&rel=0&start=60"
+                    title="Combat AI and Boss Architecture"
+                    allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                    allowfullscreen>
+            </iframe>
+            <figcaption>
+                Boss encounters — attack sequencing, combat AI
+                and state-driven behavior.
+            </figcaption>
+        </figure>
+    </section>
+
+    <!-- 02 — LEVEL DESIGN & WORLD ARCHITECTURE -->
+    <section class="showcase-feature showcase-feature-reverse showcase-wide">
+        <div class="showcase-feature-copy">
+            <span class="showcase-eyebrow">02 / LEVEL DESIGN &amp; TECHNICAL DESIGN</span>
+            <h2>Level Design &amp; World Architecture</h2>
+            <p class="showcase-feature-intro">The world is designed as a sequence of interconnected spaces where exploration, verticality and enemy placement shape the rhythm of combat.</p>
+            <div class="showcase-detail">
+                <h3>Interconnected Level Design</h3>
+                <p>Modular environments are assembled around deliberate sightlines, elevation changes, branching paths and encounter spaces. Resting sites and planned shortcuts structure progression and create a recognizable sense of place.</p>
+                <p>The Ashen Keep layout explores these principles through a castle approach, lower ward, courtyard, ramparts and an upper keep leading toward a boss arena.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>World Partition &amp; Spatial Streaming</h3>
+                <p>The earlier Unreal vertical slice used World Partition to organize large environments into streamable sections. This provides an engine-level foundation for loading spatial content independently of the authored progression through a level.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Traversal &amp; World Transitions</h3>
+                <p>Reusable traversal devices, teleporter interactions and cinematic controllers connect exploration with encounter entrances. Checkpoints, resting interactions and transition effects help maintain continuity between traversal, combat and recovery.</p>
+            </div>
+        </div>
+        <figure class="showcase-media">
+            <video controls autoplay muted loop playsinline preload="metadata" aria-label="Level design and world traversal demonstration" hidden>
+                <source src="assets/codex/WorldTraversal.mp4" type="video/mp4" />
+            </video>
+            <div data-media-fallback>
+                <img src="assets/img/FOTCodeX_cover2_16x9.png" alt="Fragment of the CodeX project artwork" loading="lazy" />
+            </div>
+            <figcaption data-video-caption="World traversal demonstration — environmental composition, interconnected routes and transitions." data-fallback-caption="Project artwork — world traversal demonstration footage in preparation.">Project artwork — world traversal demonstration footage in preparation.</figcaption>
+        </figure>
+    </section>
+
+    <!-- 03 — EQUIPMENT & INVENTORY -->
+    <section class="showcase-feature showcase-wide">
+        <div class="showcase-feature-copy">
+            <span class="showcase-eyebrow">03 / GAMEPLAY SYSTEMS &amp; UI ARCHITECTURE</span>
+            <h2>Data-Driven Equipment &amp; Inventory</h2>
+            <p class="showcase-feature-intro">A component-based item framework separates item ownership, equipment assignments, runtime gameplay effects and user interface presentation.</p>
+            <div class="showcase-detail">
+                <h3>Data Assets &amp; Gameplay Tags</h3>
+                <p>Item identities and metadata are defined in a Data Table, with typed Data Assets supplying category-specific properties. <code>AC_InventoryComponent</code> manages owned items and quantities, while <code>AC_EquipmentComponent</code> resolves assignments through Gameplay Tag slots mapped to ItemIDs.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Weapon Kits &amp; Runtime Integration</h3>
+                <p>Primary and Secondary assignments are independent from the active weapon. Changing the active kit triggers an event-driven update of weapon actors, combat styles, animation sets and resolved stats. Sword-and-shield, Katana and Twinblade kits share the same equipment contract.</p>
+                <p>The system is being refined around a curated loadout of complete outfits, passive talismans, global attunements and recovery items rather than a large attribute-allocation system.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>UMG &amp; Real-Time Previews</h3>
+                <p>Character and weapon previews bring the equipment data into the interface through dedicated preview actors and render targets. The menu consumes the same inventory and equipment state as gameplay, rather than maintaining an independent loadout.</p>
+            </div>
+        </div>
+        <figure class="showcase-media">
+            <video controls autoplay muted loop playsinline preload="metadata" aria-label="Inventory, equipment and character previews demonstration" hidden>
+                <source src="assets/codex/EquipmentSystem.mp4" type="video/mp4" />
+            </video>
+            <div data-media-fallback>
+                <svg viewBox="0 0 800 450" role="img" aria-label="Diagram of the equipment architecture" style="display:block;width:100%;height:auto;background:#0a0a0a;border:1px solid #343434;border-radius:3px">
+                    <g fill="#17151a" stroke="#796aa7" stroke-width="1.5">
+                        <rect x="255" y="36" width="290" height="62" rx="3" />
+                        <rect x="255" y="144" width="290" height="62" rx="3" />
+                        <rect x="255" y="252" width="290" height="62" rx="3" />
+                        <rect x="40" y="368" width="220" height="52" rx="3" />
+                        <rect x="290" y="368" width="220" height="52" rx="3" />
+                        <rect x="540" y="368" width="220" height="52" rx="3" />
+                    </g>
+                    <g fill="none" stroke="#b09aff" stroke-width="1.5">
+                        <path d="M400 98 V144 M400 206 V252 M400 314 V368 M150 368 V340 H650 V368" />
+                    </g>
+                    <g fill="#e5e1e8" font-family="Arial, sans-serif" font-size="17" text-anchor="middle">
+                        <text x="400" y="62">Item Data Table + Data Assets</text>
+                        <text x="400" y="170">Inventory Component</text>
+                        <text x="400" y="278">Equipment Component</text>
+                        <text x="150" y="399">Player / Combat</text>
+                        <text x="400" y="399">Resolved Stats</text>
+                        <text x="650" y="399">UMG / HUD</text>
+                    </g>
+                    <g fill="#bcbcbc" font-family="Arial, sans-serif" font-size="13" text-anchor="middle">
+                        <text x="400" y="81">Identity and static definitions</text>
+                        <text x="400" y="189">Ownership and quantities</text>
+                        <text x="400" y="297">Gameplay Tag slots and active weapon</text>
+                    </g>
+                </svg>
+            </div>
+            <figcaption data-video-caption="Equipment demonstration — weapon switching, loadout selection and real-time character previews." data-fallback-caption="Equipment architecture — simplified data flow from definitions to gameplay and UI.">Equipment architecture — simplified data flow from definitions to gameplay and UI.</figcaption>
+        </figure>
+    </section>
+
+    <!-- CLOSING -->
+    <section class="showcase-container showcase-closing">
+        <span class="showcase-eyebrow">NITROUS STUDIO</span>
+        <h2>Building a cohesive gameplay experience.</h2>
+        <p>Fragment of the CodeX brings together reusable gameplay architecture, authored encounters and world design within a single action-adventure experience. Development continues with a focus on combat expression, technical consistency and presentation.</p>
+        <div class="showcase-actions">
+            <a class="showcase-button" href="https://nitrous-studio.itch.io/fragment-of-the-codex" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-itch-io" aria-hidden="true"></i> View on itch.io</a>
+            <a class="showcase-text-link" href="projects.html">Back to Projects →</a>
+        </div>
+    </section>
 </main>
 
 <footer class="site-footer">
     <div class="container footer-row">
-        <p>Fragments of the CodeX case study</p>
-        <a href="index.html" class="back-top">Back home</a>
+        <span>© 2026 Olivier Trudel</span>
+        <a href="index.html">Home</a>
     </div>
 </footer>
 
-<script src="script.js"></script>
+<script>
+    // Same motion behavior as Underworld, with a fallback for pending video files.
+    const heroVideo = document.querySelector('video.showcase-hero-video');
+    const motionToggle = document.querySelector('.showcase-motion-toggle');
+    const videos = document.querySelectorAll('.project-showcase-page video');
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function updateMotionLabel() {
+        motionToggle.textContent = heroVideo.paused ? 'Play' : 'Pause';
+        motionToggle.setAttribute('aria-label', heroVideo.paused ? 'Play background video' : 'Pause background video');
+    }
+
+    function respectMotionPreference() {
+        videos.forEach(video => {
+            video.autoplay = !motionPreference.matches;
+            if (motionPreference.matches) video.pause();
+            else if (!video.hidden) video.play().catch(() => {});
+        });
+        updateMotionLabel();
+    }
+
+    videos.forEach(video => {
+        const fallback = video.parentElement.querySelector('[data-media-fallback]');
+        const caption = video.parentElement.querySelector('[data-video-caption]');
+        const source = video.querySelector('source');
+        function showVideo() {
+            video.hidden = false;
+            if (fallback) fallback.hidden = true;
+            if (caption) caption.textContent = caption.dataset.videoCaption;
+            if (video === heroVideo) motionToggle.hidden = false;
+            if (!motionPreference.matches) video.play().catch(() => {});
+            else video.pause();
+            updateMotionLabel();
+        }
+        function showFallback() {
+            video.pause();
+            video.hidden = true;
+            if (fallback) fallback.hidden = false;
+            if (caption) caption.textContent = caption.dataset.fallbackCaption;
+            if (video === heroVideo) motionToggle.hidden = true;
+        }
+        video.addEventListener('loadedmetadata', showVideo);
+        video.addEventListener('error', showFallback);
+        source.addEventListener('error', showFallback);
+        if (video.readyState >= 1) showVideo();
+        else if (video.error) showFallback();
+    });
+
+    heroVideo.addEventListener('play', updateMotionLabel);
+    heroVideo.addEventListener('pause', updateMotionLabel);
+    motionToggle.addEventListener('click', () => {
+        if (heroVideo.paused) heroVideo.play().catch(updateMotionLabel);
+        else heroVideo.pause();
+    });
+    motionPreference.addEventListener('change', respectMotionPreference);
+    respectMotionPreference();
+</script>
 </body>
 </html>
