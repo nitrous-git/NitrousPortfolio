@@ -3,422 +3,295 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Underworld — Case Study</title>
-    <meta name="description" content="Case study for Underworld, a released Unity 2D pixel-art action-adventure platformer developed under Nitrous Studio." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <title>Underworld — Olivier Trudel</title>
+    <meta name="description" content="Underworld — a released 2D action-adventure platformer developed by a two-person team at Nitrous Studio. Gameplay programming, combat systems, camera architecture and boss design." />
     <link rel="stylesheet" href="styles.css" />
-    <style>
-        .uw-hero {
-            display: grid;
-            gap: 26px;
-        }
-
-        .uw-cover-card,
-        .uw-section-card,
-        .uw-gallery-card {
-            border: 1px solid var(--line);
-            background: var(--panel);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-        }
-
-        .uw-cover-media {
-            position: relative;
-            min-height: 430px;
-            background:
-                    linear-gradient(180deg, rgba(4, 8, 14, 0.04), rgba(4, 8, 14, 0.54)),
-                    linear-gradient(135deg, #081019 0%, #101b2c 38%, #111221 100%);
-        }
-
-        .uw-cover-media img {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-            display: block;
-        }
-
-        .uw-cover-overlay {
-            position: absolute;
-            inset: 0;
-            background:
-                    linear-gradient(180deg, rgba(6, 9, 14, 0.02) 0%, rgba(6, 9, 14, 0.18) 34%, rgba(6, 9, 14, 0.82) 100%),
-                    radial-gradient(circle at 76% 22%, rgba(57, 178, 255, 0.18), transparent 18%);
-            z-index: 1;
-        }
-
-        .uw-cover-content {
-            position: absolute;
-            left: 28px;
-            right: 28px;
-            bottom: 26px;
-            z-index: 2;
-            display: flex;
-            justify-content: space-between;
-            align-items: end;
-            gap: 24px;
-        }
-
-        .uw-cover-copy {
-            max-width: 700px;
-        }
-
-        .uw-cover-copy h1 {
-            max-width: none;
-            font-size: clamp(2.5rem, 5vw, 4.8rem);
-            margin-top: 10px;
-        }
-
-        .uw-cover-copy p {
-            margin-top: 14px;
-            max-width: 60ch;
-            color: #d6e1f1;
-            font-size: 1.03rem;
-        }
-
-        .uw-cover-side {
-            min-width: 220px;
-            padding: 16px 18px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.09);
-            background: rgba(8, 12, 18, 0.58);
-            backdrop-filter: blur(10px);
-        }
-
-        .uw-cover-side .label {
-            display: block;
-            color: var(--accent-2);
-            text-transform: uppercase;
-            letter-spacing: 0.14em;
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .uw-cover-side strong {
-            display: block;
-            font-size: 1.05rem;
-            margin-bottom: 8px;
-        }
-
-        .uw-cover-side p {
-            color: #c8d4e7;
-            font-size: 0.94rem;
-        }
-
-        .uw-overview-grid,
-        .uw-tech-grid {
-            display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
-            gap: 24px;
-        }
-
-        .uw-section-card {
-            padding: 26px;
-        }
-
-        .uw-section-card p + p {
-            margin-top: 16px;
-        }
-
-        .uw-facts {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
-            margin-top: 20px;
-        }
-
-        .uw-facts div {
-            padding: 16px;
-            border-radius: 18px;
-            border: 1px solid rgba(255,255,255,0.06);
-            background: rgba(255,255,255,0.025);
-        }
-
-        .uw-facts span {
-            display: block;
-            color: var(--muted-2);
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 8px;
-        }
-
-        .uw-facts strong {
-            display: block;
-            color: var(--text);
-            font-size: 0.98rem;
-            line-height: 1.35;
-        }
-
-        .uw-list {
-            margin: 18px 0 0;
-            padding-left: 18px;
-            color: var(--muted);
-        }
-
-        .uw-list li + li {
-            margin-top: 10px;
-        }
-
-        .uw-gallery-card {
-            padding: 24px;
-        }
-
-        .uw-gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-            margin-top: 18px;
-        }
-
-        .uw-shot {
-            border-radius: 18px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.06);
-            background: rgba(255,255,255,0.02);
-        }
-
-        .uw-shot img {
-            display: block;
-            width: 100%;
-            aspect-ratio: 16 / 10;
-            object-fit: cover;
-            background: #0b1018;
-        }
-
-        .uw-shot-caption {
-            padding: 12px 14px 14px;
-        }
-
-        .uw-shot-caption strong {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 0.96rem;
-        }
-
-        .uw-shot-caption p {
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        @media (max-width: 980px) {
-            .uw-cover-content,
-            .uw-overview-grid,
-            .uw-tech-grid,
-            .uw-gallery-grid {
-                grid-template-columns: 1fr;
-                display: grid;
-            }
-
-            .uw-cover-content {
-                align-items: end;
-            }
-
-            .uw-cover-side {
-                min-width: 0;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .uw-cover-media {
-                min-height: 500px;
-            }
-
-            .uw-cover-content {
-                left: 18px;
-                right: 18px;
-                bottom: 18px;
-            }
-
-            .uw-section-card,
-            .uw-gallery-card {
-                padding: 20px;
-            }
-
-            .uw-facts {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="css/project-showcase.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 </head>
 <body>
-<div class="page-noise"></div>
-<div class="page-glow glow-1"></div>
-<div class="page-glow glow-2"></div>
-
 <header class="site-header">
     <div class="container nav">
         <a class="brand" href="index.html">Olivier Trudel</a>
-        <nav class="nav-links">
-            <a href="projects.html">Projects</a>
+        <nav class="nav-links" aria-label="Main navigation">
+            <a href="portfolio.html">Portfolio</a>
+            <a href="projects.html" aria-current="page">Projects</a>
             <a href="devlog.html">Devlog</a>
             <a href="about.html">About</a>
         </nav>
     </div>
 </header>
 
-<main class="section">
-    <div class="container uw-hero">
-        <section class="uw-cover-card reveal">
-            <div class="uw-cover-media">
-                <img src="https://img.itch.zone/aW1nLzI2NTIwNTExLnBuZw%3D%3D/original/fd6zIf.png" alt="Underworld cover art" />
-                <div class="uw-cover-overlay"></div>
-                <div class="uw-cover-content">
-                    <div class="uw-cover-copy">
-                        <p class="eyebrow">Unity · Released Game · 2D Pixel-Art Action Adventure</p>
-                        <h1>Underworld</h1>
-                        <p>
-                            A released sci-fi action-platformer built around exploration, precise melee combat, atmosphere,
-                            and a strong comic-book style identity. Underworld presents a darker descent-driven world while
-                            staying readable, playable, and production-minded.
-                        </p>
-                        <div class="project-tags case-hero-tags" style="margin-top:18px;">
-                            <span>Unity</span>
-                            <span>C#</span>
-                            <span>2D Platformer</span>
-                            <span>Pixel Art</span>
-                            <span>Released on itch.io</span>
-                        </div>
-                    </div>
-
-                    <aside class="uw-cover-side">
-                        <span class="label">Project status</span>
-                        <strong>Public released build</strong>
-                        <p>Browser-playable and positioned as a full player-facing game, not just an internal prototype.</p>
-                    </aside>
-                </div>
+<main class="project-showcase-page">
+    <!-- CINEMATIC HERO -->
+    <section class="showcase-hero showcase-wide" aria-labelledby="project-title">
+        <div class="showcase-hero-media">
+            <!-- The image stays visible if the optional local reel is missing. -->
+            <img class="showcase-hero-poster" src="assets/img/Underworld_horizontal01.png" alt="" fetchpriority="high" />
+            <video class="showcase-hero-video" muted loop playsinline preload="metadata" poster="assets/img/Underworld_horizontal01.png" aria-hidden="true">
+                <source src="assets/underworld/Underworld_Reel.mp4" type="video/mp4" />
+            </video>
+            <div class="showcase-hero-overlay"></div>
+            <div class="showcase-hero-content">
+                <span class="showcase-eyebrow">NITROUS STUDIO — RELEASED GAME</span>
+                <h1 id="project-title">UNDERWORLD</h1>
+                <p>Descend into Darkness</p>
             </div>
-        </section>
+            <button class="showcase-motion-toggle" type="button" hidden aria-label="Pause background video">Pause</button>
+        </div>
+        <div class="showcase-hero-footer">
+            <span>2D Action-Adventure Platformer</span>
+            <span>Unity · C# · Pixel Art</span>
+        </div>
+    </section>
 
-        <section class="uw-overview-grid">
-            <article class="uw-section-card reveal">
-                <p class="case-kicker">Game overview</p>
-                <h2>Fiction first, grounded by production</h2>
-                <p>
-                    Underworld is a 2D pixel-art action-adventure platformer set in a haunting sci-fi realm deep beneath the surface.
-                    You play as a nano-enhanced swordsman, awakened by a mysterious AI after being left for dead in the ruins of a
-                    forgotten world. From there, the game pushes a clear fantasy: descend deeper, survive hostile spaces, and uncover
-                    what happened to this corrupted underworld.
-                </p>
-                <p>
-                    The tone stays close to the public game pitch: nonlinear exploration, dangerous creatures, hidden paths, upgrades,
-                    and a more deliberate combat rhythm inspired by Metroidvania structure and Souls-like pressure. The result feels
-                    moody and stylized rather than retro for its own sake.
-                </p>
-                <div class="hero-actions" style="margin-top:24px;">
-                    <a href="https://nitrous-studio.itch.io/underworld" class="btn btn-primary">View on itch.io</a>
-                    <a href="projects.html" class="btn btn-secondary">Back to Projects</a>
-                </div>
-            </article>
-
-            <article class="uw-section-card reveal">
-                <p class="case-kicker">Project snapshot</p>
-                <h2>What this project signals</h2>
-                <div class="uw-facts">
-                    <div>
-                        <span>Engine</span>
-                        <strong>Unity production workflow</strong>
-                    </div>
-                    <div>
-                        <span>Programming</span>
-                        <strong>C# gameplay and menu-side implementation</strong>
-                    </div>
-                    <div>
-                        <span>Genre</span>
-                        <strong>2D action-platformer with exploration and combat</strong>
-                    </div>
-                    <div>
-                        <span>Portfolio value</span>
-                        <strong>Strong shipped-game credibility and player-facing finish</strong>
-                    </div>
-                </div>
-            </article>
-        </section>
-
-        <section class="uw-tech-grid">
-            <article class="uw-section-card reveal">
-                <p class="case-kicker">Production and systems</p>
-                <h2>Technical side of the game</h2>
-                <p>
-                    The important technical value of Underworld is that it brings multiple gameplay and presentation layers together
-                    into a coherent public build. This is not just a visual mockup. It is a real game page backed by a playable release,
-                    which means interaction, pacing, UI, combat clarity, and general usability had to hold up under actual players.
-                </p>
-                <ul class="uw-list">
-                    <li><strong>Unity + C# development:</strong> gameplay code and feature integration in a practical shipped-game context.</li>
-                    <li><strong>2D platformer structure:</strong> player movement, traversal flow, enemy encounters, and map progression working as one loop.</li>
-                    <li><strong>Comic-book story framing:</strong> stylized narrative presentation used to establish tone and identity early.</li>
-                    <li><strong>Combat FSM boss logic:</strong> encounter behavior built around readable state-driven combat and multi-phase pressure.</li>
-                    <li><strong>Store and menu layer:</strong> player-facing interface work, navigation, and supporting UX needed for a complete build.</li>
-                    <li><strong>Camera work:</strong> moment-to-moment readability depends heavily on follow behavior, framing, and platforming clarity.</li>
-                </ul>
-            </article>
-
-            <article class="uw-section-card reveal">
-                <p class="case-kicker">Why it matters</p>
-                <h2>Professional value in the portfolio</h2>
-                <p>
-                    Underworld works well in the portfolio because it is concrete. Recruiters can immediately understand the project,
-                    see the fiction, read the technical scope, and verify that it shipped. That makes it a strong complement to my more
-                    architecture-heavy projects: one shows system ambition, the other shows that I can help bring a real game across the line.
-                </p>
-                <ul class="uw-list">
-                    <li>Finished public result instead of a half-explained prototype.</li>
-                    <li>Clear overlap between design sensibility and implementation discipline.</li>
-                    <li>Good signal for gameplay programming, integration, and production reliability.</li>
-                </ul>
-            </article>
-        </section>
-
-        <section class="uw-gallery-card reveal">
-            <p class="case-kicker">Screenshots</p>
-            <h2>Selected in-game views</h2>
-            <p style="margin-top:12px; max-width:72ch;">
-                A few screens are enough here. They reinforce atmosphere, readability, and the kind of player-facing presentation the project delivers.
-            </p>
-
-            <div class="uw-gallery-grid">
-                <figure class="uw-shot">
-                    <img src="https://img.itch.zone/aW1hZ2UvMzg2Njk1My8yNDk4NzAxMy5qcGc%3D/347x500/RjhXNV.jpg" alt="Underworld gameplay screenshot showing atmospheric platforming" />
-                    <figcaption class="uw-shot-caption">
-                        <strong>Atmosphere and traversal</strong>
-                        <p>Strong silhouette work, moody lighting, and a readable 2D layout that supports exploration.</p>
-                    </figcaption>
-                </figure>
-
-                <figure class="uw-shot">
-                    <img src="assets/img/Underworld_snippet.jpg" height="227" width="1633" alt="Underworld gameplay screenshot showing interaction prompt and level scene"/>
-                    <figcaption class="uw-shot-caption">
-                        <strong>World interaction</strong>
-                        <p>Environmental framing and interaction cues help keep the sci-fi underworld legible and grounded.</p>
-                    </figcaption>
-                </figure>
-
-                <figure class="uw-shot">
-                    <img src="https://img.itch.zone/aW1hZ2UvMzg2Njk1My8yNDk4NzAxNS5qcGc%3D/347x500/W8RUuv.jpg" alt="Underworld gameplay screenshot showing combat-oriented side view" />
-                    <figcaption class="uw-shot-caption">
-                        <strong>Combat readability</strong>
-                        <p>HUD, screen composition, and combat space all support a more deliberate action-platformer rhythm.</p>
-                    </figcaption>
-                </figure>
+    <!-- PROJECT OVERVIEW -->
+    <section class="showcase-overview showcase-container" aria-labelledby="overview-title">
+        <aside class="showcase-facts" aria-label="Project facts">
+            <div class="showcase-fact">
+                <h3>Roles</h3>
+                <p>Gameplay Programmer<br />Game Designer<br />Level Designer</p>
             </div>
-        </section>
-    </div>
+            <div class="showcase-fact">
+                <h3>Technologies</h3>
+                <p>Unity<br />C#<br />Cinemachine<br />Aseprite</p>
+            </div>
+            <div class="showcase-fact">
+                <h3>Team</h3>
+                <p>Nitrous Studio<br />2 developers<br /><br />Olivier Trudel<br />Alexis Trudel</p>
+            </div>
+            <div class="showcase-fact">
+                <h3>Status</h3>
+                <p>Released<br />Available on itch.io</p>
+            </div>
+        </aside>
+        <div class="showcase-overview-copy">
+            <span class="showcase-eyebrow">ABOUT THE PROJECT</span>
+            <h2 id="overview-title">Project overview</h2>
+            <p><strong>Underworld</strong> is a 2D pixel-art action-adventure platformer and the first complete game my brother and I developed together under <strong>Nitrous Studio</strong>.</p>
+            <p>Players explore a decaying sci-fi world as a nano-enhanced swordsman, unlocking new abilities, discovering hidden areas and facing increasingly dangerous enemies.</p>
+            <p>Inspired by <strong>Metroidvania exploration</strong> and <strong>Souls-like combat</strong>, the game combines semi-linear progression, platforming, responsive melee combat and multi-phase boss encounters.</p>
+            <h3>My contributions</h3>
+            <p>Working collaboratively within a two-person team, I contributed to the design, implementation and refinement of the following systems:</p>
+            <ul class="showcase-contributions">
+                <li>Dynamic and context-sensitive camera system.</li>
+                <li>Combat, parrying, abilities and hit detection.</li>
+                <li>Finite State Machine boss architecture and health-based attack phases.</li>
+                <li>Boss mechanics, attacks and multi-phase encounter design.</li>
+                <li>Level design, encounter placement, tutorial flow and environmental presentation.</li>
+                <li>UI, ability progression, collectibles and merchant features.</li>
+                <li>Gameplay polish, debugging and pre/post-release fixes.</li>
+            </ul>
+            <div class="showcase-actions">
+                <a class="showcase-button" href="https://nitrous-studio.itch.io/underworld" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-brands fa-itch-io" aria-hidden="true"></i> Play Underworld <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- TECHNICAL SHOWCASE HEADER -->
+    <section class="showcase-container showcase-section-heading">
+        <span class="showcase-eyebrow">DEVELOPMENT BREAKDOWN</span>
+        <h2>Gameplay &amp; Technical Systems</h2>
+        <p>A closer look at the gameplay systems, architectural decisions and design work behind Underworld.</p>
+    </section>
+
+    <!-- 01 — COMBAT SYSTEM -->
+    <section class="showcase-feature showcase-wide">
+        <div class="showcase-feature-copy">
+            <span class="showcase-eyebrow">01 / GAMEPLAY PROGRAMMING</span>
+            <h2>Combat, Parry &amp; Ability System</h2>
+            <p class="showcase-feature-intro">Underworld's combat system combines consecutive melee attacks, defensive parrying and unlockable abilities within a responsive combat loop.</p>
+            <div class="showcase-detail">
+                <h3>Parry &amp; Combat System</h3>
+                <p>The parry uses a dedicated collision area, independent from normal attacks and abilities. It can intercept and destroy incoming projectiles. The base attack combo was also made loopable to improve consecutive attack flow.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Animation-driven Abilities</h3>
+                <p>Abilities are implemented as separate prefabs, temporarily restricting normal player input through the <code>isAbility</code> state. Animation events synchronize hit detection with specific moments of each attack animation.</p>
+                <p>Multi-hit abilities can modify <code>facingDirection</code> during execution, repositioning their attack colliders accordingly.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Ability Progression &amp; Persistence</h3>
+                <p>Ability unlocks are persisted using <code>PlayerPrefs</code>, while their acquisition order is stored separately to reconstruct the correct HUD arrangement.</p>
+                <p>This ensures that unlocked abilities remain available following player death.</p>
+            </div>
+        </div>
+        <figure class="showcase-media">
+            <!-- Optional video. The existing artwork is shown until it loads. -->
+            <img class="showcase-media-fallback" src="assets/img/Underworld_horizontal01.png" alt="Underworld artwork" loading="lazy" />
+            <video class="showcase-optional-video" controls playsinline preload="metadata" poster="assets/img/Underworld_horizontal01.png" hidden aria-label="Combat demonstration">
+                <source src="assets/underworld/CombatSystem.mp4" type="video/mp4" />
+            </video>
+            <figcaption data-video-caption="Combat demonstration — melee attacks, parrying and ability execution.">Underworld — visual preview.</figcaption>
+        </figure>
+    </section>
+
+    <!-- 02 — CAMERA SYSTEM -->
+    <section class="showcase-feature showcase-feature-reverse showcase-wide">
+        <div class="showcase-feature-copy">
+            <span class="showcase-eyebrow">02 / CAMERA ARCHITECTURE</span>
+            <h2>Dynamic Camera System</h2>
+            <p class="showcase-feature-intro">A contextual camera system developed using Cinemachine to adapt framing to the player's movement and surrounding environment.</p>
+            <div class="showcase-detail">
+                <h3>Trigger-Based Framing</h3>
+                <p>The <code>CameraControlTrigger</code> component can pan the active camera or transition between virtual cameras depending on the player's exit direction.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Configurable Camera Zones</h3>
+                <p>Camera triggers expose configurable pan direction, distance, duration and camera references. Camera offsets are interpolated using coroutines and <code>Vector3.Lerp</code> for smooth transitions.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Movement-Responsive Camera</h3>
+                <p>Camera framing adjusts to the player's movement direction. During rapid falls, Cinemachine's vertical damping is dynamically modified using <code>Rigidbody2D.velocity.y</code>.</p>
+                <p>This improves environmental visibility during platforming and vertical traversal.</p>
+            </div>
+        </div>
+        <figure class="showcase-media">
+            <video class="showcase-optional-video" controls playsinline preload="metadata" poster="assets/img/Underworld_horizontal01.png" hidden aria-label="Combat demonstration">
+                <source src="assets/underworld/CameraSystem.mp4" type="video/mp4" />
+            </video>
+            <figcaption data-image-caption="Dynamic camera system — C# implementation.">Environmental framing and traversal.</figcaption>
+        </figure>
+    </section>
+
+    <!-- 03 — BOSS FRAMEWORK -->
+    <section class="showcase-feature showcase-wide">
+        <div class="showcase-feature-copy">
+            <span class="showcase-eyebrow">03 / AI &amp; ENCOUNTER DESIGN</span>
+            <h2>Boss &amp; Encounter Systems</h2>
+            <p class="showcase-feature-intro">We implemented boss behaviours through a stack-driven Finite State Machine using the State design pattern.</p>
+            <div class="showcase-detail">
+                <h3>State-Pattern FSM</h3>
+                <p>Boss behaviours implement <code>Enter()</code>, <code>Update()</code> and <code>Exit()</code>, separating distinct states such as chasing, melee attacks, teleportation, projectile attacks and death.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Stack-Based Attack Phases</h3>
+                <p>Attack sequences are defined as <code>List&lt;IState&gt;</code> and executed through a <code>Stack&lt;IState&gt;</code>.</p>
+                <p>Different sequences are loaded when the boss reaches specific health thresholds, creating distinct combat phases.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Multi-Step Attacks</h3>
+                <p>Complex attacks use internal step-based substates to coordinate animations, movement, timers, collision activation, lasers and projectiles throughout an attack sequence.</p>
+            </div>
+        </div>
+        <figure class="showcase-media">
+            <img class="showcase-media-fallback" src="assets/img/Underworld_horizontal02.png" alt="Underworld artwork" loading="lazy" />
+            <video class="showcase-optional-video" controls playsinline preload="metadata" poster="assets/img/Underworld_horizontal02.png" hidden aria-label="Boss encounter demonstration">
+                <source src="assets/underworld/BossEncounter.mp4" type="video/mp4" />
+            </video>
+            <figcaption data-video-caption="Boss encounter demonstration — attack sequencing and multi-phase combat.">Underworld — visual preview.</figcaption>
+        </figure>
+    </section>
+
+
+
+    <!-- NARRATIVE SEQUENCES -->
+    <section class="showcase-container showcase-narrative">
+        <span class="showcase-eyebrow">NARRATIVE DESIGN</span>
+        <h2>Storytelling through Webcomics</h2>
+        <p>Underworld uses comic-book sequences as narrative cutscenes throughout the game, including its introduction, merchant interactions and boss encounters. I also contributed to the writing of these sequences.</p>
+        <!-- Insert the webcomic URL and uncomment when ready:
+        <a class="showcase-text-link" href="WEB_COMIC_URL">Read the Webcomic →</a>
+        -->
+    </section>
+
+    <!-- CLOSING -->
+    <section class="showcase-container showcase-closing">
+        <span class="showcase-eyebrow">NITROUS STUDIO</span>
+        <h2>From prototype to release.</h2>
+        <p>Underworld represents our first complete game production, bringing gameplay programming, technical implementation, design and visual presentation together into a released experience.</p>
+        <div class="showcase-actions">
+            <a class="showcase-button" href="https://nitrous-studio.itch.io/underworld" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-itch-io" aria-hidden="true"></i> Play Underworld</a>
+            <a class="showcase-text-link" href="projects.html">Back to Projects →</a>
+        </div>
+    </section>
 </main>
 
 <footer class="site-footer">
     <div class="container footer-row">
-        <p>Underworld case study</p>
-        <a href="index.html" class="back-top">Back home</a>
+        <span>© 2026 Olivier Trudel</span>
+        <a href="index.html">Home</a>
     </div>
 </footer>
 
-<script src="script.js"></script>
+<script>
+    // Progressive enhancement: show working media only; keep artwork when optional files are absent.
+    const heroVideo = document.querySelector('.showcase-hero-video');
+    const motionToggle = document.querySelector('.showcase-motion-toggle');
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let manuallyPaused = false;
+    let heroReady = false;
+    function updateMotionLabel() {
+        motionToggle.textContent = heroVideo.paused ? 'Play' : 'Pause';
+        motionToggle.setAttribute('aria-label', heroVideo.paused ? 'Play background video' : 'Pause background video');
+    }
+    function updateHeroMotion() {
+        if (!heroReady) return;
+        if (motionPreference.matches || manuallyPaused) heroVideo.pause();
+        else heroVideo.play().catch(updateMotionLabel);
+        updateMotionLabel();
+    }
+    heroVideo.addEventListener('loadeddata', () => {
+        heroReady = true;
+        heroVideo.classList.add('is-ready');
+        motionToggle.hidden = false;
+        updateHeroMotion();
+    });
+    function restoreHeroPoster() {
+        heroReady = false;
+        heroVideo.classList.remove('is-ready');
+        motionToggle.hidden = true;
+    }
+    heroVideo.addEventListener('error', restoreHeroPoster);
+    heroVideo.querySelector('source').addEventListener('error', restoreHeroPoster);
+    heroVideo.addEventListener('play', updateMotionLabel);
+    heroVideo.addEventListener('pause', updateMotionLabel);
+    motionToggle.addEventListener('click', () => {
+        manuallyPaused = !heroVideo.paused;
+        if (manuallyPaused) heroVideo.pause();
+        else heroVideo.play().catch(updateMotionLabel);
+    });
+    if (motionPreference.addEventListener) motionPreference.addEventListener('change', updateHeroMotion);
+    if (heroVideo.readyState >= 2) {
+        heroReady = true;
+        heroVideo.classList.add('is-ready');
+        motionToggle.hidden = false;
+        updateHeroMotion();
+    }
+
+    document.querySelectorAll('.showcase-optional-video').forEach(video => {
+        const figure = video.closest('figure');
+        const fallback = figure.querySelector('.showcase-media-fallback');
+        const caption = figure.querySelector('figcaption');
+        const fallbackCaption = caption.textContent;
+        function showVideo() {
+            video.hidden = false;
+            fallback.hidden = true;
+            caption.textContent = caption.dataset.videoCaption;
+        }
+        function showFallback() {
+            video.hidden = true;
+            fallback.hidden = false;
+            caption.textContent = fallbackCaption;
+        }
+        video.addEventListener('loadedmetadata', showVideo);
+        video.addEventListener('error', showFallback);
+        video.querySelector('source').addEventListener('error', showFallback);
+        if (video.readyState >= 1) showVideo();
+    });
+
+    document.querySelectorAll('[data-optional-image]').forEach(img => {
+        const candidate = new Image();
+        candidate.onload = () => {
+            img.src = candidate.src;
+            img.alt = img.dataset.optionalAlt;
+            const caption = img.closest('figure').querySelector('figcaption');
+            caption.textContent = caption.dataset.imageCaption;
+        };
+        candidate.src = img.dataset.optionalImage;
+    });
+</script>
 </body>
 </html>
