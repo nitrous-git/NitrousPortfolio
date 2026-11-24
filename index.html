@@ -3,20 +3,17 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Olivier Trudel — Portfolio</title>
-    <meta name="description" content="Olivier Trudel — gameplay programming, simulation, graphics, and technical development." />
+    <title>Olivier Trudel — Gameplay Programmer &amp; Technical Developer</title>
+    <meta name="description" content="Gameplay programming, game development, AI, physics simulation and realtime graphics by Olivier Trudel — Nitrous Studio." />
     <link rel="stylesheet" href="styles.css" />
-    <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-    />
+    <link rel="stylesheet" href="css/home-showcase.css" />
+    <script src="home-showcase.js" defer></script>
 </head>
 <body>
-
 <header class="site-header">
     <div class="container nav">
         <a class="brand" href="index.html">Olivier Trudel</a>
-        <nav class="nav-links">
+        <nav class="nav-links" aria-label="Main navigation">
             <a href="portfolio.html">Portfolio</a>
             <a href="projects.html">Projects</a>
             <a href="devlog.html">Devlog</a>
@@ -25,221 +22,284 @@
     </div>
 </header>
 
-<main class="container home-page">
-    <section class="intro home-hero">
-        <div class="home-hero-copy">
-            <p class="intro-meta">GAMEPLAY · SIMULATION · GRAPHICS</p>
-
-            <h1>Gameplay programmer and technical developer.</h1>
-
-            <p class="lead">
-                I'm Olivier Trudel — also known as Nitrous.<br>
-                I build games, gameplay systems, simulations, and graphics experiments.<br>
-                My background is in computer science and physics.
-            </p>
-
-            <div class="home-hero-actions">
-                <a class="hero-action-primary" href="portfolio.html">Explore Portfolio →</a>
-                <a class="hero-action-secondary" href="devlog.html">Technical Devlog ↗</a>
+<main class="home-showcase">
+    <section class="hs-hero" aria-labelledby="home-title">
+        <img class="hs-hero-fallback" src="assets/img/FOTCodeX_hori01.png" alt="" fetchpriority="high" />
+        <video class="hs-hero-video" muted loop playsinline preload="none" aria-hidden="true">
+            <source src="assets/video/EnvirReel_compress.mp4#t=30" type="video/mp4" />
+        </video>
+        <div class="hs-hero-shade"></div>
+        <div class="hs-shell hs-hero-inner">
+            <div class="hs-hero-copy">
+                <div class="hs-identity">
+                    <img src="assets/img/nitrous-mark.svg" alt="" width="32" height="41" />
+                    <span>Olivier Trudel <span class="hs-identity-divider">/</span> Nitrous Studio</span>
+                </div>
+                <p class="hs-eyebrow">Gameplay · Simulation · Graphics</p>
+                <h1 id="home-title">Gameplay programmer<br class="hs-desktop-break" /> &amp; technical developer.</h1>
+                <p class="hs-lead">I build games, gameplay systems, simulations and realtime graphics. My background is in computer science and physics.</p>
+                <div class="hs-actions">
+                    <a class="hs-button hs-button-primary" href="#featured">Explore my work <span aria-hidden="true">↓</span></a>
+                    <a class="hs-button hs-button-secondary" href="about.html">About me <span aria-hidden="true">↗</span></a>
+                </div>
+            </div>
+            <div class="hs-hero-bottom">
+                <span>Unreal Engine 5 <span class="hs-identity-divider">/</span> Environment Reel</span>
+                <button class="hs-motion-toggle" type="button" hidden>Pause reel</button>
             </div>
         </div>
-
-        <div class="home-hero-art" aria-hidden="true">
-            <img src="assets/img/nitrous-mark.svg" alt="" width="425" height="545">
-        </div>
     </section>
 
-    <section class="reel-section">
-        <div class="reel-frame">
-            <video
-                    class="reel-video"
-                    autoplay
-                    muted
-                    loop
-                    playsinline
-                    preload="metadata">
-<!--                    poster="assets/img/environment-reel-poster.webp">-->
+    <div class="hs-shell hs-content">
+        <section class="hs-section" id="featured" aria-labelledby="featured-title">
+            <div class="hs-section-head">
+                <div>
+                    <p class="hs-eyebrow">Game development</p>
+                    <h2 id="featured-title">Featured Projects</h2>
+                    <p>From released games to systems-driven projects in active development.</p>
+                </div>
+                <a class="hs-link" href="projects.html">All projects →</a>
+            </div>
+            <div class="hs-grid hs-featured-grid">
+                <article class="hs-card hs-featured">
+                    <a class="hs-media" href="underworld.html" aria-label="Underworld case study">
+                        <img src="assets/img/Underworld_cover1_16x9.png" alt="Underworld pixel-art gameplay" width="640" height="360" loading="lazy" />
+                    </a>
+                    <div class="hs-card-copy">
+                        <p class="hs-meta">Unity · C# · Released game</p>
+                        <h3><a href="underworld.html">Underworld</a></h3>
+                        <p>A 2D sci-fi action-adventure developed in a two-person team, with combat, boss encounters and Metroidvania exploration.</p>
+                        <a class="hs-link" href="underworld.html">View case study →</a>
+                    </div>
+                </article>
+                <article class="hs-card hs-featured">
+                    <a class="hs-media" href="fragments-codex.html" aria-label="Fragment of the CodeX case study">
+                        <img src="assets/img/FOTCodeX_cover3_16x9.png" alt="Fragment of the CodeX gameplay" width="640" height="360" loading="lazy" />
+                    </a>
+                    <div class="hs-card-copy">
+                        <p class="hs-meta">Unreal Engine 5 · Action RPG</p>
+                        <h3><a href="fragments-codex.html">Fragment of the CodeX</a></h3>
+                        <p>A systems-driven fantasy action game exploring melee combat, boss intelligence, equipment and reusable gameplay architecture.</p>
+                        <a class="hs-link" href="fragments-codex.html">View case study →</a>
+                    </div>
+                </article>
+                <article class="hs-card hs-featured">
+                    <a class="hs-media" href="protocol-exodus.html" aria-label="Protocol Exodus case study">
+                        <img src="assets/protocol-exodus/cover.svg" alt="Protocol Exodus project cover" width="960" height="540" loading="lazy" />
+                    </a>
+                    <div class="hs-card-copy">
+                        <p class="hs-meta">Unity · C# · Real-time strategy</p>
+                        <h3><a href="protocol-exodus.html">Protocol Exodus</a></h3>
+                        <p>A sci-fi RTS built around autonomous faction AI, shared navigation, economy, production and large-scale unit behavior.</p>
+                        <a class="hs-link" href="protocol-exodus.html">View case study →</a>
+                    </div>
+                </article>
+            </div>
+        </section>
 
-                <source src="assets/video/EnvirReel_compress.mp4#t=30" type="video/mp4">
-            </video>
-        </div>
+        <section class="hs-section" id="experiments" aria-labelledby="experiments-title">
+            <div class="hs-section-head">
+                <div>
+                    <p class="hs-eyebrow">Independent development</p>
+                    <h2 id="experiments-title">Games &amp; Experiments</h2>
+                    <p>Playable prototypes, game jams and focused interactive experiments.</p>
+                </div>
+                <a class="hs-link" href="https://nitrous-studio.itch.io/" target="_blank" rel="noopener noreferrer">Explore itch.io ↗</a>
+            </div>
+            <div class="hs-grid hs-compact-grid">
+                <article class="hs-card">
+                    <a class="hs-media hs-cover-geo" href="https://nitrous-git.github.io/GeoWarsClone_ThreeJs/" target="_blank" rel="noopener noreferrer" aria-label="Play GeoWarsClone in browser">
+                        <span class="hs-geo-orbit" aria-hidden="true"></span>
+                        <span class="hs-cover-title" aria-hidden="true">GEO<span>WARS</span><small>CLONE / ARCADE SURVIVAL</small></span>
+                    </a>
+                    <div class="hs-card-copy">
+                        <p class="hs-meta">Three.js · Arcade shooter</p>
+                        <h3><a href="https://nitrous-git.github.io/GeoWarsClone_ThreeJs/" target="_blank" rel="noopener noreferrer">GeoWarsClone</a></h3>
+                        <p>Neon vector combat, procedural VFX and a deformable grid.</p>
+                        <a class="hs-link" href="https://nitrous-git.github.io/GeoWarsClone_ThreeJs/" target="_blank" rel="noopener noreferrer">Play in browser ↗</a>
+                    </div>
+                </article>
+                <article class="hs-card">
+                    <a class="hs-media" href="https://nitrous-studio.itch.io/aeonsector" target="_blank" rel="noopener noreferrer" aria-label="Aeon Sector on itch.io">
+                        <img src="assets/img/AeonSector_cover_16x9.png" alt="Aeon Sector tactical gameplay" width="640" height="360" loading="lazy" />
+                    </a>
+                    <div class="hs-card-copy">
+                        <p class="hs-meta">Unity · Game jam</p>
+                        <h3><a href="https://nitrous-studio.itch.io/aeonsector" target="_blank" rel="noopener noreferrer">Aeon//Sector</a></h3>
+                        <p>Turn-based sci-fi tactics, grid movement and tactical combat.</p>
+                        <a class="hs-link" href="https://nitrous-studio.itch.io/aeonsector" target="_blank" rel="noopener noreferrer">View on itch.io ↗</a>
+                    </div>
+                </article>
+                <article class="hs-card">
+                    <div class="hs-media hs-cover-battle" role="img" aria-label="Pokémon BattleAtelier typographic project cover">
+                        <span class="hs-battle-symbol" aria-hidden="true"></span>
+                        <span class="hs-cover-title">Pokémon<small>BATTLEATELIER</small></span>
+                    </div>
+                    <div class="hs-card-copy">
+                        <p class="hs-meta">Game prototype · Turn-based combat</p>
+                        <h3>Pokémon BattleAtelier</h3>
+                        <p>A battle-system experiment exploring turn-based gameplay mechanics.</p>
+                        <a class="hs-link" href="https://nitrous-studio.itch.io/" target="_blank" rel="noopener noreferrer">Visit Nitrous Studio ↗</a>
+                    </div>
+                </article>
+            </div>
+        </section>
 
-        <div class="reel-meta">
-            <span>Environment Reel</span>
-            <span>Unreal Engine 5 · Realtime</span>
-        </div>
-    </section>
+        <section class="hs-section" id="simulation" aria-labelledby="simulation-title">
+            <div class="hs-section-head">
+                <div>
+                    <p class="hs-eyebrow">Physics · Mathematics · Rendering</p>
+                    <h2 id="simulation-title">Physics, Simulation &amp; Graphics</h2>
+                    <p>Where physical models, numerical methods and interactive software meet.</p>
+                </div>
+                <a class="hs-link" href="devlog.html">Technical devlog →</a>
+            </div>
+            <div class="hs-grid">
+                <article class="hs-card">
+                    <a class="hs-media" href="devlog/raytracer-cpp.html" aria-label="Read C++ raytracer article">
+                        <img src="assets/img/Raytracer_Cornell.png" alt="Cornell box rendered with the C++ raytracer" width="640" height="360" loading="lazy" />
+                    </a>
+                    <div class="hs-card-copy">
+                        <p class="hs-meta">C++ · Computer graphics</p>
+                        <h3><a href="devlog/raytracer-cpp.html">Raytracer Engine</a></h3>
+                        <p>A raytracer built from scratch in C++, exploring geometry, illumination and distributed sampling for soft shadows.</p>
+                        <a class="hs-link" href="devlog/raytracer-cpp.html">Read technical article →</a>
+                    </div>
+                </article>
+                <article class="hs-card">
+                    <a class="hs-media" href="https://nitrous-git.github.io/WaterSim_ThreeJs/" target="_blank" rel="noopener noreferrer" aria-label="Launch SPH fluid simulation">
+                        <img src="assets/img/SPH_cover_16x9.png" alt="Realtime SPH fluid simulation" width="640" height="360" loading="lazy" />
+                    </a>
+                    <div class="hs-card-copy">
+                        <p class="hs-meta">Three.js · Numerical physics</p>
+                        <h3><a href="https://nitrous-git.github.io/WaterSim_ThreeJs/" target="_blank" rel="noopener noreferrer">SPH Fluid Simulation</a></h3>
+                        <p>Particle-based hydrodynamics, numerical stability and realtime screen-space fluid rendering.</p>
+                        <div class="hs-card-links">
+                            <a class="hs-link" href="https://nitrous-git.github.io/WaterSim_ThreeJs/" target="_blank" rel="noopener noreferrer">Launch simulation ↗</a>
+                            <a class="hs-link" href="devlog/lid-driven-cavity.html">Related article →</a>
+                        </div>
+                    </div>
+                </article>
+                <article class="hs-card">
+                    <a class="hs-media" href="https://nitrous-git.github.io/ChaoticAttractors_ThreeJs/" target="_blank" rel="noopener noreferrer" aria-label="Launch chaotic attractor simulation">
+                        <img src="assets/img/AttractorAizawa02.png" alt="Aizawa attractor trajectory visualization" width="640" height="360" loading="lazy" />
+                    </a>
+                    <div class="hs-card-copy">
+                        <p class="hs-meta">Three.js · Dynamical systems</p>
+                        <h3><a href="https://nitrous-git.github.io/ChaoticAttractors_ThreeJs/" target="_blank" rel="noopener noreferrer">Chaotic Attractors</a></h3>
+                        <p>Interactive visualization of nonlinear dynamical systems using Runge–Kutta numerical integration.</p>
+                        <a class="hs-link" href="https://nitrous-git.github.io/ChaoticAttractors_ThreeJs/" target="_blank" rel="noopener noreferrer">Launch simulation ↗</a>
+                    </div>
+                </article>
+            </div>
+        </section>
 
-    <section>
-        <div class="section-head">
-            <h2>Selected work</h2>
-            <a href="projects.html">All projects →</a>
-        </div>
+        <section class="hs-section" id="studio" aria-labelledby="studio-title">
+            <div class="hs-studio">
+                <div class="hs-studio-copy">
+                    <p class="hs-eyebrow">Tutorials · Devlogs · Knowledge sharing</p>
+                    <h2 id="studio-title">Nitrous Studio</h2>
+                    <p>Beyond developing games, I share practical implementation techniques, gameplay architecture and the process behind my projects through Unreal Engine tutorials and development videos.</p>
+                    <a class="hs-button hs-button-secondary" href="https://www.youtube.com/@_Nitrous_" target="_blank" rel="noopener noreferrer">Visit YouTube channel ↗</a>
+                </div>
+                <div class="hs-video-grid">
+                    <article class="hs-card">
+                        <div class="hs-video-frame">
+                            <iframe src="https://www.youtube-nocookie.com/embed/_TZ37WpOWgY" title="Devil May Cry–style air combo tutorial" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                        </div>
+                        <div class="hs-card-copy">
+                            <p class="hs-meta">Unreal Engine · Tutorial</p>
+                            <h3><a href="https://www.youtube.com/watch?v=_TZ37WpOWgY" target="_blank" rel="noopener noreferrer">Devil May Cry–Style Air Combo</a></h3>
+                        </div>
+                    </article>
+                    <article class="hs-card">
+                        <div class="hs-video-frame">
+                            <iframe src="https://www.youtube-nocookie.com/embed/i_o61MNbv5E" title="Unreal Engine development and systems devlog" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                        </div>
+                        <div class="hs-card-copy">
+                            <p class="hs-meta">Unreal Engine 5 · Devlog</p>
+                            <h3><a href="https://www.youtube.com/watch?v=i_o61MNbv5E" target="_blank" rel="noopener noreferrer">Development &amp; Systems Devlogs</a></h3>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
 
-        <div class="work-grid">
-            <article class="project">
-                <a class="project-image" href="https://nitrous-studio.itch.io/underworld">
-                    <img
-                            src="assets/img/Underworld_cover1_16x9.png"
-                            alt="Underworld gameplay screenshot"
-                    >
+        <section class="hs-section hs-music" id="music" aria-labelledby="music-title">
+            <div class="hs-music-copy">
+                <p class="hs-eyebrow">Composition · Sound design · Production</p>
+                <h2 id="music-title">Music &amp; Creative Work</h2>
+                <p>Electronic production, progressive metal and metalcore — another side of my creative work, spanning composition, recording and sound design.</p>
+                <a class="hs-link" href="https://www.youtube.com/watch?v=OspCizpufto" target="_blank" rel="noopener noreferrer">Electronic production video ↗</a>
+            </div>
+            <div class="hs-albums">
+                <a href="https://unworthyhumanity.bandcamp.com/album/cycle-of-hatred-ep" target="_blank" rel="noopener noreferrer">
+                    <img src="assets/Music/UH.jpg" alt="Cycle of Hatred EP cover" width="200" height="200" loading="lazy" />
+                    <span>Cycle of Hatred EP</span>
+                    <small>Unworthy Humanity ↗</small>
                 </a>
-
-                <span class="meta">Unity · Released game</span>
-                <h3><a href="https://nitrous-studio.itch.io/underworld">Underworld</a></h3>
-                <p>A completed platformer developed under Nitrous Studio, focused on gameplay, level progression, and shipping a finished game.</p>
-<!--                <a class="text-link" href="underworld.html">View project →</a>-->
-            </article>
-
-            <article class="project">
-
-                <a class="project-image" href="https://nitrous-studio.itch.io/fragment-of-the-codex">
-                    <img
-                            src="assets/img/FOTCodeX_cover3_16x9.png"
-                            alt="FOTCodeX gameplay screenshot"
-                    >
+                <a href="https://ofcorruptedvisions.bandcamp.com/album/black-box-2" target="_blank" rel="noopener noreferrer">
+                    <img src="assets/Music/BlackBox.jpg" alt="Black Box album cover" width="200" height="200" loading="lazy" />
+                    <span>Black Box</span>
+                    <small>Of Corrupted Visions ↗</small>
                 </a>
+            </div>
+        </section>
 
-                <span class="meta">Unreal Engine 5 · Vertical slice</span>
-                <h3><a href="https://nitrous-studio.itch.io/fragment-of-the-codex">Fragments of the CodeX</a></h3>
-                <p>A systems-driven game project built around reusable combat, traversal, encounter, and boss frameworks.</p>
-<!--                <a class="text-link" href="fragments-codex.html">View project →</a>-->
-            </article>
-
-<!--            <article class="project">-->
-<!--                <div class="project-image">Project image</div>-->
-<!--                <span class="meta">Unity · RTS systems</span>-->
-<!--                <h3>Protocol Exodus</h3>-->
-<!--                <p>An RTS project focused on pathfinding, unit movement, local steering, combat behavior, and scalable gameplay architecture.</p>-->
-<!--            </article>-->
-
-            <article class="project">
-                <a class="project-image" href="https://nitrous-git.github.io/WaterSim_ThreeJs/">
-                    <img
-                            src="assets/devlog_fluid_sim/sph_envir04.JPG"
-                            alt="SPH screenshot"
-                    >
-                </a>
-
-                <span class="meta">ThreeJS · Simulation</span>
-                <h3><a href="https://nitrous-git.github.io/WaterSim_ThreeJs/">SPH Fluid Simulation</a></h3>
-                <p>
-                    Particle-based fluid simulation exploring physical modeling, numerical stability,
-                    visualization, and comparison with grid-based fluid approaches.
-                </p>
-            </article>
-
-            <article class="project">
-                <a class="project-image" href="devlog/raytracer-cpp.html">
-                    <img
-                            src="assets/img/Raytracer_Cornell.png"
-                            alt="Raytracer screenshot"
-                    >
-                </a>
-
-                <span class="meta">C++ · Engine</span>
-                <h3><a href="devlog/raytracer-cpp.html">Raytracer Engine</a></h3>
-                <p>
-                    A Raytracer Engine built in pure C++ with a Distributed Smooth Shadow Raycaster.
-                </p>
-            </article>
-
-            <article class="project">
-                <a class="project-image" href="https://nitrous-studio.itch.io/aeonsector">
-                    <img
-                            src="assets/img/AeonSector_cover_16x9.png"
-                            alt="Raytracer screenshot"
-                    >
-                </a>
-
-                <span class="meta">Game Jam · Strategy</span>
-                <h3><a href="https://nitrous-studio.itch.io/aeonsector">Aeon//Sector</a></h3>
-                <p>
-                    Turn-based sci-fi mecha tactics prototype built in Unity, focused on grid movement,
-                    attack ranges, unit UI, battle flow, and clean jam-scope architecture.
-
-                </p>
-            </article>
-
-            <article class="project">
-                <a class="project-image" href="https://nitrous-git.github.io/ChaoticAttractors_ThreeJs/">
-                    <img
-                            src="assets/img/AttractorAizawa02.png"
-                            alt="Raytracer screenshot"
-                    >
-                </a>
-
-                <span class="meta">Three.js · Simulation</span>
-                <h3><a href="https://nitrous-git.github.io/ChaoticAttractors_ThreeJs/">Chaotic Attractor</a></h3>
-                <p>
-                    Visual representation of many Chaotic Attractor with Three.js and an RK4 solver for partial
-                    differential equations.
-                </p>
-            </article>
-        </div>
-    </section>
-
-    <section class="section">
-        <h2>Highlighted Articles</h2>
-
-        <div class="article-list">
-            <article class="item">
-                <div class="item-head"  >
-                    <h3>
-                        <a href="./devlog/from-nxastar-to-shared-navigation.html"> From N×A* to Shared Navigation </a>
-                    </h3>
-                    <span class="meta">Protocol Exodus · AI</span>
-                </div><p>Movement problems in dense RTS unit groups and the systems used to address them.</p>
-            </article>
-
-            <article class="item">
-                <div class="item-head">
-                <h3>SPH vs Eulerian Fluids: Practical Tradeoffs</h3>
-                    <span class="meta">Simulation · Physics</span>
-                </div><p>Implementation tradeoffs between particle and grid-based fluid methods.</p>
-            </article>
-
-            <article class="item">
-                <div class="item-head">
-                    <h3>Designing a Combat / Orchestration Framework for a Vertical Slice</h3>
-                    <span class="meta">Fragments of the CodeX · UE5</span>
-                </div><p>Separating orchestration, gameplay flow, traversal, and encounter behavior into reusable systems.</p>
-            </article>
-        </div>
-    </section>
-
-
-    <section class="section">
-        <h2>Elsewhere</h2>
-        <div class="links">
-            <a href="https://github.com/nitrous-git" target="_blank" rel="noopener noreferrer">
-                <i class="fa-brands fa-github"></i>
-                GitHub
-            </a>
-
-            <a href="https://www.youtube.com/@_Nitrous_" target="_blank" rel="noopener noreferrer">
-                <i class="fa-brands fa-youtube"></i>
-                YouTube
-            </a>
-
-            <a href="https://nitrous-studio.itch.io/" target="_blank" rel="noopener noreferrer">
-                <i class="fa-brands fa-itch-io"></i>
-                itch.io
-            </a>
-
-            <a href="mailto:oliviertrudel716@gmail.com">
-                <i class="fa-solid fa-envelope"></i>
-                Email
-            </a>
-        </div>
-    </section>
-
+        <section class="hs-section hs-articles" id="articles" aria-labelledby="articles-title">
+            <div class="hs-section-head">
+                <div>
+                    <p class="hs-eyebrow">Technical writing</p>
+                    <h2 id="articles-title">Highlighted Articles</h2>
+                    <p>Implementation decisions, algorithms and research behind the work.</p>
+                </div>
+                <a class="hs-link" href="devlog.html">All articles →</a>
+            </div>
+            <div class="hs-article-list">
+                <article>
+                    <a href="devlog/from-nxastar-to-shared-navigation.html">
+                        <div><p class="hs-meta">Protocol Exodus · AI &amp; Algorithms</p><h3>From N×A* to Shared Navigation</h3><p>Movement problems in dense RTS unit groups and the architecture used to address them.</p></div>
+                        <span aria-hidden="true">↗</span>
+                    </a>
+                </article>
+                <article>
+                    <a href="devlog/raytracer-cpp.html">
+                        <div><p class="hs-meta">Rendering · Computer graphics</p><h3>C++ Raytracer with Soft Shadow</h3><p>Ray intersection, illumination and distributed sampling.</p></div>
+                        <span aria-hidden="true">↗</span>
+                    </a>
+                </article>
+                <article>
+                    <a href="devlog/lid-driven-cavity.html">
+                        <div><p class="hs-meta">Simulation · Computational physics</p><h3>Two Views of Fluid Motion — Eulerian vs SPH</h3><p>Comparing particle-based and grid-based methods through the lid-driven cavity problem.</p></div>
+                        <span aria-hidden="true">↗</span>
+                    </a>
+                </article>
+                <article>
+                    <a href="devlog/graphene-tight-binding.html">
+                        <div><p class="hs-meta">Physics · Numerical modeling</p><h3>Graphene — From the Lattice to Dirac Cones</h3><p>Exploring the electronic structure of graphene through a tight-binding model.</p></div>
+                        <span aria-hidden="true">↗</span>
+                    </a>
+                </article>
+                <article>
+                    <a href="fragments-codex.html">
+                        <div><p class="hs-meta">Fragment of the CodeX · Case study</p><h3>Combat &amp; Gameplay Orchestration</h3><p>Explore the gameplay framework and reusable systems in the project showcase.</p></div>
+                        <span aria-hidden="true">↗</span>
+                    </a>
+                </article>
+            </div>
+        </section>
+    </div>
 </main>
 
 <footer class="site-footer">
-    <div class="container footer-row">
-        <span>© 2026 Olivier Trudel</span>
-        <span>Nitrous Studio</span>
+    <div class="container footer-row hs-footer">
+        <span>© 2026 Olivier Trudel · Nitrous Studio</span>
+        <div class="hs-socials" aria-label="Contact and social links">
+            <a href="https://github.com/nitrous-git" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            <a href="https://www.youtube.com/@_Nitrous_" target="_blank" rel="noopener noreferrer">YouTube ↗</a>
+            <a href="https://nitrous-studio.itch.io/" target="_blank" rel="noopener noreferrer">itch.io ↗</a>
+            <a href="mailto:oliviertrudel716@gmail.com">Email</a>
+        </div>
     </div>
 </footer>
 </body>
