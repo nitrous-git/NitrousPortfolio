@@ -117,22 +117,22 @@ a.hs-media:hover img, a.hs-media:focus-visible img { transform: scale(1.035); }
     a.hs-media:hover img, a.hs-media:focus-visible img { transform: none; }
 }
 
-/* Ambient starfield: one viewport-sized canvas, behind the content only. */
+/* Ambient starfield: an explicitly layered, viewport-sized backdrop. */
 .hs-particle-region {
     position: relative;
     isolation: isolate;
     background:
-        radial-gradient(ellipse at 0% 18%, rgba(101, 77, 164, .07), transparent 42%),
-        radial-gradient(ellipse at 100% 55%, rgba(75, 110, 175, .065), transparent 44%),
+        radial-gradient(ellipse at 0% 10%, rgba(104, 76, 179, .15), transparent 35%),
+        radial-gradient(ellipse at 100% 35%, rgba(56, 92, 162, .12), transparent 38%),
+        radial-gradient(ellipse at 5% 72%, rgba(100, 72, 167, .10), transparent 36%),
         var(--bg);
 }
 .hs-particle-layer {
     position: absolute;
     inset: 0;
-    z-index: -1;
+    z-index: 0;
     pointer-events: none;
     overflow: clip;
-    mask-image: linear-gradient(to bottom, transparent, #000 180px, #000 calc(100% - 120px), transparent);
 }
 .hs-particle-canvas {
     position: sticky;
@@ -142,6 +142,10 @@ a.hs-media:hover img, a.hs-media:focus-visible img { transform: scale(1.035); }
     height: 100vh;
     height: 100lvh;
     pointer-events: none;
+}
+.hs-particle-region > .hs-content {
+    position: relative;
+    z-index: 1;
 }
 .hs-section-tools {
     display: flex;
