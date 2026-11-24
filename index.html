@@ -51,6 +51,10 @@
         </div>
     </section>
 
+    <div class="hs-particle-region">
+        <div class="hs-particle-layer" aria-hidden="true">
+            <canvas class="hs-particle-canvas"></canvas>
+        </div>
     <div class="hs-shell hs-content">
         <section class="hs-section" id="featured" aria-labelledby="featured-title">
             <div class="hs-section-head">
@@ -59,7 +63,10 @@
                     <h2 id="featured-title">Featured Projects</h2>
                     <p>From released games to systems-driven projects in active development.</p>
                 </div>
-                <a class="hs-link" href="projects.html">All projects →</a>
+                <div class="hs-section-tools">
+                    <a class="hs-link" href="projects.html">All projects →</a>
+                    <button class="hs-particle-toggle" type="button" hidden>Pause particles</button>
+                </div>
             </div>
             <div class="hs-grid hs-featured-grid">
                 <article class="hs-card hs-featured">
@@ -313,6 +320,7 @@
                 </a>
             </div>
         </section>
+    </div>
     </div>
 </main>
 
