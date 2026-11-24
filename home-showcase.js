@@ -74,8 +74,8 @@
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const palette = ['176, 154, 255', '124, 174, 255', '220, 202, 255', '143, 110, 238'];
     const config = {
-        density: 9000,       // CSS pixels squared per particle
-        maxParticles: 190,
+        density: 4000,       // CSS pixels squared per particle
+        maxParticles: 420,
         brightness: 1.0,
         size: 1.0,
         speed: 3.0,              // ambient drift multiplier
@@ -125,7 +125,7 @@
         canvas.height = Math.round(height * dpr);
         ctx.setTransform(canvas.width / width, 0, 0, canvas.height / height, 0, 0);
 
-        const count = Math.max(38, Math.min(config.maxParticles, Math.round(width * height / config.density)));
+        const count = Math.max(70, Math.min(config.maxParticles, Math.round(width * height / config.density)));
         stars = Array.from({ length: count }, () => {
             const roll = Math.random();
             const tier = roll < .55 ? 0 : roll < .89 ? 1 : 2;

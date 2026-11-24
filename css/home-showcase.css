@@ -1,4 +1,5 @@
 /* Homepage only. Shared navigation and existing showcase pages are unchanged. */
+body:has(> .home-showcase) { --bg: #000; }
 .home-showcase { --hs-width: 1360px; --hs-gutter: clamp(20px, 5vw, 76px); --hs-subtle: #b1b1b1; --hs-accent: #d1c4ff; padding: 0; }
 .hs-shell { width: min(var(--hs-width), calc(100% - var(--hs-gutter) * 2)); margin-inline: auto; }
 .hs-hero { position: relative; isolation: isolate; display: grid; min-height: 620px; min-height: clamp(540px, 79svh, 860px); background: #17191b; overflow: hidden; }
@@ -6,7 +7,7 @@
 .hs-hero-fallback, .hs-hero-video { object-fit: cover; object-position: center; z-index: -3; }
 .hs-hero-video { z-index: -2; opacity: 0; }
 .hs-hero-video.is-ready { opacity: 1; }
-.hs-hero-shade { z-index: -1; background: linear-gradient(90deg, rgba(9,10,12,.92) 0%, rgba(9,10,12,.76) 34%, rgba(9,10,12,.25) 76%, rgba(9,10,12,.12)), linear-gradient(0deg, #111 0%, rgba(17,17,17,.18) 25%, transparent 65%); }
+.hs-hero-shade { z-index: -1; background: linear-gradient(90deg, rgba(9,10,12,.92) 0%, rgba(9,10,12,.76) 34%, rgba(9,10,12,.25) 76%, rgba(9,10,12,.12)), linear-gradient(0deg, #000 0%, rgba(0,0,0,.18) 25%, transparent 65%); }
 .hs-hero-inner { display: flex; flex-direction: column; justify-content: center; position: relative; padding-block: 60px 96px; }
 .hs-hero-copy { max-width: 790px; }
 .hs-identity { display: flex; align-items: center; gap: 13px; margin-bottom: 34px; color: #efefef; font-size: .87rem; font-weight: 600; }
@@ -172,7 +173,7 @@ a.hs-media:hover img, a.hs-media:focus-visible img { transform: scale(1.035); }
 @media (max-width: 760px) {
     .hs-hero { min-height: clamp(540px, 82svh, 760px); }
     .hs-hero-inner { padding-block: 40px 100px; }
-    .hs-hero-shade { background: linear-gradient(90deg, #090a0ce8, #090a0c8f), linear-gradient(0deg, #111, transparent 40%); }
+    .hs-hero-shade { background: linear-gradient(90deg, #090a0ce8, #090a0c8f), linear-gradient(0deg, #000, transparent 40%); }
     .hs-hero h1 { font-size: clamp(2.4rem, 8.3vw, 3.9rem); }
     .hs-desktop-break { display: none; }
     .hs-identity { margin-bottom: 26px; }
@@ -203,11 +204,7 @@ a.hs-media:hover img, a.hs-media:focus-visible img { transform: scale(1.035); }
 .hs-particle-region {
     position: relative;
     isolation: isolate;
-    background:
-        radial-gradient(ellipse at 0% 10%, rgba(104, 76, 179, .15), transparent 35%),
-        radial-gradient(ellipse at 100% 35%, rgba(56, 92, 162, .12), transparent 38%),
-        radial-gradient(ellipse at 5% 72%, rgba(100, 72, 167, .10), transparent 36%),
-        var(--bg);
+    background: #000;
 }
 .hs-particle-layer {
     position: absolute;
