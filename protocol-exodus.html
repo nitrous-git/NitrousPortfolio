@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Protocol Exodus — Olivier Trudel</title>
+    <meta name="description" content="Protocol Exodus — a Unity sci-fi RTS technical showcase of multi-layered faction AI, A* and shared Flow Field navigation, economy and production architecture." />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="css/project-showcase.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+</head>
+<body>
+<header class="site-header">
+    <div class="container nav">
+        <a class="brand" href="index.html">Olivier Trudel</a>
+        <nav class="nav-links" aria-label="Main navigation">
+            <a href="portfolio.html">Portfolio</a>
+            <a href="projects.html" aria-current="page">Projects</a>
+            <a href="devlog.html">Devlog</a>
+            <a href="about.html">About</a>
+        </nav>
+    </div>
+</header>
+
+
+<main class="project-showcase-page">
+    <!-- CINEMATIC HERO -->
+    <section class="showcase-hero" aria-labelledby="project-title">
+        <div class="showcase-hero-media">
+            <img class="showcase-hero-video" data-media-fallback src="assets/protocol-exodus/cover.svg" alt="" />
+            <video class="showcase-hero-video" autoplay muted loop playsinline preload="metadata" aria-hidden="true" hidden>
+                <source src="assets/devlog_shared_nav/largercombat02.mp4" type="video/mp4" />
+            </video>
+            <div class="showcase-hero-overlay"></div>
+            <div class="showcase-hero-content">
+                <span class="showcase-eyebrow">NITROUS STUDIO — IN DEVELOPMENT</span>
+                <h1 id="project-title">PROTOCOL EXODUS</h1>
+                <p>Sci-Fi Real-Time Strategy</p>
+            </div>
+            <button class="showcase-motion-toggle" type="button" aria-label="Pause background video" hidden>Pause</button>
+        </div>
+        <div class="showcase-hero-footer showcase-wide">
+            <span>Sci-Fi · Real-Time Strategy</span>
+            <span>Unity · C# · AI &amp; Gameplay Engineering</span>
+        </div>
+    </section>
+
+    <!-- PROJECT OVERVIEW -->
+    <section class="showcase-overview showcase-wide" aria-labelledby="overview-title">
+        <aside class="showcase-facts" aria-label="Project facts">
+            <div class="showcase-fact">
+                <h3>Roles</h3>
+                <p>Gameplay Programmer<br />AI &amp; Systems Programmer<br />Game Designer</p>
+            </div>
+            <div class="showcase-fact">
+                <h3>Technologies</h3>
+                <p>Unity<br />C#<br />A* / Dijkstra<br />Flow Fields<br />ScriptableObjects</p>
+            </div>
+            <div class="showcase-fact">
+                <h3>Project</h3>
+                <p>Nitrous Studio<br />Independent development</p>
+            </div>
+            <div class="showcase-fact">
+                <h3>Status</h3>
+                <p>In development<br />Playable RTS prototype</p>
+            </div>
+        </aside>
+        <div class="showcase-overview-copy">
+            <span class="showcase-eyebrow">ABOUT THE PROJECT</span>
+            <h2 id="overview-title">Project overview</h2>
+            <p><strong>Protocol Exodus</strong> is a sci-fi real-time strategy game developed in Unity and C#, inspired by classic base-building RTS games. Players establish a base, gather resources, develop their forces and command infantry, mechanized units and aircraft against autonomous enemy factions.</p>
+            <p>The project builds on earlier Java RTS experiments, translating algorithmic research into a playable strategy game. Its central engineering challenge is coordinating large groups of autonomous units while keeping navigation, tactical decisions, economic simulation and player commands responsive and maintainable.</p>
+            <p>The architecture separates <strong>navigation, unit behavior, faction strategy and gameplay systems</strong> so each can evolve independently while sharing the same match rules.</p>
+            <h3>My contributions</h3>
+            <ul class="showcase-contributions">
+                <li>Custom grid-based A* and shared Flow Field navigation for group movement.</li>
+                <li>Radius-aware clearance, formation allocation, local steering and unit depenetration.</li>
+                <li>Multi-layered enemy AI: individual combat decisions, squad missions and faction strategy.</li>
+                <li>Resource gathering, building construction, supply and unit production systems.</li>
+                <li>Data-driven faction and unit definitions, shared match initialization and command architecture.</li>
+                <li>RTS controls, selection, tactical HUD, minimap and combat presentation.</li>
+            </ul>
+            <div class="showcase-actions">
+                <a class="showcase-button" href="https://github.com/nitrous-git/Protocol_Exodus_RTS" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github" aria-hidden="true"></i> View source code <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
+                <a class="showcase-text-link" href="devlog/from-nxastar-to-shared-navigation.html">Read the navigation devlog →</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- TECHNICAL SHOWCASE HEADER -->
+    <section class="showcase-wide showcase-section-heading">
+        <span class="showcase-eyebrow">DEVELOPMENT BREAKDOWN</span>
+        <h2>Gameplay &amp; Technical Systems</h2>
+        <p>A closer look at the artificial intelligence, navigation algorithms and gameplay architecture behind Protocol Exodus.</p>
+    </section>
+
+    <!-- 01 — MULTI-LAYERED FACTION AI -->
+    <section class="showcase-feature showcase-wide" aria-labelledby="feature-01">
+        <div class="showcase-feature-copy">
+            <span class="showcase-eyebrow">01 / ARTIFICIAL INTELLIGENCE</span>
+            <h2 id="feature-01">Multi-Layered Faction AI</h2>
+            <p class="showcase-feature-intro">Enemy factions operate through three complementary layers of intelligence, from individual combat decisions to coordinated missions and strategic economic planning.</p>
+            <div class="showcase-detail">
+                <h3>Individual Combat Intelligence</h3>
+                <p><code>CombatUnitAI</code> responds to threats, manages objectives and supports defensive behavior and critical-health retreat. Tactical autonomy is kept separate from the larger mission assigned to a unit.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Squad Missions &amp; Assault Waves</h3>
+                <p><code>AIMissionDirector</code> recruits eligible units, reserves participants and coordinates assault and defense missions. Squads assemble, move toward shared objectives, engage enemies and can withdraw or terminate unsuccessful missions.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Faction-Level Strategy</h3>
+                <p><code>AIFactionStrategy</code> evaluates military readiness, local threats, economic goals and mission outcomes. It coordinates with <code>AIEconomyManager</code> to develop the base, prepare attacks, defend and recover after losses.</p>
+            </div>
+
+        </div>
+        <figure class="showcase-media">
+            <img src="assets/protocol-exodus/ai.svg" alt="Three-layer AI responsibility diagram connecting faction strategy, economy management, mission director and combat unit intelligence." width="960" height="540" loading="lazy" />
+            <figcaption>AI architecture — strategic goals, squad missions and autonomous tactical decisions.</figcaption>
+        </figure>
+    </section>
+
+    <!-- 02 — SCALABLE RTS NAVIGATION -->
+    <section class="showcase-feature showcase-feature-reverse showcase-wide" aria-labelledby="feature-02">
+        <div class="showcase-feature-copy">
+            <span class="showcase-eyebrow">02 / ALGORITHMS &amp; NAVIGATION</span>
+            <h2 id="feature-02">Scalable RTS Navigation</h2>
+            <p class="showcase-feature-intro">The navigation framework evolved from individual A* searches to a hybrid architecture that shares the expensive global navigation solution across large groups while preserving individual movement.</p>
+            <div class="showcase-detail">
+                <h3>A* &amp; Shared Flow Fields</h3>
+                <p>Individual A* remains useful for smaller commands, while shared Flow Fields address the repeated-search problem for larger formations. Multi-source Dijkstra integration generates a spatial cost field from which units sample movement directions.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Clearance &amp; Local Steering</h3>
+                <p>Radius-aware traversability and static clearance costs account for different unit sizes. Local steering adapts to nearby traffic without replacing global guidance, and a separate depenetration system resolves residual overlaps.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Formation &amp; Tactical Allocation</h3>
+                <p>Destination allocation is distinct from pathfinding. Topology-aware formation slots distribute units across the destination area; attack-position allocation gives combat units space to engage a common target.</p>
+            </div>
+            <div class="showcase-actions">
+                <a class="showcase-text-link" href="devlog/from-nxastar-to-shared-navigation.html">From N × A* to Shared Navigation →</a>
+                <a class="showcase-text-link" href="devlog/cooperative-pathfinding-starcraft.html">Cooperative Pathfinding “à la StarCraft” →</a>
+                <a class="showcase-text-link" href="assets/devlog_shared_nav/FlowFieldGroupNav.mp4">Watch Flow Field demonstration →</a>
+            </div>
+        </div>
+        <figure class="showcase-media">
+            <img src="assets/protocol-exodus/navigation.svg" alt="Diagram separating individual A*, shared Flow Field navigation, formation allocation, local steering and depenetration." width="960" height="540" loading="lazy" />
+            <figcaption>Navigation architecture — global path planning, formation policy and local unit motion.</figcaption>
+        </figure>
+    </section>
+
+    <!-- 03 — ECONOMY, PRODUCTION &AMP; FACTIONS -->
+    <section class="showcase-feature showcase-wide" aria-labelledby="feature-03">
+        <div class="showcase-feature-copy">
+            <span class="showcase-eyebrow">03 / GAMEPLAY &amp; SYSTEMS ARCHITECTURE</span>
+            <h2 id="feature-03">Economy, Production &amp; Factions</h2>
+            <p class="showcase-feature-intro">The RTS economy is built around shared, data-driven gameplay rules rather than separate implementations for player-controlled and AI-controlled factions.</p>
+            <div class="showcase-detail">
+                <h3>Resources &amp; Construction</h3>
+                <p>Workers gather and deliver resources to their faction. Building placement validates spatial footprints, and supply structures and production buildings expand the faction's capacity.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Production &amp; Unit Deployment</h3>
+                <p><code>UnitProductionComponent</code> validates costs and supply, manages production queues and deploys units to appropriate spawn positions and rally destinations. Ground units and aircraft use distinct deployment paths.</p>
+            </div>
+            <div class="showcase-detail">
+                <h3>Data-Driven Faction Architecture</h3>
+                <p><code>FactionDefinition</code>, <code>UnitDefinition</code> and <code>BuildingDefinition</code> describe available content, costs and gameplay configuration. <code>GameBuilder</code> initializes match participants and starting assets, while player and AI controllers operate on shared systems.</p>
+            </div>
+
+        </div>
+        <figure class="showcase-media">
+            <img src="assets/protocol-exodus/production.svg" alt="Economy architecture diagram connecting controllers, faction definitions, workers, construction and production." width="960" height="540" loading="lazy" />
+            <figcaption>Economy architecture — faction ownership, shared gameplay rules and unit production.</figcaption>
+        </figure>
+    </section>
+
+    <!-- CLOSING -->
+    <section class="showcase-container showcase-closing">
+        <span class="showcase-eyebrow">TECHNICAL DEVELOPMENT</span>
+        <h2>From algorithmic experiments to a playable RTS.</h2>
+        <p>Protocol Exodus brings together research in pathfinding, autonomous agents and game systems within a single playable strategy game. Development continues with a focus on scalable simulation, intelligent opponents and responsive gameplay.</p>
+        <div class="showcase-actions">
+            <a class="showcase-button" href="devlog/from-nxastar-to-shared-navigation.html"><i class="fa-solid fa-code" aria-hidden="true"></i> Read the technical devlog</a>
+            <a class="showcase-text-link" href="devlog/cooperative-pathfinding-starcraft.html">Earlier pathfinding research →</a>
+            <a class="showcase-text-link" href="https://github.com/nitrous-git/Protocol_Exodus_RTS" target="_blank" rel="noopener noreferrer">View source code →</a>
+            <a class="showcase-text-link" href="projects.html">Back to Projects →</a>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="container footer-row">
+        <span>© 2026 Olivier Trudel</span>
+        <a href="index.html">Home</a>
+    </div>
+</footer>
+
+
+<script>
+    const heroVideo = document.querySelector('video.showcase-hero-video');
+    const fallback = document.querySelector('[data-media-fallback]');
+    const motionToggle = document.querySelector('.showcase-motion-toggle');
+    const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    function updateMotionLabel() {
+        motionToggle.textContent = heroVideo.paused ? 'Play' : 'Pause';
+        motionToggle.setAttribute('aria-label', heroVideo.paused ? 'Play background video' : 'Pause background video');
+    }
+
+    function showFallback() {
+        heroVideo.pause();
+        heroVideo.hidden = true;
+        fallback.hidden = false;
+        motionToggle.hidden = true;
+    }
+
+    function showVideo() {
+        heroVideo.hidden = false;
+        fallback.hidden = true;
+        motionToggle.hidden = false;
+        if (!motionPreference.matches) heroVideo.play().catch(updateMotionLabel);
+        else heroVideo.pause();
+        updateMotionLabel();
+    }
+
+    function respectMotionPreference() {
+        heroVideo.autoplay = !motionPreference.matches;
+        if (motionPreference.matches) heroVideo.pause();
+        else if (!heroVideo.hidden) heroVideo.play().catch(updateMotionLabel);
+        updateMotionLabel();
+    }
+
+    heroVideo.addEventListener('loadeddata', showVideo);
+    heroVideo.addEventListener('error', showFallback);
+    heroVideo.querySelector('source').addEventListener('error', showFallback);
+    heroVideo.addEventListener('play', updateMotionLabel);
+    heroVideo.addEventListener('pause', updateMotionLabel);
+    motionToggle.addEventListener('click', () => {
+        if (heroVideo.paused) heroVideo.play().catch(updateMotionLabel);
+        else heroVideo.pause();
+    });
+    motionPreference.addEventListener('change', respectMotionPreference);
+    respectMotionPreference();
+    if (heroVideo.readyState >= 2) showVideo();
+    else if (heroVideo.error) showFallback();
+</script>
+</body>
+</html>
