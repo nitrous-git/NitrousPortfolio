@@ -78,8 +78,13 @@
         maxParticles: 190,
         brightness: 1.0,
         size: 1.0,
-        speed: 1.0,
-        glow: 1.0
+        speed: 3.0,              // ambient drift multiplier
+        glow: 1.0,
+        idleSwirl: .065,         // radians/sec near the vortex
+        scrollSwirl: .65,        // additional signed rotation at full scroll velocity
+        scrollParallax: .14,    // vertical motion relative to scroll velocity
+        maxScrollSpeed: 2200,    // CSS pixels/sec
+        maxTrail: 23            // CSS pixels
     };
     let enabled = !motion.matches;
     let inView = true;
@@ -87,6 +92,8 @@
     let stars = [];
     let frame = 0, previous = 0;
     let elapsed = 0;
+    let lastScrollY = window.scrollY;
+    let scrollVelocity = 0;
 
     // Prerender smooth, additive-looking halos once, rather than blur every frame.
     const sprites = palette.map(color => {
@@ -144,13 +151,41 @@
         draw(0);
     }
 
+    // A softened, differential vortex: no singularity or inward collapse.
+    // Scrolling down drives clockwise rotation and upward parallax; up reverses both.
+    function flowAt(star, scroll) {
+        const cx = width * .60;
+        const cy = height * .49;
+        const dx = star.x * width - cx;
+        const dy = star.y * height - cy;
+        const scale = Math.max(160, Math.min(width, height) * .42);
+        const falloff = 1 / Math.sqrt(1 + (dx * dx + dy * dy) / (scale * scale));
+        const depth = .62 + star.tier * .23;
+        const impulse = scroll / config.maxScrollSpeed;
+        const omega = (config.idleSwirl + impulse * config.scrollSwirl) * falloff * depth;
+        return {
+            x: star.vx - dy * omega,
+            y: star.vy + dx * omega - scroll * config.scrollParallax * depth
+        };
+    }
+
     function draw(dt) {
         if (!width || !height) return;
         elapsed += dt;
         ctx.clearRect(0, 0, width, height);
+        const scroll = enabled ? scrollVelocity : 0;
+        const activity = Math.min(1, Math.abs(scroll) / config.maxScrollSpeed);
         for (const star of stars) {
-            star.x = (star.x + dt * star.vx / width + 1) % 1;
-            star.y = (star.y + dt * star.vy / height + 1) % 1;
+            // Midpoint integration limits orbit drift at high scroll speeds.
+            const first = flowAt(star, scroll);
+            const midpoint = {
+                ...star,
+                x: star.x + first.x * dt * .5 / width,
+                y: star.y + first.y * dt * .5 / height
+            };
+            const velocity = flowAt(midpoint, scroll);
+            star.x = ((star.x + dt * velocity.x / width) % 1 + 1) % 1;
+            star.y = ((star.y + dt * velocity.y / height) % 1 + 1) % 1;
             const x = star.x * width, y = star.y * height;
             const twinkle = .87 + .13 * Math.sin(elapsed * (.35 + star.tier * .13) + star.phase);
             const edge = Math.max(0, Math.min(1, x / 24, (width - x) / 24, y / 24, (height - y) / 24));
@@ -159,6 +194,28 @@
             const halo = star.radius * star.halo * config.glow;
             ctx.globalAlpha = alpha * (star.tier === 0 ? .45 : .85);
             ctx.drawImage(sprites[star.color], x - halo, y - halo, halo * 2, halo * 2);
+            // Short, fading motion streaks during scrolling, with no persistent canvas trails.
+            if (activity > .035 && star.tier > 0) {
+                const magnitude = Math.hypot(velocity.x, velocity.y);
+                if (magnitude > 1) {
+                    const length = Math.min(config.maxTrail, magnitude * .065) * activity;
+                    const tx = x - velocity.x / magnitude * length;
+                    const ty = y - velocity.y / magnitude * length;
+                    if (length > .4) {
+                        const trail = ctx.createLinearGradient(tx, ty, x, y);
+                        trail.addColorStop(0, 'rgba(' + palette[star.color] + ',0)');
+                        trail.addColorStop(1, 'rgba(' + palette[star.color] + ',.85)');
+                        ctx.globalAlpha = alpha * activity * .78;
+                        ctx.strokeStyle = trail;
+                        ctx.lineWidth = Math.max(.8, star.radius * .75);
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(tx, ty);
+                        ctx.lineTo(x, y);
+                        ctx.stroke();
+                    }
+                }
+            }
             ctx.globalAlpha = alpha;
             ctx.fillStyle = 'rgb(' + palette[star.color] + ')';
             ctx.beginPath();
@@ -179,10 +236,24 @@
     function tick(now) {
         frame = 0;
         if (!enabled || !inView || document.hidden) return;
-        if (!previous) previous = now;
+        if (!previous) {
+            previous = now;
+            lastScrollY = window.scrollY;
+        }
         const dt = (now - previous) / 1000;
-        if (dt >= 1 / 30) {
-            draw(Math.min(dt, .1));
+        // 60 Hz on typical displays; cap simulation dt after a stall.
+        if (dt >= 1 / 62) {
+            const currentY = window.scrollY;
+            const raw = (currentY - lastScrollY) / dt;
+            lastScrollY = currentY;
+            const target = Math.max(-config.maxScrollSpeed, Math.min(config.maxScrollSpeed, raw));
+            const step = Math.min(dt, .05);
+            // Responsive acceleration and smooth inertial decay when scrolling stops.
+            const response = Math.abs(target) > Math.abs(scrollVelocity) ||
+                target * scrollVelocity < 0 ? 11 : 4;
+            scrollVelocity += (target - scrollVelocity) * (1 - Math.exp(-response * step));
+            if (Math.abs(scrollVelocity) < .5) scrollVelocity = 0;
+            draw(step);
             previous = now;
         }
         frame = requestAnimationFrame(tick);
@@ -193,12 +264,17 @@
         if (enabled && inView && !document.hidden) {
             if (!frame) {
                 previous = 0;
+                lastScrollY = window.scrollY;
+                scrollVelocity = 0;
                 frame = requestAnimationFrame(tick);
             }
         } else {
             if (frame) cancelAnimationFrame(frame);
             frame = 0;
             previous = 0;
+            lastScrollY = window.scrollY;
+            scrollVelocity = 0;
+            draw(0); // remove motion streaks while paused
         }
     }
 
